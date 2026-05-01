@@ -3256,7 +3256,11 @@ input[type=range]::-webkit-slider-thumb {
   <svg width="24" height="24"><use href="#i-chat"/></svg>
 </button>
 
-<script src="config.local.js" onerror="window.APO_CONFIG=window.APO_CONFIG||{};"></script>
+<script>
+window.APO_CONFIG = window.APO_CONFIG || {};
+window.APO_CONFIG.mapboxToken = window.APO_CONFIG.mapboxToken || '__MAPBOX_TOKEN__';
+</script>
+<script src="config.local.js" onerror="void 0"></script>
 
 <!-- ═══════════════════════════════════════════════════════════════
      STAGE 2: APO LOGIC ENGINE — Agent-Based Simulation

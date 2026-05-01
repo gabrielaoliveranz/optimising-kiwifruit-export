@@ -1,4 +1,6 @@
 {
+  "buildCommand": "sed -i \"s|__MAPBOX_TOKEN__|$VITE_MAPBOX_TOKEN|g\" apophenia_v4_executive.html",
+  "outputDirectory": ".",
   "rewrites": [
     { "source": "/", "destination": "/apophenia_v4_executive.html" }
   ]
