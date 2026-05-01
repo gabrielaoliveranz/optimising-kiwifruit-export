@@ -2175,15 +2175,31 @@ input[type=range]::-webkit-slider-thumb {
 @media (max-width: 768px) {
   canvas {
     width: 100% !important;
-    min-height: 260px !important;
     max-width: 100% !important;
     display: block !important;
   }
+  /* Charts that successfully initialised get adequate height */
+  canvas.chart-ready {
+    min-height: 240px !important;
+  }
+  /* Charts that failed to init OR have no parent dimensions: collapse gracefully */
   .chart-wrap, .chart-container, [class*="chart-"] {
     width: 100% !important;
-    min-height: 280px !important;
     position: relative !important;
   }
+  /* Containers explicitly marked empty (no chart rendered) collapse */
+  .chart-empty,
+  .chart-empty .bi-chart-card,
+  .chart-empty .chart-card { min-height: 0 !important; padding: 4px 0 !important; }
+  .chart-empty canvas { display: none !important; }
+  .chart-empty::after {
+    content: "Chart unavailable on this device";
+    display: block; padding: 10px 14px; font-size: 11px;
+    color: var(--txt-dim,#8a938d); text-align: center;
+    border: 1px dashed var(--cf-border,#e5ebe7); border-radius: 6px;
+  }
+  /* Map fallback: collapse if Mapbox fails to load */
+  #apoMap:empty, #apoMap.map-empty { min-height: 0 !important; height: 0 !important; display: none !important; }
   /* Force layout containers to max 100vw */
   main, section, .band, .band-inner, .module, .card-section {
     max-width: 100vw !important;
@@ -3992,15 +4008,20 @@ const APO = (() => {
     /* PTE strip */
     const strip=document.getElementById('pteStrip');
     if(strip){ strip.innerHTML=''; const lost=parseFloat(shelf); for(let i=0;i<90;i++){const d=document.createElement('div'); d.className='pte-day'+(i>=90-Math.round(lost)?' lost':''); strip.appendChild(d);} }
-    /* Grower payments */
+    /* Grower payments — seasonal value = volume (M trays) × effective rate ($/tray) = $M NZD */
     const pay=_computePayment(s.dm);
     _setText('gp_category', pay.cat==='MTS Fail'?'MTS Failure — No Payment':pay.cat==='Green MTS'?'Green MTS Compliant':pay.cat==='SunGold G3 Premium'?'SunGold G3 Premium':'SunGold Ultra Premium');
     _setText('gp_submit', '$'+pay.submit.toFixed(2)+'/tray');
     _setText('gp_taste',  '+$'+pay.taste.toFixed(2)+'/tray');
     _setText('gp_total',  '$'+pay.total.toFixed(2)+'/tray');
-    const sR=Math.round(pay.total*s.vol), mR=Math.round(4.40*s.vol);
+    // s.vol is M trays (default 100). Guard against NaN/undefined.
+    const volM = (Number.isFinite(s.vol) && s.vol > 0) ? s.vol : 100;
+    const rate = (Number.isFinite(pay.total) && pay.total > 0) ? pay.total : 0;
+    const maxRate = 4.40;
+    const sR = Math.round(rate * volM);
+    const mR = Math.round(maxRate * volM);
     _setText('gp_season', '$'+sR+'M NZD seasonal');
-    _setText('gp_loss',   '−$'+Math.max(0,mR-sR)+'M vs maximum premium');
+    _setText('gp_loss',   '−$'+Math.max(0, mR - sR)+'M vs maximum premium');
     _setText('gp_dm_note',`DM ${s.dm}% ${s.dm>=16.369?'≥':'<'} 16.369% (Ōpōtiki mean) → ${pay.cat} @ ${pay.rate}.`);
     /* VSI */
     const avgVsi=_state.agents.length?_state.agents.reduce((a,b)=>a+b.vsi_score,0)/_state.agents.length:0;
@@ -4112,13 +4133,26 @@ const APO = (() => {
 
   /* ── ARC GAUGE SVG ──────────────────────────────────────────── */
   function _drawArcGauge(risk) {
-    const svg=document.getElementById('arcGauge'); if(!svg) return;
-    const cx=80,cy=88,R=70;
-    const sA=Math.PI;                           // left  (0%)
-    const rA=Math.PI*(1-risk/100);              // interpolate: π→0 as risk 0→100
-    const col=risk>60?'#a13030':risk>25?'#c97a2c':'#006338';
-    const ap=(cx,cy,r,a1,a2)=>{const x1=cx+r*Math.cos(a1),y1=cy+r*Math.sin(a1),x2=cx+r*Math.cos(a2),y2=cy+r*Math.sin(a2),lg=Math.abs(a2-a1)>Math.PI?1:0;return `M${x1} ${y1} A${r} ${r} 0 ${lg} 0 ${x2} ${y2}`;};
-    svg.innerHTML=`<path d="${ap(cx,cy,R,sA,0)}" fill="none" stroke="#e2e8e2" stroke-width="8" stroke-linecap="round"/><path d="${ap(cx,cy,R,sA,rA)}" fill="none" stroke="${col}" stroke-width="8" stroke-linecap="round"/><circle cx="${cx+Math.cos(rA)*R}" cy="${cy+Math.sin(rA)*R}" r="5" fill="${col}"/>`;
+    const svg = document.getElementById('arcGauge'); if (!svg) return;
+    const cx = 80, cy = 88, R = 70;
+    const r = Math.max(0, Math.min(100, Number(risk) || 0));
+    const col = r > 60 ? '#a13030' : r > 25 ? '#c97a2c' : '#006338';
+    // Map risk to angle: risk=0 → θ=π (left), risk=100 → θ=0 (right). Top semicircle.
+    // SVG y is inverted, so use cy - R*sin(θ) to put arc ABOVE the baseline.
+    const theta = Math.PI * (1 - r / 100);
+    const pt = (t) => [cx + R * Math.cos(t), cy - R * Math.sin(t)];
+    const [sx, sy] = pt(Math.PI);
+    const [bx, by] = pt(0);
+    const [ex, ey] = pt(theta);
+    // Sweep flag = 1 (clockwise in screen coords) traces left → top → right.
+    const bgPath     = `M ${sx} ${sy} A ${R} ${R} 0 0 1 ${bx} ${by}`;
+    const activePath = r > 0
+      ? `<path d="M ${sx} ${sy} A ${R} ${R} 0 0 1 ${ex} ${ey}" fill="none" stroke="${col}" stroke-width="8" stroke-linecap="round"/>`
+      : '';
+    svg.innerHTML =
+      `<path d="${bgPath}" fill="none" stroke="#e2e8e2" stroke-width="8" stroke-linecap="round"/>` +
+      activePath +
+      `<circle cx="${ex}" cy="${ey}" r="5" fill="${col}"/>`;
   }
 
   /* ── PROJECTION SVG (26-week arc — accepts real ETL data or falls back to defaults) */
@@ -4211,20 +4245,27 @@ const APO = (() => {
     register(id, buildFn) { this.defs[id] = buildFn; },
 
     ensure(id) {
-      if (typeof Chart === 'undefined') return;
       let canvas = document.getElementById(id); if (!canvas) return;
       const parent = canvas.parentElement;
+      const markEmpty = () => { if (parent) parent.classList.add('chart-empty'); canvas.classList.remove('chart-ready'); };
+      const markReady = () => { if (parent) parent.classList.remove('chart-empty'); canvas.classList.add('chart-ready'); };
+      if (typeof Chart === 'undefined') { markEmpty(); return; }
       // Abort if parent has no dimensions — still in display:none tree
-      if (!parent || parent.offsetWidth === 0 || parent.offsetHeight === 0) return;
-      // Destroy any existing instance on this canvas
-      const existing = Chart.getChart(canvas);
-      if (existing) existing.destroy();
-      // Replace canvas element to clear ALL residual Chart.js state
-      const fresh = document.createElement('canvas');
-      fresh.id = id; canvas.replaceWith(fresh);
-      const inst = new Chart(fresh, this.defs[id]());
-      this.instances[id] = inst;
-      return inst;
+      if (!parent || parent.offsetWidth === 0 || parent.offsetHeight === 0) { markEmpty(); return; }
+      try {
+        const existing = Chart.getChart(canvas);
+        if (existing) existing.destroy();
+        const fresh = document.createElement('canvas');
+        fresh.id = id; canvas.replaceWith(fresh);
+        const inst = new Chart(fresh, this.defs[id]());
+        this.instances[id] = inst;
+        if (parent) parent.classList.remove('chart-empty');
+        fresh.classList.add('chart-ready');
+        return inst;
+      } catch(e) {
+        console.warn('[chart] init failed for', id, e);
+        markEmpty();
+      }
     },
 
     ensureAll(ids) { ids.forEach(id => this.ensure(id)); },
@@ -4549,9 +4590,34 @@ const APO = (() => {
       document.body.classList.remove('sidebar-open');
       ham?.setAttribute('aria-expanded','false');
     });
-    /* Report buttons */
-    document.getElementById('generateReportBtn')?.addEventListener('click',()=>{_updateReport();_switchVaultTab('briefing');});
-    document.getElementById('regenReportBtn')?.addEventListener('click',_updateReport);
+    /* Report buttons — with visual feedback + scroll into view + error guard */
+    const _flashBtn = (btn, label) => {
+      if (!btn) return;
+      const orig = btn.textContent;
+      btn.textContent = label || '✓ Generated';
+      btn.disabled = true;
+      setTimeout(() => { btn.textContent = orig; btn.disabled = false; }, 1400);
+    };
+    const _runReport = (btn) => {
+      try { _updateReport(); } catch(e) { console.warn('[report] update failed', e); }
+      const preview = document.getElementById('reportPreview');
+      if (preview) {
+        preview.style.transition = 'opacity .25s';
+        preview.style.opacity = '0.4';
+        setTimeout(() => { preview.style.opacity = '1'; }, 180);
+        if (typeof preview.scrollIntoView === 'function') {
+          preview.scrollIntoView({ behavior:'smooth', block:'nearest' });
+        }
+      }
+      _flashBtn(btn);
+    };
+    document.getElementById('generateReportBtn')?.addEventListener('click', (e) => {
+      _switchVaultTab('briefing');
+      _runReport(e.currentTarget);
+    });
+    document.getElementById('regenReportBtn')?.addEventListener('click', (e) => {
+      _runReport(e.currentTarget);
+    });
     document.getElementById('copyReportBtn')?.addEventListener('click',()=>{
       const el=document.getElementById('reportPreview'); const btn=document.getElementById('copyReportBtn');
       if(el&&navigator.clipboard){navigator.clipboard.writeText(el.innerText).catch(()=>{});if(btn){btn.textContent='✓ Copied';setTimeout(()=>btn.textContent='⎘ Copy Markdown',2000);}}
@@ -4563,16 +4629,32 @@ const APO = (() => {
     }));
     _initTabKeys();
     document.getElementById('dynChartGenerate')?.addEventListener('click', _generateDynChart);
-    /* Auto-refresh toggle */
+    /* Toggle helpers — inline style for guaranteed visual feedback */
+    const _setPillActive = (btn, on) => {
+      if (!btn) return;
+      btn.classList.toggle('active', on);
+      btn.style.background = on ? 'var(--cf-ink, #0e1410)' : '';
+      btn.style.color      = on ? 'var(--txt-on-dark, #fafaf7)' : '';
+      btn.style.borderColor= on ? 'var(--cf-ink, #0e1410)' : '';
+    };
+    /* Auto-refresh toggle — actually polls live ETL feed */
     (function() {
       const btn = document.getElementById('autoRefreshBtn'); if (!btn) return;
       let _arTimer = null;
+      _setPillActive(btn, btn.classList.contains('active'));
       btn.addEventListener('click', () => {
-        const on = btn.classList.toggle('active');
-        btn.style.background = on ? 'var(--brand-green)' : '';
-        btn.style.color = on ? '#fff' : '';
-        if (on) { _arTimer = setInterval(() => { _updateDOM(); _updateCharts(); }, 30000); }
-        else { clearInterval(_arTimer); _arTimer = null; }
+        const on = !btn.classList.contains('active');
+        _setPillActive(btn, on);
+        if (on) {
+          _arTimer = setInterval(() => {
+            try { if (typeof _Feed !== 'undefined' && _Feed && typeof _Feed.load === 'function') _Feed.load(); } catch(e){}
+            try { _updateDOM(); } catch(e){}
+            try { _updateCharts && _updateCharts(); } catch(e){}
+            try { _drawArcGauge(_computeRisk()); } catch(e){}
+          }, 30000);
+        } else {
+          clearInterval(_arTimer); _arTimer = null;
+        }
       });
     })();
     window.addEventListener('resize', () => requestAnimationFrame(_resizeAllCharts));
@@ -4586,15 +4668,26 @@ const APO = (() => {
     document.querySelectorAll('.qp-btn').forEach(b => b.addEventListener('click', () => { _chatPost('user', b.textContent); _chatRespond(b.textContent); }));
     /* PDF export */
     document.querySelectorAll('#exportPdfBtn, #exportPdfPill').forEach(b => b?.addEventListener('click', _exportPdf));
-    /* Forecast Lab toggle */
-    document.getElementById('btn90Day')?.addEventListener('click', () => {
-      document.getElementById('btn90Day')?.classList.add('active');
-      document.getElementById('btn26Week')?.classList.remove('active');
+    /* Forecast Lab toggle — both buttons get robust visual highlight + show distinct content */
+    const _btn26 = document.getElementById('btn26Week');
+    const _btn90 = document.getElementById('btn90Day');
+    _setPillActive(_btn26, _btn26?.classList.contains('active'));
+    _setPillActive(_btn90, _btn90?.classList.contains('active'));
+    _btn90?.addEventListener('click', () => {
+      _setPillActive(_btn90, true);
+      _setPillActive(_btn26, false);
       _show90DayModal();
     });
-    document.getElementById('btn26Week')?.addEventListener('click', () => {
-      document.getElementById('btn26Week')?.classList.add('active');
-      document.getElementById('btn90Day')?.classList.remove('active');
+    _btn26?.addEventListener('click', () => {
+      _setPillActive(_btn26, true);
+      _setPillActive(_btn90, false);
+      _close90DayModal();
+      try { _drawProjectionSvg(); } catch(e){}
+      // Scroll the projection into view so user sees the change
+      const proj = document.getElementById('projSvg');
+      if (proj && typeof proj.scrollIntoView === 'function') {
+        proj.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      }
     });
   }
 
@@ -4966,8 +5059,9 @@ const APO = (() => {
       delete _ChartRegistry.instances['canvas90Day'];
     }
     if (_projChart90) { _projChart90.destroy(); _projChart90 = null; }
-    document.getElementById('btn26Week')?.classList.add('active');
-    document.getElementById('btn90Day')?.classList.remove('active');
+    const b26 = document.getElementById('btn26Week'), b90 = document.getElementById('btn90Day');
+    if (b26) { b26.classList.add('active'); b26.style.background='var(--cf-ink, #0e1410)'; b26.style.color='var(--txt-on-dark, #fafaf7)'; b26.style.borderColor='var(--cf-ink, #0e1410)'; }
+    if (b90) { b90.classList.remove('active'); b90.style.background=''; b90.style.color=''; b90.style.borderColor=''; }
   }
 
   function _build90DayChart() {
