@@ -4588,6 +4588,8 @@ const APO = (() => {
     document.querySelectorAll('#exportPdfBtn, #exportPdfPill').forEach(b => b?.addEventListener('click', _exportPdf));
     /* Forecast Lab toggle */
     document.getElementById('btn90Day')?.addEventListener('click', () => {
+      document.getElementById('btn90Day')?.classList.add('active');
+      document.getElementById('btn26Week')?.classList.remove('active');
       _show90DayModal();
     });
     document.getElementById('btn26Week')?.addEventListener('click', () => {
@@ -4964,6 +4966,8 @@ const APO = (() => {
       delete _ChartRegistry.instances['canvas90Day'];
     }
     if (_projChart90) { _projChart90.destroy(); _projChart90 = null; }
+    document.getElementById('btn26Week')?.classList.add('active');
+    document.getElementById('btn90Day')?.classList.remove('active');
   }
 
   function _build90DayChart() {
