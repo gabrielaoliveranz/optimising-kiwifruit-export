@@ -2007,112 +2007,141 @@ input[type=range]::-webkit-slider-thumb {
 /* Last sync stale indicator */
 #lastSyncDisplay.stale strong { color: var(--risk-mid); }
 
-/* ── Mobile banner ───────────────────────────────────────────────── */
-.mobile-banner { display: none; }
+/* ============================================
+   RESPONSIVE — Tablet (≤1024px) and Mobile (≤768px)
+   ============================================ */
+
+/* TABLET */
+@media (max-width: 1024px) {
+  .band-inner { padding: 0 var(--s4); }
+  .topbar { height: auto; padding: 12px 16px; flex-wrap: wrap; gap: 8px; }
+  .topbar-eyebrow { display: none; }
+  .ticker { font-size: 11px; }
+  .hero-headline { font-size: clamp(28px, 4vw, 40px) !important; }
+  .evidence-triad { grid-template-columns: repeat(2, 1fr) !important; gap: var(--s3) !important; }
+  .evidence-triad .evidence-card:last-child { grid-column: 1 / -1; }
+  .kpi-strip { grid-template-columns: repeat(2, 1fr) !important; gap: var(--s3) !important; }
+  .process-grid { grid-template-columns: repeat(2, 1fr) !important; gap: var(--s4) var(--s3) !important; }
+  .process-item:nth-child(odd) { border-left: none !important; padding-left: 0 !important; }
+  .band-footer-grid { grid-template-columns: repeat(2, 1fr) !important; gap: var(--s4) !important; }
+  .map-shell { height: 420px !important; }
+  .controls-drawer { width: 100% !important; max-width: 380px; }
+}
+
+/* MOBILE */
 @media (max-width: 768px) {
-  .mobile-banner {
-    display: flex;
-    position: fixed;
-    inset: 0;
-    background: var(--cf-bg);
-    z-index: 9999;
-    align-items: center;
-    justify-content: center;
-    padding: 24px;
-    overflow-y: auto;
-  }
-  .mobile-banner-card {
-    max-width: 420px;
-    text-align: center;
-    background: var(--cf-card);
-    padding: 32px 24px;
-    border-radius: 16px;
-    box-shadow: 0 4px 24px rgba(10,20,16,0.08);
-  }
-  .mobile-banner-eyebrow {
-    font: 600 11px var(--f-sans);
-    letter-spacing: 0.14em;
-    text-transform: uppercase;
-    color: var(--txt-dim);
-    margin-bottom: 16px;
-  }
-  .mobile-banner-title {
-    font: 700 36px var(--f-serif);
-    letter-spacing: -0.02em;
-    color: var(--txt-primary);
-    margin: 0 0 8px;
-  }
-  .mobile-banner-subtitle {
-    font: 500 14px var(--f-sans);
-    color: var(--txt-secondary);
-    margin: 0 0 24px;
-  }
-  .mobile-banner-image {
-    width: 100%;
-    height: 160px;
-    border-radius: 12px;
-    overflow: hidden;
-    margin-bottom: 24px;
-    background: var(--cf-raised);
-  }
-  .mobile-banner-image img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-  }
-  .mobile-banner-text {
-    font: 400 14px var(--f-sans);
-    line-height: 1.6;
-    color: var(--txt-secondary);
-    margin: 0 0 16px;
-  }
-  .mobile-banner-link {
-    font: 600 13px var(--f-sans);
-    color: var(--brand-green);
-    margin: 0 0 24px;
-    user-select: all;
-  }
-  .mobile-banner-continue {
-    background: transparent;
-    border: 1px solid var(--green-hair);
-    border-radius: 999px;
-    padding: 8px 16px;
-    font: 500 12px var(--f-sans);
-    color: var(--txt-dim);
-    cursor: pointer;
-    margin-bottom: 24px;
-  }
-  .mobile-banner-author {
-    font: 500 11px var(--f-sans);
-    color: var(--txt-dim);
-    margin: 0;
-    letter-spacing: 0.04em;
-  }
+  body { font-size: 14px; }
+  .band { padding: var(--s5) 0 !important; }
+  .band-inner { padding: 0 16px !important; max-width: 100% !important; }
+
+  /* Topbar */
+  .topbar { padding: 10px 12px !important; min-height: auto !important; }
+  .topbar-logo { font-size: 16px !important; }
+  .topbar-status, .topbar-season { display: none !important; }
+  .scenario-toggle { padding: 6px 12px !important; font-size: 11px !important; }
+
+  /* Ticker */
+  .ticker, .ticker-bar { font-size: 10px !important; padding: 6px 12px !important; }
+  .ticker-bar { white-space: nowrap; overflow-x: auto; }
+
+  /* Hero */
+  .band-hero { padding: 48px 0 32px !important; }
+  .band-hero::before { opacity: 0.18 !important; background-position: center !important; }
+  .band-hero::after { background: linear-gradient(180deg, rgba(255,255,255,0.92) 30%, rgba(255,255,255,0.65) 100%) !important; }
+  .hero-eyebrow { font-size: 10px !important; margin-bottom: 12px !important; }
+  .hero-headline { font-size: 26px !important; line-height: 1.2 !important; max-width: 100% !important; }
+  .hero-action { padding: 14px 16px !important; margin-top: 20px !important; font-size: 14px !important; }
+  .hero-action-label { font-size: 9px !important; }
+  .hero-meta { flex-direction: column; gap: 6px !important; font-size: 11px !important; margin-top: 16px !important; }
+
+  /* Evidence Triad */
+  .evidence-triad { grid-template-columns: 1fr !important; gap: 12px !important; }
+  .evidence-card { min-height: 240px !important; padding: 20px !important; }
+  .evidence-card h3 { font-size: 18px !important; }
+
+  /* KPI Strip */
+  .kpi-strip { grid-template-columns: 1fr 1fr !important; gap: 12px !important; }
+  .kpi-card { padding: 16px !important; min-height: 120px !important; }
+  .kpi-value { font-size: 24px !important; }
+  .kpi-eyebrow { font-size: 10px !important; }
+
+  /* Section titles */
+  .band-title, h2.band-title { font-size: 24px !important; }
+  h2 { font-size: 22px !important; }
+  h3 { font-size: 18px !important; }
+
+  /* Modules */
+  .module, .card-section { padding: 20px !important; margin-bottom: 16px !important; }
+  .module-header { padding: 16px !important; }
+  .module-title { font-size: 18px !important; }
+
+  /* KPI tiles inside modules */
+  .kpi-grid, .module-kpi-grid { grid-template-columns: 1fr 1fr !important; gap: 8px !important; }
+
+  /* Charts */
+  canvas { max-width: 100% !important; height: 260px !important; }
+
+  /* Map */
+  .map-shell { height: 360px !important; }
+  .map-legend { bottom: 12px !important; left: 12px !important; padding: 8px 12px !important; font-size: 10px !important; }
+  .nzta-badge { top: 12px !important; left: 12px !important; padding: 4px 10px !important; font-size: 10px !important; }
+  .map-fallback-title { font-size: 16px !important; }
+  .map-fallback-text { font-size: 12px !important; }
+
+  /* Process band */
+  .process-grid { grid-template-columns: 1fr !important; gap: 24px !important; }
+  .process-item { border-left: none !important; padding-left: 0 !important; padding-bottom: 20px !important; border-bottom: 1px solid var(--green-hair) !important; }
+  .process-item:last-child { border-bottom: none !important; }
+  .process-icon { width: 36px !important; height: 36px !important; }
+  .process-title { font-size: 16px !important; }
+  .process-text { font-size: 13px !important; }
+
+  /* Footer */
+  .band-footer-grid { grid-template-columns: 1fr !important; gap: 24px !important; }
+  .footer-col { text-align: left !important; }
+  .footer-author-photo { width: 48px !important; height: 48px !important; }
+  .footer-author-name { font-size: 14px !important; }
+  .footer-list li { margin: 6px 0 !important; }
+
+  /* Drawer */
+  .controls-drawer { width: 100% !important; max-width: 100% !important; }
+  .controls-drawer.open { transform: translateX(0) !important; }
+
+  /* Chat FAB */
+  .chat-fab { bottom: 16px !important; right: 16px !important; width: 52px !important; height: 52px !important; }
+  .chat-panel { width: calc(100vw - 24px) !important; right: 12px !important; bottom: 80px !important; max-height: 70vh !important; }
+
+  /* Modals */
+  .doc-modal-card { padding: 24px 20px !important; max-height: 85vh !important; width: calc(100vw - 24px) !important; }
+  .doc-modal-title { font-size: 22px !important; }
+  .doc-modal-body { font-size: 13px !important; }
+  .meta-grid { grid-template-columns: 100px 1fr !important; gap: 8px var(--s2) !important; font-size: 12px !important; }
+
+  /* Author modal */
+  .author-modal-card { grid-template-columns: 1fr !important; }
+  .author-modal-photo { margin: 0 auto !important; width: 100px !important; height: 100px !important; }
+
+  /* Tabs */
+  .vault-tabs, .tab-strip { flex-wrap: wrap !important; gap: 4px !important; }
+  .vault-tab, .tab-btn { font-size: 11px !important; padding: 6px 10px !important; }
+
+  /* Generic */
+  .eyebrow { font-size: 10px !important; letter-spacing: 0.1em !important; }
+  button, .btn { font-size: 12px !important; }
+
+  /* Hide non-essential decorative elements on small screens */
+  .topbar-logo-eyebrow { display: none !important; }
+}
+
+/* SMALL MOBILE (<400px) — extra tightening */
+@media (max-width: 400px) {
+  .hero-headline { font-size: 22px !important; }
+  .kpi-strip { grid-template-columns: 1fr !important; }
+  .evidence-card { padding: 16px !important; }
 }
 </style>
 </head>
 <body>
-
-<div id="mobileBanner" class="mobile-banner">
-  <div class="mobile-banner-card">
-    <div class="mobile-banner-eyebrow">DESKTOP RECOMMENDED</div>
-    <h1 class="mobile-banner-title">APOPHENIA</h1>
-    <p class="mobile-banner-subtitle">Operational Risk Intelligence Simulator</p>
-    <div class="mobile-banner-image">
-      <img src="assets/hero-orchard.webp" alt="APOPHENIA preview">
-    </div>
-    <p class="mobile-banner-text">
-      This simulator is optimised for desktop and tablet. For the full
-      interactive experience — live map, scenario sliders, executive
-      dashboard — please open this link on a larger screen.
-    </p>
-    <p class="mobile-banner-link">apophenia-nz.vercel.app</p>
-    <button type="button" class="mobile-banner-continue" onclick="document.getElementById('mobileBanner').style.display='none'">
-      Continue on mobile anyway
-    </button>
-    <p class="mobile-banner-author">By Gabriela Olivera · Tauranga, NZ</p>
-  </div>
-</div>
 
 
 <!-- Phosphor icon sprite — inline for zero HTTP requests -->
