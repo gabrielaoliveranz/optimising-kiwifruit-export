@@ -2006,9 +2006,114 @@ input[type=range]::-webkit-slider-thumb {
 .status-sync { color: var(--gold-deep); font-weight: 600; }
 /* Last sync stale indicator */
 #lastSyncDisplay.stale strong { color: var(--risk-mid); }
+
+/* ── Mobile banner ───────────────────────────────────────────────── */
+.mobile-banner { display: none; }
+@media (max-width: 768px) {
+  .mobile-banner {
+    display: flex;
+    position: fixed;
+    inset: 0;
+    background: var(--cf-bg);
+    z-index: 9999;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+    overflow-y: auto;
+  }
+  .mobile-banner-card {
+    max-width: 420px;
+    text-align: center;
+    background: var(--cf-card);
+    padding: 32px 24px;
+    border-radius: 16px;
+    box-shadow: 0 4px 24px rgba(10,20,16,0.08);
+  }
+  .mobile-banner-eyebrow {
+    font: 600 11px var(--f-sans);
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--txt-dim);
+    margin-bottom: 16px;
+  }
+  .mobile-banner-title {
+    font: 700 36px var(--f-serif);
+    letter-spacing: -0.02em;
+    color: var(--txt-primary);
+    margin: 0 0 8px;
+  }
+  .mobile-banner-subtitle {
+    font: 500 14px var(--f-sans);
+    color: var(--txt-secondary);
+    margin: 0 0 24px;
+  }
+  .mobile-banner-image {
+    width: 100%;
+    height: 160px;
+    border-radius: 12px;
+    overflow: hidden;
+    margin-bottom: 24px;
+    background: var(--cf-raised);
+  }
+  .mobile-banner-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  .mobile-banner-text {
+    font: 400 14px var(--f-sans);
+    line-height: 1.6;
+    color: var(--txt-secondary);
+    margin: 0 0 16px;
+  }
+  .mobile-banner-link {
+    font: 600 13px var(--f-sans);
+    color: var(--brand-green);
+    margin: 0 0 24px;
+    user-select: all;
+  }
+  .mobile-banner-continue {
+    background: transparent;
+    border: 1px solid var(--green-hair);
+    border-radius: 999px;
+    padding: 8px 16px;
+    font: 500 12px var(--f-sans);
+    color: var(--txt-dim);
+    cursor: pointer;
+    margin-bottom: 24px;
+  }
+  .mobile-banner-author {
+    font: 500 11px var(--f-sans);
+    color: var(--txt-dim);
+    margin: 0;
+    letter-spacing: 0.04em;
+  }
+}
 </style>
 </head>
 <body>
+
+<div id="mobileBanner" class="mobile-banner">
+  <div class="mobile-banner-card">
+    <div class="mobile-banner-eyebrow">DESKTOP RECOMMENDED</div>
+    <h1 class="mobile-banner-title">APOPHENIA</h1>
+    <p class="mobile-banner-subtitle">Operational Risk Intelligence Simulator</p>
+    <div class="mobile-banner-image">
+      <img src="assets/hero-orchard.webp" alt="APOPHENIA preview">
+    </div>
+    <p class="mobile-banner-text">
+      This simulator is optimised for desktop and tablet. For the full
+      interactive experience — live map, scenario sliders, executive
+      dashboard — please open this link on a larger screen.
+    </p>
+    <p class="mobile-banner-link">apophenia-nz.vercel.app</p>
+    <button type="button" class="mobile-banner-continue" onclick="document.getElementById('mobileBanner').style.display='none'">
+      Continue on mobile anyway
+    </button>
+    <p class="mobile-banner-author">By Gabriela Olivera · Tauranga, NZ</p>
+  </div>
+</div>
+
 
 <!-- Phosphor icon sprite — inline for zero HTTP requests -->
 <svg width="0" height="0" style="position:absolute" aria-hidden="true">
