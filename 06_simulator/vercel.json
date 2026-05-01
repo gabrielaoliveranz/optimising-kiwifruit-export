@@ -1,0 +1,5 @@
+{
+  "rewrites": [
+    { "source": "/", "destination": "/apophenia_v4_executive.html" }
+  ]
+}
