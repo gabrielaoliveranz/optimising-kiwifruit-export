@@ -2139,6 +2139,62 @@ input[type=range]::-webkit-slider-thumb {
   .kpi-strip { grid-template-columns: 1fr !important; }
   .evidence-card { padding: 16px !important; }
 }
+
+/* ── Mobile visibility fallback — Detailed Analysis section ──────── */
+@media (max-width: 768px) {
+  /* Force all main sections visible */
+  .band, .band-light, .band-cream, .band-soft, .module, .card-section, .detailed-analysis-modules, [class*="module"] {
+    display: block !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    overflow: visible !important;
+    visibility: visible !important;
+  }
+
+  /* Module cards stack full width */
+  .detailed-analysis-modules {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 16px !important;
+  }
+
+  /* Containers that may be hiding overflow */
+  .module-body, .card-body, .vault-tab-content, [id^="vault-tab"] {
+    overflow: visible !important;
+    width: 100% !important;
+  }
+
+  /* Charts containers */
+  .chart-wrap, .chart-container, [class*="chart"] {
+    width: 100% !important;
+    min-height: 240px !important;
+    overflow: visible !important;
+  }
+
+  /* Force canvas visible */
+  canvas {
+    display: block !important;
+    max-width: 100% !important;
+    height: auto !important;
+    min-height: 200px !important;
+  }
+
+  /* Tabs */
+  .vault-tabs, .tab-strip {
+    display: flex !important;
+    flex-wrap: wrap !important;
+  }
+  .vault-tab-content, [id^="vault-tab"] {
+    display: block !important;
+  }
+
+  /* Sidebars or fixed-width containers that break mobile */
+  aside, .sidebar, [class*="sidebar"] {
+    width: 100% !important;
+    position: static !important;
+  }
+}
 </style>
 </head>
 <body>
