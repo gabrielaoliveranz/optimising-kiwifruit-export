@@ -4113,10 +4113,11 @@ const APO = (() => {
   /* ── ARC GAUGE SVG ──────────────────────────────────────────── */
   function _drawArcGauge(risk) {
     const svg=document.getElementById('arcGauge'); if(!svg) return;
-    const cx=80,cy=88,R=70,sA=Math.PI,eA=0;
-    const rA=sA+(risk/100)*(eA-sA+Math.PI);
-    const col=risk>60?'#ef4444':risk>25?'#f97316':'#006338';
-    const ap=(cx,cy,r,a1,a2)=>{const x1=cx+r*Math.cos(a1),y1=cy+r*Math.sin(a1),x2=cx+r*Math.cos(a2),y2=cy+r*Math.sin(a2),lg=Math.abs(a2-a1)>Math.PI?1:0;return `M${x1} ${y1} A${r} ${r} 0 ${lg} 1 ${x2} ${y2}`;};
+    const cx=80,cy=88,R=70;
+    const sA=Math.PI;                           // left  (0%)
+    const rA=Math.PI*(1-risk/100);              // interpolate: π→0 as risk 0→100
+    const col=risk>60?'#a13030':risk>25?'#c97a2c':'#006338';
+    const ap=(cx,cy,r,a1,a2)=>{const x1=cx+r*Math.cos(a1),y1=cy+r*Math.sin(a1),x2=cx+r*Math.cos(a2),y2=cy+r*Math.sin(a2),lg=Math.abs(a2-a1)>Math.PI?1:0;return `M${x1} ${y1} A${r} ${r} 0 ${lg} 0 ${x2} ${y2}`;};
     svg.innerHTML=`<path d="${ap(cx,cy,R,sA,0)}" fill="none" stroke="#e2e8e2" stroke-width="8" stroke-linecap="round"/><path d="${ap(cx,cy,R,sA,rA)}" fill="none" stroke="${col}" stroke-width="8" stroke-linecap="round"/><circle cx="${cx+Math.cos(rA)*R}" cy="${cy+Math.sin(rA)*R}" r="5" fill="${col}"/>`;
   }
 
