@@ -2148,6 +2148,17 @@ input[type=range]::-webkit-slider-thumb {
   .evidence-card { padding: 16px !important; }
 }
 
+.mobile-placeholder {
+  display: none;
+  padding: 32px 16px;
+  text-align: center;
+  background: var(--cf-raised);
+  border-radius: 12px;
+  color: var(--txt-dim);
+  font-size: 13px;
+}
+.mobile-placeholder-icon { font-size: 32px; margin-bottom: 8px; }
+
 @media (max-width: 768px) {
   /* Stack modules vertically on mobile */
   main, .layout-grid, [class*="layout"] {
@@ -2155,6 +2166,10 @@ input[type=range]::-webkit-slider-thumb {
   }
   aside.sidebar { display: none !important; }
   .controls-drawer { width: 100% !important; }
+  .map-shell { display: none !important; }
+  .mobile-placeholder { display: block !important; }
+  .topbar-status, .topbar-season, .ticker-bar { display: none !important; }
+  .topbar { padding: 8px 12px !important; }
 }
 
 @media (max-width: 768px) {
@@ -2230,7 +2245,7 @@ input[type=range]::-webkit-slider-thumb {
 
   <div class="tb-brand">
     <div class="tb-logo">APOPHENIA<sup>™</sup></div>
-    <div class="tb-edition">· Risk Intelligence</div>
+    <div class="tb-edition">Risk Intelligence</div>
   </div>
 
   <div class="tb-meta">
@@ -2602,7 +2617,7 @@ input[type=range]::-webkit-slider-thumb {
           <h3 class="mod-title">Strategic <em>Monitor</em></h3>
         </div>
         <div class="mod-actions">
-          <button class="pill-btn active">Auto-refresh</button>
+          <button class="pill-btn active" id="autoRefreshBtn">Auto-refresh</button>
           <button class="pill-btn" id="exportPdfPill">Export PDF</button>
         </div>
       </div>
@@ -2825,6 +2840,10 @@ input[type=range]::-webkit-slider-thumb {
             <div class="legend-item"><span class="dot" style="background:var(--risk-high)"></span> Critical · &gt; 60</div>
           </div>
         </div><!-- /map-shell -->
+        <div class="mobile-placeholder">
+          <div class="mobile-placeholder-icon">🗺</div>
+          <p>Interactive map available on desktop and tablet.</p>
+        </div>
 
         <!-- GIS stat bar -->
         <div class="gis-stat-bar">
@@ -2867,7 +2886,7 @@ input[type=range]::-webkit-slider-thumb {
           <h3 class="mod-title">Forecast <em>Lab</em></h3>
         </div>
         <div class="mod-actions">
-          <button class="pill-btn active">26-week arc</button>
+          <button class="pill-btn active" id="btn26Week">26-week arc</button>
           <button class="pill-btn" id="btn90Day">90-day</button>
         </div>
       </div>
@@ -3352,7 +3371,7 @@ input[type=range]::-webkit-slider-thumb {
   <div class="band-inner">
     <div class="footer-brand">
       <div class="footer-brand-name">APOPHENIA<sup>™</sup></div>
-      <div class="eyebrow" style="margin-top:6px;">· Risk Intelligence</div>
+      <div class="eyebrow" style="margin-top:6px;">Risk Intelligence</div>
     </div>
     <div class="footer-cols">
       <div class="footer-col">
@@ -3886,6 +3905,29 @@ const APO = (() => {
     _nztaRefreshTimer = setInterval(_refreshNZTA, 300000);
   }
 
+  /* ── WHEN CARD SPARKLINE ────────────────────────────────────── */
+  function _updateHeroSparkline() {
+    const svg = document.getElementById('heroTimeSvg'); if (!svg) return;
+    const hist = _state.riskHistory;
+    if (hist.length < 2) return;
+    const W = 200, H = 60, pad = 4;
+    const min = 0, max = 100;
+    const tx = (i, n) => pad + (i / (n - 1)) * (W - pad * 2);
+    const ty = v => H - pad - ((v - min) / (max - min)) * (H - pad * 2);
+    const pts = hist.map((v, i) => `${tx(i, hist.length)},${ty(v)}`).join(' ');
+    const peakIdx = hist.indexOf(Math.max(...hist));
+    const peakX = tx(peakIdx, hist.length);
+    const peakY = ty(hist[peakIdx]);
+    const peakWk = _state.tick > 0 ? Math.min(26, _state.tick - hist.length + peakIdx + 1) : 17;
+    svg.innerHTML = `
+      <polyline points="${pts}" fill="none" stroke="var(--gold-deep)" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>
+      <line x1="${peakX}" y1="${pad}" x2="${peakX}" y2="${H}" stroke="var(--risk-mid)" stroke-width="1" stroke-dasharray="3,2" opacity="0.7"/>
+      <circle cx="${peakX}" cy="${peakY}" r="3.5" fill="var(--risk-mid)"/>`;
+    const lbl = document.querySelector('.when-peak-label');
+    if (lbl) lbl.textContent = `Wk${peakWk} — peak risk · ${Math.round(hist[peakIdx])}/100`;
+    _setText('triad-when-wk', `Wk${peakWk}`);
+  }
+
   /* ── SIMULATION TICK ────────────────────────────────────────── */
   let _interval=null;
   function _tick() {
@@ -3916,6 +3958,7 @@ const APO = (() => {
     _setText('riskVerdict', risk>60?'Critical risk. Immediate corrective action required. MTS breach imminent.':risk>25?'Elevated risk. Monitor SH2 congestion and DM levels closely.':'Low risk environment. Export operations within normal parameters. TZG payments accruing.');
     _setText('arcLabel', risk>60?'CRITICAL':risk>25?'ELEVATED':'LOW RISK');
     _drawArcGauge(risk);
+    _updateHeroSparkline();
     /* KPIs */
     const otif=Math.max(40,Math.round(100-(s.cong*0.35)-(s.rain>40?(s.rain-40)*0.2:0)));
     const ret=Math.round(384*(s.dm>=16.1?1.08:0.92)*(s.vol/100));
@@ -3955,9 +3998,9 @@ const APO = (() => {
     _setText('gp_submit', '$'+pay.submit.toFixed(2)+'/tray');
     _setText('gp_taste',  '+$'+pay.taste.toFixed(2)+'/tray');
     _setText('gp_total',  '$'+pay.total.toFixed(2)+'/tray');
-    const sR=Math.round(pay.total*s.vol*1e6/1000), mR=Math.round(4.40*s.vol*1e6/1000);
-    _setText('gp_season', '$'+Math.round(sR/1e6)+'M NZD seasonal');
-    _setText('gp_loss',   '−$'+Math.max(0,Math.round((mR-sR)/1e6))+'M vs maximum premium');
+    const sR=Math.round(pay.total*s.vol), mR=Math.round(4.40*s.vol);
+    _setText('gp_season', '$'+sR+'M NZD seasonal');
+    _setText('gp_loss',   '−$'+Math.max(0,mR-sR)+'M vs maximum premium');
     _setText('gp_dm_note',`DM ${s.dm}% ${s.dm>=16.369?'≥':'<'} 16.369% (Ōpōtiki mean) → ${pay.cat} @ ${pay.rate}.`);
     /* VSI */
     const avgVsi=_state.agents.length?_state.agents.reduce((a,b)=>a+b.vsi_score,0)/_state.agents.length:0;
@@ -4519,6 +4562,18 @@ const APO = (() => {
     }));
     _initTabKeys();
     document.getElementById('dynChartGenerate')?.addEventListener('click', _generateDynChart);
+    /* Auto-refresh toggle */
+    (function() {
+      const btn = document.getElementById('autoRefreshBtn'); if (!btn) return;
+      let _arTimer = null;
+      btn.addEventListener('click', () => {
+        const on = btn.classList.toggle('active');
+        btn.style.background = on ? 'var(--brand-green)' : '';
+        btn.style.color = on ? '#fff' : '';
+        if (on) { _arTimer = setInterval(() => { _updateDOM(); _updateCharts(); }, 30000); }
+        else { clearInterval(_arTimer); _arTimer = null; }
+      });
+    })();
     window.addEventListener('resize', () => requestAnimationFrame(_resizeAllCharts));
     /* Chat */
     const _doChat = () => {
@@ -4530,8 +4585,14 @@ const APO = (() => {
     document.querySelectorAll('.qp-btn').forEach(b => b.addEventListener('click', () => { _chatPost('user', b.textContent); _chatRespond(b.textContent); }));
     /* PDF export */
     document.querySelectorAll('#exportPdfBtn, #exportPdfPill').forEach(b => b?.addEventListener('click', _exportPdf));
-    /* 90-day modal */
-    document.getElementById('btn90Day')?.addEventListener('click', _show90DayModal);
+    /* Forecast Lab toggle */
+    document.getElementById('btn90Day')?.addEventListener('click', () => {
+      _show90DayModal();
+    });
+    document.getElementById('btn26Week')?.addEventListener('click', () => {
+      document.getElementById('btn26Week')?.classList.add('active');
+      document.getElementById('btn90Day')?.classList.remove('active');
+    });
   }
 
   /* ── ANALYTICS INTERSECTION OBSERVER ───────────────────────── */
