@@ -16,7 +16,7 @@ APOPHENIA is an interactive **operational risk simulator** for the New Zealand k
 
 The product targets executive audiences — designed for boardroom projection, daily desktop work, and tablet review.
 
-**Live demonstration:** *Coming soon (Vercel deploy in progress)*
+**Live demonstration:** https://apophenia-nz.vercel.app/
 
 ---
 
