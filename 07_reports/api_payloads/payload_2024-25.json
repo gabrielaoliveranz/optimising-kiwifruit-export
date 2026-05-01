@@ -1,0 +1,77 @@
+{
+  "dm": 16.4,
+  "pest": 65.0,
+  "congestion": 18,
+  "rainfall": 25.2,
+  "vol": 97.0,
+  "regulatory": 15.0,
+  "timestamp": "2026-04-24T12:11:43.806061+12:00",
+  "source": "kiwifruit_export.db",
+  "season": "2024/25",
+  "pack_week": 23,
+  "data_quality": {
+    "nulls": 0,
+    "health_score": 100,
+    "mts_pass_rate": 0.741,
+    "mts_fail_pct": 25.9,
+    "otif_avg": 85.63,
+    "risk_avg": 26.6,
+    "total_return_nzd_m": 13.724,
+    "payments_reversed_nzd_m": 4.897,
+    "total_trays": 5362293,
+    "submissions": 4398,
+    "last_etl_run": "2026-04-24T12:11:43.806061+12:00",
+    "congestion_note": "Estimated from pack_week position — pending NZTA recalibration (constant 91.8 in DB)"
+  },
+  "subzones": {
+    "Katikati": {
+      "dm_mean": 16.38,
+      "dm_std": 0.693,
+      "mts_fail_pct": 26.9,
+      "readings": 1520
+    },
+    "Pongakawa": {
+      "dm_mean": 16.299,
+      "dm_std": 0.87,
+      "mts_fail_pct": 31.4,
+      "readings": 880
+    },
+    "Te Puke": {
+      "dm_mean": 16.245,
+      "dm_std": 0.827,
+      "mts_fail_pct": 34.0,
+      "readings": 2880
+    },
+    "Tauranga": {
+      "dm_mean": 16.147,
+      "dm_std": 0.751,
+      "mts_fail_pct": 34.4,
+      "readings": 1200
+    },
+    "Opotiki": {
+      "dm_mean": 15.981,
+      "dm_std": 0.988,
+      "mts_fail_pct": 44.4,
+      "readings": 640
+    }
+  },
+  "worst_week": {
+    "pack_week": 23,
+    "subzone": "Katikati",
+    "avg_risk": 35.5,
+    "avg_dm": 15.56,
+    "avg_otif": 77.13,
+    "mts_fails": 2,
+    "submissions": 2
+  },
+  "season_profile": {
+    "mtsPassRate": 0.741,
+    "totalReturnM": 13.72,
+    "pestBase": 65.0,
+    "volIndex": 97.0,
+    "dmAvg": 16.4,
+    "climateNote": "Cyclone Gabrielle aftermath. High pest pressure. Worst season in dataset.",
+    "otifAvg": 85.63,
+    "paymentsReversedM": 4.897
+  }
+}

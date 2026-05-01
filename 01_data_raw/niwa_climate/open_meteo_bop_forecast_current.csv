@@ -1,0 +1,11 @@
+latitude,longitude,elevation,utc_offset_seconds,timezone,timezone_abbreviation
+-37.875,176.375,2.0,43200,Pacific/Auckland,GMT+12
+
+time,precipitation_sum (mm),temperature_2m_max (°C)
+2026-04-22,0.20,14.7
+2026-04-23,0.00,14.8
+2026-04-24,0.00,16.2
+2026-04-25,0.00,17.4
+2026-04-26,0.00,18.0
+2026-04-27,0.00,17.9
+2026-04-28,0.00,17.8

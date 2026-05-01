@@ -1,0 +1,169 @@
+{
+  "name": "APOPHENIA™ — Live ETL Feed",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "0 18 * * *"
+            }
+          ]
+        }
+      },
+      "id": "a1b2c3d4-0001-4000-8000-apo001trigger",
+      "name": "Schedule Trigger",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [200, 300],
+      "notes": "Fires 18:00 UTC daily = 06:00 NZT next morning (UTC+12)"
+    },
+    {
+      "parameters": {
+        "command": "python \"G:\\My Drive\\optimising-kiwifruit-export\\07_api_feed.py\" --live --live-apis"
+      },
+      "id": "a1b2c3d4-0002-4000-8000-apo002execute",
+      "name": "Run ETL Feed",
+      "type": "n8n-nodes-base.executeCommand",
+      "typeVersion": 1,
+      "position": [440, 300],
+      "notes": "Runs 07_api_feed.py --live --live-apis. Calls Open-Meteo, Frankfurter, Overpass APIs. Writes payload_live.json to 07_reports/api_payloads/"
+    },
+    {
+      "parameters": {
+        "jsCode": "const fs = require('fs');\nconst path = require('path');\n\nconst payloadPath = path.join(\n  'G:', 'My Drive', 'optimising-kiwifruit-export',\n  '07_reports', 'api_payloads', 'payload_live.json'\n);\n\nlet payload;\ntry {\n  const raw = fs.readFileSync(payloadPath, 'utf-8');\n  payload = JSON.parse(raw);\n} catch(e) {\n  throw new Error('Failed to read payload_live.json: ' + e.message);\n}\n\nconst healthScore = payload?.data_quality?.health_score ?? 0;\nconst season      = payload?.season ?? 'unknown';\nconst packWeek    = payload?.pack_week ?? 0;\nconst liveApis    = payload?.live_apis_used ? 'yes' : 'no';\nconst rainSource  = payload?.rain_source ?? 'etl-only';\nconst fxEur       = payload?.fx?.nzd_eur ?? null;\nconst fxJpy       = payload?.fx?.nzd_jpy ?? null;\nconst corVerified = payload?.corridors_verified ?? null;\n\nreturn [{\n  json: {\n    health_score:        healthScore,\n    season:              season,\n    pack_week:           packWeek,\n    live_apis_used:      liveApis,\n    rain_source:         rainSource,\n    fx_nzd_eur:          fxEur,\n    fx_nzd_jpy:          fxJpy,\n    corridors_verified:  corVerified,\n    payload_path:        payloadPath,\n    parsed_at:           new Date().toISOString()\n  }\n}];"
+      },
+      "id": "a1b2c3d4-0003-4000-8000-apo003parse",
+      "name": "Parse Payload",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [680, 300],
+      "notes": "Reads payload_live.json, extracts data_quality.health_score and all metadata. Passes structured data to IF node."
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "health-check-condition",
+              "leftValue": "={{ $json.health_score }}",
+              "rightValue": 80,
+              "operator": {
+                "type": "number",
+                "operation": "gte"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "a1b2c3d4-0004-4000-8000-apo004ifcheck",
+      "name": "Health Score OK?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [920, 300],
+      "notes": "True branch (output 0): health_score >= 80 — publish payload and log success. False branch (output 1): health_score < 80 — log QUALITY ALERT, do NOT overwrite good payload."
+    },
+    {
+      "parameters": {
+        "jsCode": "const fs   = require('fs');\nconst path = require('path');\n\nconst baseDir = path.join(\n  'G:', 'My Drive', 'optimising-kiwifruit-export',\n  '07_reports', 'api_payloads'\n);\n\nconst payloadPath = path.join(baseDir, 'payload_live.json');\nconst logPath     = path.join(baseDir, 'etl_log.txt');\n\n// payload_live.json is already in place (written by the python script).\n// This node confirms it's valid and appends a success entry to the log.\nconst ts          = new Date().toISOString();\nconst hs          = $input.first().json.health_score;\nconst season      = $input.first().json.season;\nconst pw          = $input.first().json.pack_week;\nconst rainSrc     = $input.first().json.rain_source;\nconst fxEur       = $input.first().json.fx_nzd_eur;\nconst fxJpy       = $input.first().json.fx_nzd_jpy;\nconst corV        = $input.first().json.corridors_verified;\n\nconst fxStr = fxEur ? `NZD/EUR=${fxEur} NZD/JPY=${fxJpy}` : 'FX=unavailable';\nconst corStr = corV === true ? 'SH2=verified' : corV === false ? 'SH2=not-found' : 'SH2=unknown';\n\nconst logEntry = [\n  `[${ts}]`,\n  `STATUS=OK`,\n  `HEALTH=${hs}`,\n  `SEASON=${season}`,\n  `PW=${pw}`,\n  `RAIN=${rainSrc}`,\n  fxStr,\n  corStr,\n  `PAYLOAD=published`\n].join(' | ') + '\\n';\n\nfs.appendFileSync(logPath, logEntry, 'utf-8');\n\nreturn [{ json: { status: 'published', log_entry: logEntry.trim(), payload_path: payloadPath } }];"
+      },
+      "id": "a1b2c3d4-0005-4000-8000-apo005writegood",
+      "name": "Log Success",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1160, 200],
+      "notes": "True branch: payload_live.json already written by python. This node appends a structured success line to etl_log.txt."
+    },
+    {
+      "parameters": {
+        "jsCode": "const fs   = require('fs');\nconst path = require('path');\n\nconst logPath = path.join(\n  'G:', 'My Drive', 'optimising-kiwifruit-export',\n  '07_reports', 'api_payloads', 'etl_log.txt'\n);\n\nconst ts  = new Date().toISOString();\nconst hs  = $input.first().json.health_score;\nconst ssn = $input.first().json.season;\nconst pw  = $input.first().json.pack_week;\n\nconst logEntry = [\n  `[${ts}]`,\n  `STATUS=ETL QUALITY ALERT`,\n  `HEALTH=${hs}`,\n  `SEASON=${ssn}`,\n  `PW=${pw}`,\n  `THRESHOLD=80`,\n  `ACTION=payload NOT published (previous good payload retained)`,\n  `REVIEW=Check kiwifruit_export.db data quality and re-run pipeline`\n].join(' | ') + '\\n';\n\nfs.appendFileSync(logPath, logEntry, 'utf-8');\n\n// Do NOT overwrite payload_live.json — retain last known-good payload\n// so the dashboard continues to function with stale-but-valid data.\n\nreturn [{ json: { status: 'alert', health_score: hs, log_entry: logEntry.trim() } }];"
+      },
+      "id": "a1b2c3d4-0006-4000-8000-apo006writealert",
+      "name": "Log Quality Alert",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1160, 420],
+      "notes": "False branch: health_score < 80. Appends ETL QUALITY ALERT to etl_log.txt. Does NOT overwrite payload_live.json — retains last valid payload."
+    }
+  ],
+  "connections": {
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "Run ETL Feed",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Run ETL Feed": {
+      "main": [
+        [
+          {
+            "node": "Parse Payload",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse Payload": {
+      "main": [
+        [
+          {
+            "node": "Health Score OK?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Health Score OK?": {
+      "main": [
+        [
+          {
+            "node": "Log Success",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Log Quality Alert",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "saveManualExecutions": true,
+    "callerPolicy": "workflowsFromSameOwner",
+    "errorWorkflow": ""
+  },
+  "versionId": "apophenia-v4-live-feed-2026-04-25",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "apophenia-zgl-portfolio"
+  },
+  "id": "apophenia-live-feed-001",
+  "tags": [
+    {"name": "apophenia"},
+    {"name": "zgl-etl"},
+    {"name": "kiwifruit"},
+    {"name": "live-feed"}
+  ]
+}

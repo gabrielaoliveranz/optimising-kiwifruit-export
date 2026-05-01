@@ -1,0 +1,101 @@
+{
+  "dm": 16.88,
+  "pest": 18.0,
+  "congestion": 18,
+  "rainfall": 0.6,
+  "vol": 104.0,
+  "regulatory": 15.0,
+  "timestamp": "2026-04-27T20:47:19.001538+12:00",
+  "source": "kiwifruit_export.db",
+  "season": "2025/26",
+  "pack_week": 23,
+  "data_quality": {
+    "nulls": 0,
+    "health_score": 100,
+    "mts_pass_rate": 0.927,
+    "mts_fail_pct": 7.3,
+    "otif_avg": 87.86,
+    "risk_avg": 22.3,
+    "total_return_nzd_m": 18.777,
+    "payments_reversed_nzd_m": 1.635,
+    "total_trays": 5754062,
+    "submissions": 4398,
+    "last_etl_run": "2026-04-27T20:47:19.001538+12:00",
+    "congestion_note": "Estimated from pack_week position — pending NZTA recalibration (constant 91.8 in DB)"
+  },
+  "subzones": {
+    "Katikati": {
+      "dm_mean": 16.872,
+      "dm_std": 0.55,
+      "mts_fail_pct": 7.6,
+      "mts_pass_rate": 0.924,
+      "readings": 1520
+    },
+    "Pongakawa": {
+      "dm_mean": 16.802,
+      "dm_std": 0.646,
+      "mts_fail_pct": 8.8,
+      "mts_pass_rate": 0.912,
+      "readings": 880
+    },
+    "Te Puke": {
+      "dm_mean": 16.721,
+      "dm_std": 0.634,
+      "mts_fail_pct": 11.9,
+      "mts_pass_rate": 0.881,
+      "readings": 2880
+    },
+    "Tauranga": {
+      "dm_mean": 16.663,
+      "dm_std": 0.606,
+      "mts_fail_pct": 11.6,
+      "mts_pass_rate": 0.884,
+      "readings": 1200
+    },
+    "Opotiki": {
+      "dm_mean": 16.369,
+      "dm_std": 0.745,
+      "mts_fail_pct": 26.1,
+      "mts_pass_rate": 0.739,
+      "readings": 640
+    }
+  },
+  "weekly_risk_arc": [
+    22.2,
+    22.2,
+    21.8,
+    21.9,
+    22.0,
+    22.1,
+    21.4,
+    21.9,
+    22.7,
+    22.6,
+    23.5,
+    24.3,
+    23.0
+  ],
+  "worst_week": {
+    "pack_week": 22,
+    "subzone": "Opotiki",
+    "avg_risk": 29.5,
+    "avg_dm": 16.03,
+    "avg_otif": 83.28,
+    "mts_fails": 11,
+    "submissions": 23
+  },
+  "season_profile": {
+    "mtsPassRate": 0.927,
+    "totalReturnM": 18.78,
+    "pestBase": 18.0,
+    "volIndex": 104.0,
+    "dmAvg": 16.88,
+    "climateNote": "Recovery season. Strong SunGold pool. Reference year for 2026 analysis.",
+    "otifAvg": 87.86,
+    "paymentsReversedM": 1.635
+  },
+  "live_apis_used": true,
+  "api_fetch_timestamp": "2026-04-27T20:47:15.993940+12:00",
+  "rain_source": "open-meteo-live",
+  "corridors_verified": null
+}

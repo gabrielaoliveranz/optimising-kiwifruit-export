@@ -1,0 +1,446 @@
+kpin,subzone,primary_variety,organic,orchard_ha,distance_port_km,psa_history,base_risk_weight,dm_std_modifier
+100000,Te Puke,Green,False,10.8,28,False,0.35,1.0
+100001,Te Puke,Green,False,3.9,28,False,0.35,1.0
+100002,Te Puke,Green,False,17.7,28,True,0.35,1.0
+100003,Te Puke,SunGold,False,9.4,28,False,0.35,1.0
+100004,Te Puke,Green,False,18.5,28,False,0.35,1.0
+100005,Te Puke,SunGold,False,13.1,28,True,0.35,1.0
+100006,Te Puke,Green,False,14.6,28,False,0.35,1.0
+100007,Te Puke,SunGold,False,21.4,28,False,0.35,1.0
+100008,Te Puke,Green,False,5.9,28,False,0.35,1.0
+100009,Te Puke,SunGold,False,5.1,28,False,0.35,1.0
+100010,Te Puke,Green,False,21.4,28,False,0.35,1.0
+100011,Te Puke,SunGold,False,11.4,28,False,0.35,1.0
+100012,Te Puke,SunGold,False,11.5,28,False,0.35,1.0
+100013,Te Puke,Green,False,10.7,28,False,0.35,1.0
+100014,Te Puke,Green,False,8.2,28,False,0.35,1.0
+100015,Te Puke,Green,False,9.7,28,False,0.35,1.0
+100016,Te Puke,Green,False,4.8,28,False,0.35,1.0
+100017,Te Puke,SunGold,False,17.7,28,False,0.35,1.0
+100018,Te Puke,Green,False,17.6,28,False,0.35,1.0
+100019,Te Puke,SunGold,False,4.8,28,True,0.35,1.0
+100020,Te Puke,Green,False,11.4,28,False,0.35,1.0
+100021,Te Puke,Green,False,14.7,28,False,0.35,1.0
+100022,Te Puke,SunGold,False,8.1,28,True,0.35,1.0
+100023,Te Puke,SunGold,False,6.3,28,False,0.35,1.0
+100024,Te Puke,Green,False,6.7,28,True,0.35,1.0
+100025,Te Puke,SunGold,False,7.9,28,False,0.35,1.0
+100026,Te Puke,SunGold,False,17.7,28,False,0.35,1.0
+100027,Te Puke,SunGold,False,18.3,28,True,0.35,1.0
+100028,Te Puke,SunGold,False,3.8,28,False,0.35,1.0
+100029,Te Puke,SunGold,False,5.2,28,False,0.35,1.0
+100030,Te Puke,SunGold,False,15.9,28,False,0.35,1.0
+100031,Te Puke,SunGold,False,8.0,28,False,0.35,1.0
+100032,Te Puke,SunGold,False,3.8,28,True,0.35,1.0
+100033,Te Puke,OrganicGreen,True,20.2,28,False,0.35,1.0
+100034,Te Puke,SunGold,False,21.4,28,False,0.35,1.0
+100035,Te Puke,Green,False,11.0,28,False,0.35,1.0
+100036,Te Puke,SunGold,False,20.1,28,False,0.35,1.0
+100037,Te Puke,SunGold,False,8.1,28,False,0.35,1.0
+100038,Te Puke,SunGold,False,19.1,28,False,0.35,1.0
+100039,Te Puke,Green,False,10.6,28,False,0.35,1.0
+100040,Te Puke,SunGold,False,15.0,28,True,0.35,1.0
+100041,Te Puke,SunGold,False,2.8,28,False,0.35,1.0
+100042,Te Puke,SunGold,False,4.9,28,True,0.35,1.0
+100043,Te Puke,SunGold,False,5.4,28,False,0.35,1.0
+100044,Te Puke,SunGold,False,8.9,28,False,0.35,1.0
+100045,Te Puke,SunGold,False,21.2,28,False,0.35,1.0
+100046,Te Puke,Green,False,3.7,28,False,0.35,1.0
+100047,Te Puke,SunGold,False,20.8,28,False,0.35,1.0
+100048,Te Puke,SunGold,False,7.3,28,False,0.35,1.0
+100049,Te Puke,SunGold,False,10.8,28,True,0.35,1.0
+100050,Te Puke,Green,False,19.9,28,True,0.35,1.0
+100051,Te Puke,SunGold,False,4.2,28,False,0.35,1.0
+100052,Te Puke,SunGold,False,15.2,28,False,0.35,1.0
+100053,Te Puke,Green,False,4.2,28,False,0.35,1.0
+100054,Te Puke,SunGold,False,2.7,28,False,0.35,1.0
+100055,Te Puke,SunGold,False,18.6,28,False,0.35,1.0
+100056,Te Puke,SunGold,False,21.1,28,False,0.35,1.0
+100057,Te Puke,SunGold,False,7.1,28,False,0.35,1.0
+100058,Te Puke,SunGold,False,2.9,28,False,0.35,1.0
+100059,Te Puke,RubyRed,False,19.8,28,False,0.35,1.0
+100060,Te Puke,Green,False,19.9,28,False,0.35,1.0
+100061,Te Puke,SunGold,False,17.4,28,False,0.35,1.0
+100062,Te Puke,SunGold,False,3.9,28,False,0.35,1.0
+100063,Te Puke,SunGold,False,20.7,28,False,0.35,1.0
+100064,Te Puke,SunGold,False,18.6,28,True,0.35,1.0
+100065,Te Puke,SunGold,False,14.0,28,False,0.35,1.0
+100066,Te Puke,SunGold,False,8.2,28,False,0.35,1.0
+100067,Te Puke,OrganicGreen,True,12.0,28,True,0.35,1.0
+100068,Te Puke,SunGold,False,6.6,28,True,0.35,1.0
+100069,Te Puke,Green,False,4.4,28,False,0.35,1.0
+100070,Te Puke,Green,False,13.6,28,False,0.35,1.0
+100071,Te Puke,Green,False,16.3,28,False,0.35,1.0
+100072,Te Puke,SunGold,False,4.5,28,False,0.35,1.0
+100073,Te Puke,SunGold,False,8.0,28,False,0.35,1.0
+100074,Te Puke,Green,False,21.1,28,False,0.35,1.0
+100075,Te Puke,OrganicSunGold,True,2.5,28,False,0.35,1.0
+100076,Te Puke,Green,False,4.1,28,True,0.35,1.0
+100077,Te Puke,SunGold,False,21.3,28,False,0.35,1.0
+100078,Te Puke,OrganicSunGold,True,18.1,28,False,0.35,1.0
+100079,Te Puke,Green,False,2.4,28,True,0.35,1.0
+100080,Te Puke,Green,False,17.9,28,False,0.35,1.0
+100081,Te Puke,SunGold,False,14.1,28,False,0.35,1.0
+100082,Te Puke,SunGold,False,10.3,28,False,0.35,1.0
+100083,Te Puke,SunGold,False,15.0,28,False,0.35,1.0
+100084,Te Puke,SunGold,False,7.0,28,False,0.35,1.0
+100085,Te Puke,Green,False,18.3,28,True,0.35,1.0
+100086,Te Puke,SunGold,False,13.9,28,True,0.35,1.0
+100087,Te Puke,Green,False,8.2,28,True,0.35,1.0
+100088,Te Puke,OrganicSunGold,True,5.3,28,False,0.35,1.0
+100089,Te Puke,SunGold,False,4.3,28,True,0.35,1.0
+100090,Te Puke,SunGold,False,5.5,28,True,0.35,1.0
+100091,Te Puke,SunGold,False,15.6,28,False,0.35,1.0
+100092,Te Puke,SunGold,False,12.1,28,False,0.35,1.0
+100093,Te Puke,Green,False,2.9,28,False,0.35,1.0
+100094,Te Puke,SunGold,False,7.0,28,False,0.35,1.0
+100095,Te Puke,SunGold,False,3.0,28,False,0.35,1.0
+100096,Te Puke,SunGold,False,4.0,28,False,0.35,1.0
+100097,Te Puke,SunGold,False,20.5,28,True,0.35,1.0
+100098,Te Puke,Green,False,20.1,28,False,0.35,1.0
+100099,Te Puke,Green,False,17.6,28,False,0.35,1.0
+100100,Te Puke,Green,False,4.7,28,False,0.35,1.0
+100101,Te Puke,SunGold,False,19.2,28,False,0.35,1.0
+100102,Te Puke,SunGold,False,14.8,28,False,0.35,1.0
+100103,Te Puke,SunGold,False,11.6,28,False,0.35,1.0
+100104,Te Puke,SunGold,False,9.4,28,False,0.35,1.0
+100105,Te Puke,SunGold,False,9.6,28,False,0.35,1.0
+100106,Te Puke,SunGold,False,21.0,28,False,0.35,1.0
+100107,Te Puke,SunGold,False,8.6,28,False,0.35,1.0
+100108,Te Puke,Green,False,15.1,28,False,0.35,1.0
+100109,Te Puke,SunGold,False,14.7,28,False,0.35,1.0
+100110,Te Puke,Green,False,6.0,28,False,0.35,1.0
+100111,Te Puke,Green,False,4.6,28,False,0.35,1.0
+100112,Te Puke,SunGold,False,16.5,28,True,0.35,1.0
+100113,Te Puke,OrganicSunGold,True,4.7,28,False,0.35,1.0
+100114,Te Puke,Green,False,13.9,28,False,0.35,1.0
+100115,Te Puke,Green,False,20.9,28,False,0.35,1.0
+100116,Te Puke,SunGold,False,3.9,28,False,0.35,1.0
+100117,Te Puke,SunGold,False,13.3,28,False,0.35,1.0
+100118,Te Puke,SunGold,False,12.5,28,False,0.35,1.0
+100119,Te Puke,Green,False,11.8,28,False,0.35,1.0
+100120,Te Puke,OrganicSunGold,True,4.4,28,True,0.35,1.0
+100121,Te Puke,SunGold,False,15.2,28,False,0.35,1.0
+100122,Te Puke,Green,False,15.4,28,False,0.35,1.0
+100123,Te Puke,Green,False,17.3,28,False,0.35,1.0
+100124,Te Puke,SunGold,False,8.3,28,True,0.35,1.0
+100125,Te Puke,SunGold,False,20.7,28,False,0.35,1.0
+100126,Te Puke,SunGold,False,16.6,28,False,0.35,1.0
+100127,Te Puke,OrganicSunGold,True,17.6,28,False,0.35,1.0
+100128,Te Puke,SunGold,False,21.7,28,False,0.35,1.0
+100129,Te Puke,OrganicGreen,True,4.4,28,False,0.35,1.0
+100130,Te Puke,Green,False,4.4,28,False,0.35,1.0
+100131,Te Puke,Green,False,2.2,28,False,0.35,1.0
+100132,Te Puke,Green,False,7.9,28,False,0.35,1.0
+100133,Te Puke,SunGold,False,8.0,28,False,0.35,1.0
+100134,Te Puke,Green,False,4.2,28,False,0.35,1.0
+100135,Te Puke,Green,False,7.7,28,False,0.35,1.0
+100136,Te Puke,SunGold,False,22.0,28,False,0.35,1.0
+100137,Te Puke,Green,False,3.8,28,False,0.35,1.0
+100138,Te Puke,SunGold,False,6.8,28,True,0.35,1.0
+100139,Te Puke,Green,False,6.0,28,False,0.35,1.0
+100140,Te Puke,Green,False,2.7,28,True,0.35,1.0
+100141,Te Puke,SunGold,False,14.1,28,False,0.35,1.0
+100142,Te Puke,SunGold,False,19.0,28,True,0.35,1.0
+100143,Te Puke,Green,False,20.6,28,False,0.35,1.0
+100144,Te Puke,Green,False,18.8,28,True,0.35,1.0
+100145,Te Puke,SunGold,False,4.5,28,False,0.35,1.0
+100146,Te Puke,Green,False,14.6,28,False,0.35,1.0
+100147,Te Puke,SunGold,False,16.7,28,False,0.35,1.0
+100148,Te Puke,SunGold,False,16.2,28,False,0.35,1.0
+100149,Te Puke,SunGold,False,3.1,28,False,0.35,1.0
+100150,Te Puke,SunGold,False,19.7,28,False,0.35,1.0
+100151,Te Puke,SunGold,False,3.8,28,False,0.35,1.0
+100152,Te Puke,SweetGreen,False,11.2,28,False,0.35,1.0
+100153,Te Puke,Green,False,13.4,28,True,0.35,1.0
+100154,Te Puke,OrganicSunGold,True,8.0,28,False,0.35,1.0
+100155,Te Puke,Green,False,15.0,28,False,0.35,1.0
+100156,Te Puke,SunGold,False,12.2,28,False,0.35,1.0
+100157,Te Puke,SunGold,False,4.4,28,True,0.35,1.0
+100158,Te Puke,SunGold,False,8.1,28,False,0.35,1.0
+100159,Te Puke,SunGold,False,14.7,28,False,0.35,1.0
+100160,Te Puke,SunGold,False,6.4,28,False,0.35,1.0
+100161,Te Puke,SunGold,False,2.7,28,False,0.35,1.0
+100162,Te Puke,SunGold,False,6.5,28,False,0.35,1.0
+100163,Te Puke,SunGold,False,16.0,28,False,0.35,1.0
+100164,Te Puke,Green,False,8.3,28,False,0.35,1.0
+100165,Te Puke,SunGold,False,10.6,28,False,0.35,1.0
+100166,Te Puke,SunGold,False,12.3,28,False,0.35,1.0
+100167,Te Puke,Green,False,20.4,28,False,0.35,1.0
+100168,Te Puke,SunGold,False,18.0,28,False,0.35,1.0
+100169,Te Puke,Green,False,11.9,28,True,0.35,1.0
+100170,Te Puke,SunGold,False,18.8,28,True,0.35,1.0
+100171,Te Puke,SunGold,False,8.7,28,True,0.35,1.0
+100172,Te Puke,SunGold,False,16.9,28,True,0.35,1.0
+100173,Te Puke,Green,False,19.1,28,False,0.35,1.0
+100174,Te Puke,SunGold,False,14.0,28,True,0.35,1.0
+100175,Te Puke,SunGold,False,21.2,28,False,0.35,1.0
+100176,Te Puke,Green,False,8.2,28,False,0.35,1.0
+100177,Te Puke,Green,False,9.8,28,False,0.35,1.0
+100178,Te Puke,SunGold,False,6.2,28,False,0.35,1.0
+100179,Te Puke,SunGold,False,5.3,28,False,0.35,1.0
+100180,Katikati,SweetGreen,False,13.1,52,False,0.2,0.8
+100181,Katikati,RubyRed,False,4.8,52,False,0.2,0.8
+100182,Katikati,SunGold,False,3.6,52,False,0.2,0.8
+100183,Katikati,SunGold,False,11.4,52,False,0.2,0.8
+100184,Katikati,SunGold,False,20.1,52,True,0.2,0.8
+100185,Katikati,SunGold,False,7.8,52,False,0.2,0.8
+100186,Katikati,Green,False,11.9,52,True,0.2,0.8
+100187,Katikati,SunGold,False,18.9,52,False,0.2,0.8
+100188,Katikati,Green,False,15.4,52,False,0.2,0.8
+100189,Katikati,SunGold,False,9.3,52,False,0.2,0.8
+100190,Katikati,SunGold,False,18.9,52,False,0.2,0.8
+100191,Katikati,Green,False,19.0,52,False,0.2,0.8
+100192,Katikati,OrganicSunGold,True,13.7,52,False,0.2,0.8
+100193,Katikati,SunGold,False,12.0,52,False,0.2,0.8
+100194,Katikati,SunGold,False,10.0,52,False,0.2,0.8
+100195,Katikati,Green,False,5.6,52,False,0.2,0.8
+100196,Katikati,SunGold,False,2.5,52,False,0.2,0.8
+100197,Katikati,SunGold,False,8.2,52,False,0.2,0.8
+100198,Katikati,SunGold,False,7.6,52,False,0.2,0.8
+100199,Katikati,Green,False,21.6,52,False,0.2,0.8
+100200,Katikati,SunGold,False,17.2,52,False,0.2,0.8
+100201,Katikati,Green,False,21.3,52,False,0.2,0.8
+100202,Katikati,Green,False,4.3,52,False,0.2,0.8
+100203,Katikati,SunGold,False,13.1,52,False,0.2,0.8
+100204,Katikati,OrganicGreen,True,21.7,52,False,0.2,0.8
+100205,Katikati,Green,False,17.0,52,False,0.2,0.8
+100206,Katikati,SunGold,False,2.8,52,False,0.2,0.8
+100207,Katikati,SunGold,False,21.7,52,False,0.2,0.8
+100208,Katikati,OrganicGreen,True,10.2,52,False,0.2,0.8
+100209,Katikati,SunGold,False,13.1,52,False,0.2,0.8
+100210,Katikati,OrganicSunGold,True,18.5,52,True,0.2,0.8
+100211,Katikati,SunGold,False,3.0,52,False,0.2,0.8
+100212,Katikati,Green,False,16.3,52,False,0.2,0.8
+100213,Katikati,Green,False,16.8,52,False,0.2,0.8
+100214,Katikati,SunGold,False,6.7,52,False,0.2,0.8
+100215,Katikati,Green,False,2.1,52,False,0.2,0.8
+100216,Katikati,Green,False,2.6,52,False,0.2,0.8
+100217,Katikati,Green,False,15.4,52,False,0.2,0.8
+100218,Katikati,Green,False,9.0,52,False,0.2,0.8
+100219,Katikati,SunGold,False,13.8,52,False,0.2,0.8
+100220,Katikati,SunGold,False,19.7,52,False,0.2,0.8
+100221,Katikati,SunGold,False,8.8,52,False,0.2,0.8
+100222,Katikati,Green,False,22.0,52,False,0.2,0.8
+100223,Katikati,SunGold,False,4.7,52,False,0.2,0.8
+100224,Katikati,RubyRed,False,16.0,52,False,0.2,0.8
+100225,Katikati,SunGold,False,20.3,52,False,0.2,0.8
+100226,Katikati,SunGold,False,9.3,52,True,0.2,0.8
+100227,Katikati,SunGold,False,2.4,52,False,0.2,0.8
+100228,Katikati,Green,False,8.9,52,False,0.2,0.8
+100229,Katikati,OrganicGreen,True,17.0,52,False,0.2,0.8
+100230,Katikati,SunGold,False,19.9,52,False,0.2,0.8
+100231,Katikati,SunGold,False,20.2,52,False,0.2,0.8
+100232,Katikati,Green,False,13.8,52,False,0.2,0.8
+100233,Katikati,SunGold,False,6.8,52,False,0.2,0.8
+100234,Katikati,SunGold,False,19.5,52,False,0.2,0.8
+100235,Katikati,Green,False,17.8,52,False,0.2,0.8
+100236,Katikati,SunGold,False,11.5,52,False,0.2,0.8
+100237,Katikati,Green,False,18.3,52,False,0.2,0.8
+100238,Katikati,Green,False,5.7,52,False,0.2,0.8
+100239,Katikati,SunGold,False,15.1,52,False,0.2,0.8
+100240,Katikati,SunGold,False,10.7,52,True,0.2,0.8
+100241,Katikati,OrganicGreen,True,4.1,52,True,0.2,0.8
+100242,Katikati,SunGold,False,3.3,52,False,0.2,0.8
+100243,Katikati,SunGold,False,8.3,52,True,0.2,0.8
+100244,Katikati,SunGold,False,9.7,52,True,0.2,0.8
+100245,Katikati,Green,False,6.1,52,False,0.2,0.8
+100246,Katikati,SunGold,False,10.3,52,True,0.2,0.8
+100247,Katikati,SunGold,False,19.3,52,True,0.2,0.8
+100248,Katikati,SunGold,False,11.8,52,False,0.2,0.8
+100249,Katikati,SunGold,False,17.6,52,False,0.2,0.8
+100250,Katikati,SunGold,False,8.4,52,False,0.2,0.8
+100251,Katikati,SunGold,False,15.7,52,False,0.2,0.8
+100252,Katikati,SunGold,False,20.6,52,True,0.2,0.8
+100253,Katikati,SunGold,False,16.2,52,False,0.2,0.8
+100254,Katikati,SunGold,False,4.8,52,False,0.2,0.8
+100255,Katikati,SunGold,False,5.8,52,True,0.2,0.8
+100256,Katikati,SunGold,False,14.4,52,False,0.2,0.8
+100257,Katikati,Green,False,13.8,52,False,0.2,0.8
+100258,Katikati,SunGold,False,19.1,52,False,0.2,0.8
+100259,Katikati,SunGold,False,17.5,52,False,0.2,0.8
+100260,Katikati,SunGold,False,20.4,52,False,0.2,0.8
+100261,Katikati,Green,False,21.7,52,False,0.2,0.8
+100262,Katikati,Green,False,8.4,52,False,0.2,0.8
+100263,Katikati,Green,False,6.3,52,False,0.2,0.8
+100264,Katikati,SunGold,False,3.6,52,True,0.2,0.8
+100265,Katikati,SunGold,False,2.4,52,False,0.2,0.8
+100266,Katikati,Green,False,16.2,52,False,0.2,0.8
+100267,Katikati,SunGold,False,19.8,52,False,0.2,0.8
+100268,Katikati,SunGold,False,4.9,52,False,0.2,0.8
+100269,Katikati,SunGold,False,12.1,52,False,0.2,0.8
+100270,Katikati,SunGold,False,2.3,52,False,0.2,0.8
+100271,Katikati,Green,False,4.5,52,False,0.2,0.8
+100272,Katikati,Green,False,12.7,52,False,0.2,0.8
+100273,Katikati,SunGold,False,3.0,52,False,0.2,0.8
+100274,Katikati,SunGold,False,15.3,52,False,0.2,0.8
+100275,Tauranga,SunGold,False,13.9,12,False,0.18,0.9
+100276,Tauranga,Green,False,7.1,12,False,0.18,0.9
+100277,Tauranga,SunGold,False,9.9,12,False,0.18,0.9
+100278,Tauranga,Green,False,13.3,12,False,0.18,0.9
+100279,Tauranga,SweetGreen,False,10.4,12,False,0.18,0.9
+100280,Tauranga,SunGold,False,17.9,12,False,0.18,0.9
+100281,Tauranga,SunGold,False,3.9,12,False,0.18,0.9
+100282,Tauranga,SunGold,False,15.7,12,False,0.18,0.9
+100283,Tauranga,OrganicGreen,True,5.6,12,False,0.18,0.9
+100284,Tauranga,Green,False,20.3,12,False,0.18,0.9
+100285,Tauranga,SunGold,False,16.7,12,False,0.18,0.9
+100286,Tauranga,SunGold,False,12.3,12,False,0.18,0.9
+100287,Tauranga,Green,False,17.7,12,False,0.18,0.9
+100288,Tauranga,SunGold,False,20.1,12,False,0.18,0.9
+100289,Tauranga,Green,False,4.0,12,False,0.18,0.9
+100290,Tauranga,Green,False,2.5,12,False,0.18,0.9
+100291,Tauranga,SunGold,False,16.4,12,False,0.18,0.9
+100292,Tauranga,SunGold,False,8.4,12,False,0.18,0.9
+100293,Tauranga,Green,False,10.2,12,False,0.18,0.9
+100294,Tauranga,OrganicSunGold,True,11.4,12,False,0.18,0.9
+100295,Tauranga,SunGold,False,9.9,12,False,0.18,0.9
+100296,Tauranga,SunGold,False,15.7,12,False,0.18,0.9
+100297,Tauranga,OrganicGreen,True,6.9,12,True,0.18,0.9
+100298,Tauranga,Green,False,19.6,12,False,0.18,0.9
+100299,Tauranga,SunGold,False,5.7,12,False,0.18,0.9
+100300,Tauranga,SunGold,False,7.2,12,True,0.18,0.9
+100301,Tauranga,SunGold,False,21.2,12,False,0.18,0.9
+100302,Tauranga,SunGold,False,4.2,12,False,0.18,0.9
+100303,Tauranga,SunGold,False,17.3,12,False,0.18,0.9
+100304,Tauranga,OrganicSunGold,True,21.7,12,False,0.18,0.9
+100305,Tauranga,OrganicGreen,True,3.4,12,False,0.18,0.9
+100306,Tauranga,SunGold,False,13.1,12,True,0.18,0.9
+100307,Tauranga,Green,False,14.3,12,False,0.18,0.9
+100308,Tauranga,SunGold,False,7.1,12,False,0.18,0.9
+100309,Tauranga,Green,False,13.7,12,False,0.18,0.9
+100310,Tauranga,SunGold,False,9.4,12,False,0.18,0.9
+100311,Tauranga,Green,False,17.4,12,False,0.18,0.9
+100312,Tauranga,OrganicGreen,True,4.4,12,False,0.18,0.9
+100313,Tauranga,SunGold,False,7.3,12,False,0.18,0.9
+100314,Tauranga,SunGold,False,10.3,12,False,0.18,0.9
+100315,Tauranga,SunGold,False,16.2,12,False,0.18,0.9
+100316,Tauranga,Green,False,8.8,12,False,0.18,0.9
+100317,Tauranga,SunGold,False,6.9,12,False,0.18,0.9
+100318,Tauranga,OrganicGreen,True,19.8,12,False,0.18,0.9
+100319,Tauranga,SunGold,False,11.8,12,False,0.18,0.9
+100320,Tauranga,SunGold,False,10.7,12,False,0.18,0.9
+100321,Tauranga,SunGold,False,21.0,12,False,0.18,0.9
+100322,Tauranga,OrganicGreen,True,5.3,12,False,0.18,0.9
+100323,Tauranga,SunGold,False,7.1,12,True,0.18,0.9
+100324,Tauranga,SunGold,False,20.3,12,False,0.18,0.9
+100325,Tauranga,Green,False,11.3,12,False,0.18,0.9
+100326,Tauranga,SunGold,False,5.7,12,False,0.18,0.9
+100327,Tauranga,Green,False,16.8,12,False,0.18,0.9
+100328,Tauranga,SunGold,False,20.4,12,False,0.18,0.9
+100329,Tauranga,SunGold,False,8.8,12,False,0.18,0.9
+100330,Tauranga,Green,False,17.0,12,False,0.18,0.9
+100331,Tauranga,SunGold,False,20.5,12,False,0.18,0.9
+100332,Tauranga,Green,False,2.0,12,False,0.18,0.9
+100333,Tauranga,SunGold,False,3.2,12,False,0.18,0.9
+100334,Tauranga,SunGold,False,5.0,12,False,0.18,0.9
+100335,Tauranga,SunGold,False,20.4,12,False,0.18,0.9
+100336,Tauranga,Green,False,11.2,12,False,0.18,0.9
+100337,Tauranga,Green,False,11.5,12,False,0.18,0.9
+100338,Tauranga,SunGold,False,5.5,12,False,0.18,0.9
+100339,Tauranga,Green,False,2.8,12,False,0.18,0.9
+100340,Tauranga,OrganicSunGold,True,17.0,12,False,0.18,0.9
+100341,Tauranga,SunGold,False,15.2,12,False,0.18,0.9
+100342,Tauranga,OrganicGreen,True,9.3,12,False,0.18,0.9
+100343,Tauranga,SunGold,False,13.2,12,False,0.18,0.9
+100344,Tauranga,SunGold,False,20.1,12,False,0.18,0.9
+100345,Tauranga,Green,False,8.8,12,False,0.18,0.9
+100346,Tauranga,SunGold,False,4.5,12,True,0.18,0.9
+100347,Tauranga,Green,False,15.1,12,False,0.18,0.9
+100348,Tauranga,SunGold,False,8.5,12,False,0.18,0.9
+100349,Tauranga,Green,False,19.2,12,False,0.18,0.9
+100350,Pongakawa,Green,False,4.6,35,False,0.15,1.05
+100351,Pongakawa,SunGold,False,7.7,35,False,0.15,1.05
+100352,Pongakawa,OrganicSunGold,True,6.1,35,False,0.15,1.05
+100353,Pongakawa,Green,False,21.1,35,False,0.15,1.05
+100354,Pongakawa,SunGold,False,14.5,35,False,0.15,1.05
+100355,Pongakawa,OrganicGreen,True,10.0,35,False,0.15,1.05
+100356,Pongakawa,SunGold,False,10.0,35,False,0.15,1.05
+100357,Pongakawa,Green,False,10.9,35,False,0.15,1.05
+100358,Pongakawa,Green,False,8.4,35,False,0.15,1.05
+100359,Pongakawa,SunGold,False,14.6,35,False,0.15,1.05
+100360,Pongakawa,SunGold,False,20.3,35,False,0.15,1.05
+100361,Pongakawa,Green,False,21.6,35,False,0.15,1.05
+100362,Pongakawa,Green,False,17.3,35,False,0.15,1.05
+100363,Pongakawa,SunGold,False,6.8,35,False,0.15,1.05
+100364,Pongakawa,SunGold,False,7.2,35,False,0.15,1.05
+100365,Pongakawa,SunGold,False,6.4,35,False,0.15,1.05
+100366,Pongakawa,Green,False,5.4,35,True,0.15,1.05
+100367,Pongakawa,SunGold,False,18.0,35,False,0.15,1.05
+100368,Pongakawa,SunGold,False,17.5,35,True,0.15,1.05
+100369,Pongakawa,SunGold,False,22.0,35,False,0.15,1.05
+100370,Pongakawa,SunGold,False,10.5,35,False,0.15,1.05
+100371,Pongakawa,OrganicGreen,True,21.6,35,True,0.15,1.05
+100372,Pongakawa,SunGold,False,17.8,35,False,0.15,1.05
+100373,Pongakawa,Green,False,15.3,35,True,0.15,1.05
+100374,Pongakawa,Green,False,5.5,35,False,0.15,1.05
+100375,Pongakawa,SunGold,False,12.0,35,False,0.15,1.05
+100376,Pongakawa,Green,False,21.8,35,False,0.15,1.05
+100377,Pongakawa,SunGold,False,3.9,35,False,0.15,1.05
+100378,Pongakawa,OrganicGreen,True,8.4,35,False,0.15,1.05
+100379,Pongakawa,SunGold,False,3.0,35,False,0.15,1.05
+100380,Pongakawa,SunGold,False,17.7,35,False,0.15,1.05
+100381,Pongakawa,Green,False,10.3,35,False,0.15,1.05
+100382,Pongakawa,Green,False,18.0,35,False,0.15,1.05
+100383,Pongakawa,Green,False,4.9,35,False,0.15,1.05
+100384,Pongakawa,SunGold,False,5.1,35,False,0.15,1.05
+100385,Pongakawa,SunGold,False,3.1,35,True,0.15,1.05
+100386,Pongakawa,SunGold,False,17.5,35,True,0.15,1.05
+100387,Pongakawa,Green,False,18.5,35,False,0.15,1.05
+100388,Pongakawa,SunGold,False,19.2,35,False,0.15,1.05
+100389,Pongakawa,SunGold,False,18.4,35,True,0.15,1.05
+100390,Pongakawa,SunGold,False,16.8,35,False,0.15,1.05
+100391,Pongakawa,Green,False,12.1,35,False,0.15,1.05
+100392,Pongakawa,SunGold,False,9.4,35,False,0.15,1.05
+100393,Pongakawa,SunGold,False,17.0,35,True,0.15,1.05
+100394,Pongakawa,SunGold,False,5.5,35,False,0.15,1.05
+100395,Pongakawa,Green,False,10.0,35,False,0.15,1.05
+100396,Pongakawa,SunGold,False,15.1,35,False,0.15,1.05
+100397,Pongakawa,SunGold,False,19.5,35,False,0.15,1.05
+100398,Pongakawa,Green,False,5.8,35,False,0.15,1.05
+100399,Pongakawa,Green,False,7.8,35,False,0.15,1.05
+100400,Pongakawa,SunGold,False,13.0,35,False,0.15,1.05
+100401,Pongakawa,Green,False,2.5,35,True,0.15,1.05
+100402,Pongakawa,Green,False,11.7,35,False,0.15,1.05
+100403,Pongakawa,SunGold,False,17.2,35,False,0.15,1.05
+100404,Pongakawa,SunGold,False,9.7,35,False,0.15,1.05
+100405,Opotiki,Green,False,8.3,97,False,0.12,1.35
+100406,Opotiki,Green,False,3.3,97,True,0.12,1.35
+100407,Opotiki,SunGold,False,19.9,97,False,0.12,1.35
+100408,Opotiki,SunGold,False,19.8,97,False,0.12,1.35
+100409,Opotiki,Green,False,20.7,97,True,0.12,1.35
+100410,Opotiki,SunGold,False,13.7,97,True,0.12,1.35
+100411,Opotiki,Green,False,6.3,97,True,0.12,1.35
+100412,Opotiki,SunGold,False,10.5,97,True,0.12,1.35
+100413,Opotiki,SunGold,False,19.2,97,False,0.12,1.35
+100414,Opotiki,SunGold,False,3.1,97,False,0.12,1.35
+100415,Opotiki,SunGold,False,14.2,97,True,0.12,1.35
+100416,Opotiki,OrganicSunGold,True,20.6,97,True,0.12,1.35
+100417,Opotiki,SunGold,False,4.3,97,False,0.12,1.35
+100418,Opotiki,SunGold,False,19.0,97,False,0.12,1.35
+100419,Opotiki,Green,False,12.5,97,False,0.12,1.35
+100420,Opotiki,SunGold,False,10.0,97,False,0.12,1.35
+100421,Opotiki,OrganicGreen,True,13.5,97,False,0.12,1.35
+100422,Opotiki,SunGold,False,21.6,97,False,0.12,1.35
+100423,Opotiki,Green,False,21.4,97,False,0.12,1.35
+100424,Opotiki,SunGold,False,13.7,97,True,0.12,1.35
+100425,Opotiki,SunGold,False,5.9,97,True,0.12,1.35
+100426,Opotiki,Green,False,13.8,97,False,0.12,1.35
+100427,Opotiki,SunGold,False,10.6,97,False,0.12,1.35
+100428,Opotiki,OrganicGreen,True,20.7,97,False,0.12,1.35
+100429,Opotiki,SunGold,False,11.0,97,False,0.12,1.35
+100430,Opotiki,Green,False,15.2,97,False,0.12,1.35
+100431,Opotiki,SunGold,False,8.9,97,False,0.12,1.35
+100432,Opotiki,SunGold,False,5.3,97,False,0.12,1.35
+100433,Opotiki,SunGold,False,6.3,97,False,0.12,1.35
+100434,Opotiki,Green,False,7.1,97,False,0.12,1.35
+100435,Opotiki,OrganicGreen,True,13.9,97,False,0.12,1.35
+100436,Opotiki,SunGold,False,20.9,97,False,0.12,1.35
+100437,Opotiki,OrganicGreen,True,13.6,97,True,0.12,1.35
+100438,Opotiki,SunGold,False,15.6,97,False,0.12,1.35
+100439,Opotiki,SunGold,False,16.9,97,False,0.12,1.35
+100440,Opotiki,Green,False,11.3,97,True,0.12,1.35
+100441,Opotiki,Green,False,8.6,97,False,0.12,1.35
+100442,Opotiki,SunGold,False,13.3,97,False,0.12,1.35
+100443,Opotiki,SunGold,False,17.5,97,False,0.12,1.35
+100444,Opotiki,Green,False,21.3,97,False,0.12,1.35
