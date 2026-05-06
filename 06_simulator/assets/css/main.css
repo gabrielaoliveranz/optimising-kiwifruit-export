@@ -167,6 +167,17 @@ select:focus-visible, textarea:focus-visible, [role="tab"]:focus-visible {
   .sys-ticker-inner { animation: none; }
 }
 
+/* ── LOAD ANIMATION (respects prefers-reduced-motion) ────────── */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(14px); }
+  to   { opacity: 1; transform: none; }
+}
+@media (prefers-reduced-motion: no-preference) {
+  #execHero        { animation: fadeUp .5s ease both; }
+  .risk-gauge-wrap { animation: fadeUp .5s .1s ease both; }
+  .kpi-strip       { animation: fadeUp .5s .2s ease both; }
+}
+
 /* ═══════════════════════════════════════════════════════════════════
    TOPBAR
    ═══════════════════════════════════════════════════════════════════ */
@@ -215,7 +226,8 @@ select:focus-visible, textarea:focus-visible, [role="tab"]:focus-visible {
 .tb-status { display:flex; align-items:center; gap:7px; font-size:11px; color:rgba(244,243,238,.55); letter-spacing:.08em; font-family:var(--f-mono); }
 .tb-week  { font-size:11px; letter-spacing:.08em; color:rgba(244,243,238,.55); font-family:var(--f-mono); }
 .tb-week strong { color:var(--txt-on-dark); }
-.tb-divider { width:1px; height:16px; background:rgba(232,235,230,.14); flex-shrink:0; }
+.tb-divider { display:none; }
+.tb-status { white-space:nowrap; }
 
 .status-dot {
   width:6px; height:6px; border-radius:50%; background:#4ade80; flex-shrink:0;
@@ -588,7 +600,7 @@ input[type=range].gold-mode::-webkit-slider-thumb {
   border: var(--hair); border-radius:var(--r2);
   overflow:hidden; margin-bottom:14px;
 }
-@media (max-width:600px) { .kpi-grid { grid-template-columns:repeat(2,1fr); } }
+@media (max-width:600px) { .kpi-grid { grid-template-columns:1fr; } }
 .kpi-cell {
   background:var(--cf-card); padding:18px 18px 14px;
   border-right: var(--hair);
@@ -757,7 +769,13 @@ input[type=range].gold-mode::-webkit-slider-thumb {
   border:1px solid var(--cf-border); border-radius:var(--r2); overflow:hidden;
 }
 @media (max-width:480px) { .gis-stat-bar { grid-template-columns:repeat(2,1fr); } }
-.gis-stat-cell { background:var(--cf-raised); padding:16px 18px; }
+.gis-stat-cell {
+  background: var(--cf-card);
+  padding: 18px 22px;
+  transition: background-color .2s ease;
+}
+.gis-stat-cell:hover { background-color: var(--gold-muted); }
+.gis-stat-cell:active { background-color: rgba(201,169,97,.20); transform: scale(0.98); }
 .gis-stat-label { font-size:13px; letter-spacing:1px; text-transform:uppercase; color:var(--txt-dim); margin-bottom:4px; }
 .gis-stat-val { font-family:var(--f-mono); font-size:22px; color:var(--txt-primary); line-height:1; }
 .gis-stat-val.green { color:var(--green); }
@@ -1035,7 +1053,12 @@ input[type=range].gold-mode::-webkit-slider-thumb {
 .bi-kpi-cell {
   background: var(--cf-card); padding: 16px 18px;
   border-right: var(--hair);
+  transition: background-color .25s ease;
 }
+@media (hover: hover) {
+  .bi-kpi-cell:hover { background-color: rgba(201,169,97,.06); }
+}
+.bi-kpi-cell:active { background-color: rgba(201,169,97,.18); transform: scale(0.98); }
 .bi-kpi-cell:last-child { border-right: none; }
 .bi-kpi-label {
   font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase;
@@ -1079,9 +1102,14 @@ input[type=range].gold-mode::-webkit-slider-thumb {
   padding: 10px 14px 8px; gap: 8px; flex-shrink: 0;
   border-bottom: var(--hair);
 }
+@media (max-width: 900px) {
+  .bi-chart-header { flex-direction: column; align-items: flex-start; gap: 6px; }
+  .bi-chart-header-right { align-self: flex-start; }
+}
 .bi-chart-title {
   font-family: var(--f-sans); font-size: 12px; font-weight: 600;
   color: var(--txt-primary); letter-spacing: .04em; text-transform: uppercase; margin-bottom: 2px;
+  white-space: normal; width: 100%;
 }
 .bi-chart-subtitle {
   font-size: 11px; letter-spacing: .06em; text-transform: uppercase;
@@ -1355,7 +1383,7 @@ body { line-height:1.55; }
   content: "";
   position: absolute;
   inset: 0;
-  background-image: url('assets/hero-orchard.webp');
+  background-image: url('../hero-orchard.webp');
   background-size: cover;
   background-position: center right;
   background-repeat: no-repeat;
@@ -1536,9 +1564,12 @@ body { line-height:1.55; }
   padding: var(--s4);
   min-height: 180px;
   display: flex; flex-direction: column; justify-content: space-between;
-  transition: box-shadow .2s, transform .2s;
+  transition: box-shadow .2s ease, transform .2s ease, background-color .2s ease;
 }
-.kpi-card:hover { box-shadow: var(--shadow-hover); transform: translateY(-2px); }
+@media (hover: hover) {
+  .kpi-card:hover { box-shadow: var(--shadow-hover); transform: translateY(-2px); background-color: var(--green-muted); }
+}
+.kpi-card:active { box-shadow: var(--shadow-hover); transform: scale(0.98); background-color: rgba(0,103,74,.14); }
 .kpi-eyebrow {
   font: 600 12px var(--f-sans);
   text-transform: uppercase; letter-spacing: .12em; color: var(--txt-dim);
@@ -1621,8 +1652,12 @@ body { line-height:1.55; }
 .footer-author-links { display:flex; flex-wrap:wrap; gap:6px; margin-top:var(--s3); }
 .footer-author-links a,
 .footer-author-pill { font:600 11px var(--f-sans); color:var(--txt-on-dark); background:transparent; text-decoration:none; padding:4px 10px; border:1px solid rgba(255,255,255,0.25); border-radius:999px; letter-spacing:0.04em; cursor:pointer; transition:background .18s ease,border-color .18s ease; font-family:var(--f-sans); }
-.footer-author-links a:hover,
-.footer-author-pill:hover { background:rgba(255,255,255,0.12); border-color:rgba(255,255,255,0.5); }
+@media (hover: hover) {
+  .footer-author-links a:hover,
+  .footer-author-pill:hover { background:rgba(255,255,255,0.12); border-color:rgba(255,255,255,0.5); }
+}
+.footer-author-links a:active,
+.footer-author-pill:active { background:rgba(255,255,255,0.15); border-color:rgba(255,255,255,0.6); }
 .footer-author-pill .pill-success { display:none; color:var(--green-mid); }
 .footer-author-pill.copied .pill-default { display:none; }
 .footer-author-pill.copied .pill-success { display:inline; }
@@ -1645,7 +1680,10 @@ body { line-height:1.55; }
 .footer-list { list-style:none; padding:0; margin:0; }
 .footer-list li { margin:8px 0; }
 .footer-link-btn { background:transparent; border:none; padding:0; color:var(--txt-on-dark); font:500 14px var(--f-sans); cursor:pointer; text-align:left; text-decoration:underline; text-decoration-thickness:1px; text-underline-offset:3px; text-decoration-color:rgba(255,255,255,0.3); transition:text-decoration-color .18s ease,color .18s ease; }
-.footer-link-btn:hover { text-decoration-color:rgba(255,255,255,1); color:var(--txt-on-dark); }
+@media (hover: hover) {
+  .footer-link-btn:hover { text-decoration-color:rgba(255,255,255,1); color:var(--txt-on-dark); }
+}
+.footer-link-btn:active { text-decoration-color:rgba(255,255,255,1); color:var(--txt-on-dark); }
 @media (max-width: 1100px) {
   .footer-cols { grid-template-columns: repeat(2, 1fr); gap: var(--s4); }
 }
@@ -1781,9 +1819,14 @@ body { line-height:1.55; }
 .triad-card:hover { box-shadow: var(--shadow-hover); }
 .triad-card .triad-eyebrow { flex: 0 0 auto; }
 /* Evidence card accent system */
-.evidence-card { position:relative; overflow:hidden; transition:transform 0.25s ease, box-shadow 0.25s ease; min-height:360px; box-shadow:0 2px 6px rgba(10,20,16,0.06),0 12px 28px rgba(10,20,16,0.08); }
-.evidence-card:hover { transform:translateY(-3px); box-shadow:0 4px 12px rgba(10,20,16,0.08),0 24px 48px rgba(10,20,16,0.12); }
-.evidence-card::before { content:''; position:absolute; top:0; left:0; right:0; height:3px; }
+.evidence-card { position:relative; overflow:hidden; transition:transform 0.25s ease, box-shadow 0.25s ease, background-color 0.25s ease; min-height:360px; box-shadow:0 2px 6px rgba(10,20,16,0.06),0 12px 28px rgba(10,20,16,0.08); }
+@media (hover: hover) {
+  .evidence-card:hover { transform:translateY(-3px); box-shadow:0 4px 12px rgba(10,20,16,0.08),0 24px 48px rgba(10,20,16,0.12); background-color:rgba(0,99,56,.04); }
+  .evidence-card:hover::before { height:5px; filter:brightness(1.3); }
+}
+.evidence-card:active { transform:scale(0.99); box-shadow:0 4px 12px rgba(10,20,16,0.08),0 16px 36px rgba(10,20,16,0.10); background-color:rgba(0,99,56,.13); }
+.evidence-card:active::before { height:5px; filter:brightness(1.3); }
+.evidence-card::before { content:''; position:absolute; top:0; left:0; right:0; height:3px; transition:height .25s ease, filter .25s ease; }
 .where-card::before { background:var(--green-main); }
 .when-card::before  { background:var(--gold-deep); }
 .cost-card::before  { background:var(--risk-mid); }
@@ -1880,9 +1923,13 @@ input[type=range]::-webkit-slider-thumb {
   box-shadow: var(--shadow-card);
   padding: var(--s4);
   min-height: 160px;
-  transition: box-shadow .2s;
+  transition: box-shadow .25s ease, background-color .25s ease, transform .25s ease;
 }
-.kpi-cell:hover { box-shadow: var(--shadow-hover); }
+.kpi-cell:hover {
+  box-shadow: var(--shadow-hover), inset 0 0 0 1px rgba(201,169,97,.35);
+  background-color: rgba(201,169,97,.06);
+  transform: translateY(-2px);
+}
 .kpi-label  { font-size:12px; letter-spacing:0.1em; margin-bottom:var(--s2); }
 .kpi-val::after { display:none !important; }
 .kpi-delta  { margin-top:var(--s2); font-size:14px; }
@@ -2129,11 +2176,60 @@ input[type=range]::-webkit-slider-thumb {
   .topbar-logo-eyebrow { display: none !important; }
 }
 
+/* Mobile ≤640px overrides — layout only, no desktop impact */
+@media (max-width: 640px) {
+  /* KPI strip + in-module kpi grids — 1 column so values never clip */
+  .kpi-strip, .kpi-grid, .module-kpi-grid { grid-template-columns: 1fr !important; }
+
+  /* Risk gauge — stack arc above verdict text */
+  .risk-gauge-wrap { display:flex; flex-direction:column-reverse; gap:16px; }
+  .rg-arc-wrap { align-self:center; }
+
+  /* CoD / econ grids — 1 column + breathing room */
+  .econ-grid { grid-template-columns: 1fr !important; gap: 16px; background: transparent; border: none; }
+  .econ-cell { border-right: none; border-radius: var(--r2); box-shadow: var(--shadow-card); padding: 18px 20px; }
+  .gp-grid   { grid-template-columns: 1fr !important; }
+
+  /* Scenario Controls button — fit inside topbar on narrow screens */
+  .controls-toggle {
+    font-size: 11px;
+    padding: 6px 10px;
+    height: auto;
+    flex-shrink: 1;
+  }
+  .topbar { flex-wrap: wrap; gap: 6px; }
+}
+
 /* SMALL MOBILE (<400px) — extra tightening */
 @media (max-width: 400px) {
   .hero-headline { font-size: 22px !important; }
   .kpi-strip { grid-template-columns: 1fr !important; }
   .evidence-card { padding: 16px !important; }
+}
+
+/* ── TOUCH DEVICE: faster active feedback, clear default tap highlight ── */
+@media (hover: none) {
+  .kpi-card,
+  .evidence-card,
+  .bi-kpi-cell,
+  .gis-stat-cell,
+  .kpi-cell {
+    -webkit-tap-highlight-color: transparent;
+    transition-duration: .1s;
+  }
+}
+
+/* ── TOPBAR: column layout on narrow screens — all info remains visible ─── */
+@media (max-width: 600px) {
+  .topbar { height: auto; flex-wrap: wrap; padding: 6px 0; }
+  .tb-brand { height: auto; padding: 8px 16px; }
+  .tb-meta {
+    flex-direction: column; align-items: flex-start;
+    gap: 4px; padding: 6px 12px 8px;
+    margin-left: 0; width: 100%;
+    border-top: 1px solid rgba(232,235,230,.08);
+  }
+  .tb-week { display: block; }
 }
 
 .mobile-placeholder {
@@ -2193,4 +2289,32 @@ input[type=range]::-webkit-slider-thumb {
     max-width: 100vw !important;
     overflow-x: hidden !important;
   }
+}
+
+/* ══════════════════════════════════════════════════════════════════
+   UNIFIED INTERACTIVE STATES — hover (desktop) + active (mobile tap)
+   Single rule, no media query, works everywhere.
+   Placed last so cascade always wins.
+   ══════════════════════════════════════════════════════════════════ */
+.kpi-card,
+.evidence-card,
+.bi-kpi-cell,
+.gis-stat-cell,
+.kpi-cell {
+  -webkit-tap-highlight-color: transparent;
+  transition: transform .2s ease, background-color .2s ease, box-shadow .2s ease;
+}
+
+.kpi-card:hover,       .kpi-card:active,
+.evidence-card:hover,  .evidence-card:active {
+  transform: translateY(-2px);
+  background-color: rgba(0,103,74,.12);
+  box-shadow: 0 4px 12px rgba(0,0,0,.08);
+}
+
+.bi-kpi-cell:hover,    .bi-kpi-cell:active,
+.gis-stat-cell:hover,  .gis-stat-cell:active,
+.kpi-cell:hover,       .kpi-cell:active {
+  background-color: rgba(201,169,97,.13);
+  box-shadow: 0 2px 8px rgba(0,0,0,.06);
 }

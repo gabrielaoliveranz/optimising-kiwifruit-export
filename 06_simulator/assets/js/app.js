@@ -1959,8 +1959,8 @@ const _docContent = {
       <dt>Provider</dt><dd>Mapbox Traffic API · TomTom-sourced</dd>
       <dt>Coverage</dt><dd>Global, including New Zealand state highway network</dd>
       <dt>Refresh</dt><dd>~5 minute cadence (Mapbox-managed)</dd>
-      <dt>Color coding</dt><dd>Green (low) · Gold (moderate) · Orange (heavy) · Red (severe)</dd>
-      <dt>Visualization</dt><dd>Live congestion lines under corridor overlays</dd>
+      <dt>Colour coding</dt><dd>Green (low) · Gold (moderate) · Orange (heavy) · Red (severe)</dd>
+      <dt>Visualisation</dt><dd>Live congestion lines under corridor overlays</dd>
       <dt>Status</dt><dd><span class="status-live">&#x25CF; LIVE</span></dd>
     </dl>`
   },
@@ -2090,6 +2090,18 @@ const _docContent = {
     </div>`
   },
   'contact': {
+    eyebrow: 'ABOUT THIS PROTOTYPE',
+    title: 'APOPHENIA — Horticultural Export Risk Intelligence',
+    body: `<dl class="meta-grid">
+      <dt>Purpose</dt><dd>Independent portfolio project demonstrating end-to-end data engineering, predictive risk modelling, and executive dashboard design applied to NZ kiwifruit export supply chains.</dd>
+      <dt>Data</dt><dd>Synthetic operational data generated from publicly available Bay of Plenty seasonal benchmarks. No proprietary grower data is used.</dd>
+      <dt>Risk model</dt><dd>Logistic sigmoid function combining dry matter, SH2 congestion, rainfall, regulatory load, dwell time, and volume stress indicators.</dd>
+      <dt>Stack</dt><dd>Vanilla HTML/CSS/JavaScript · Chart.js · Mapbox GL JS · jsPDF · Open-Meteo API</dd>
+      <dt>Version</dt><dd>4.1.0 · Season 2025/26</dd>
+      <dt>Disclaimer</dt><dd>Independent research. Not affiliated with any grower organisation, exporter, or government agency.</dd>
+    </dl>`
+  },
+  'commercial': {
     eyebrow: 'COMMERCIAL ENQUIRIES',
     title: 'Get in touch',
     body: `<p>APOPHENIA is a demonstration prototype. Commercial deployment, customisation, and integration with proprietary data sources are available on request.</p>
@@ -2101,7 +2113,7 @@ const _docContent = {
         <li>Methodology audits for synthetic vs proprietary data integration</li>
       </ul>
       <h4>Direct contact</h4>
-      <p>Email: <strong style="user-select:all">gabriela.olivera.nz@gmail.com</strong></p>
+      <p>Email: <a href="mailto:gabriela.olivera.nz@gmail.com"><strong>gabriela.olivera.nz@gmail.com</strong></a></p>
       <p>LinkedIn: <a href="https://www.linkedin.com/in/gabriela-olivera-nz" target="_blank" rel="noopener">linkedin.com/in/gabriela-olivera-nz</a></p>
       <h4>Location</h4>
       <p>Tauranga, Bay of Plenty · New Zealand</p>
@@ -2178,7 +2190,7 @@ document.getElementById('copyEmailBtn')?.addEventListener('click', async (e) => 
 });
 
 /* T4 — Footer CTA buttons */
-document.getElementById('ctaCommercial')?.addEventListener('click', () => _openDoc('contact'));
+document.getElementById('ctaCommercial')?.addEventListener('click', () => _openDoc('commercial'));
 document.getElementById('ctaAbout')?.addEventListener('click', () => _openDoc('author'));
 
 /* T5 — Delegated copy handler for author modal email pill */
