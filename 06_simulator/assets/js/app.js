@@ -2000,7 +2000,7 @@ const _docContent = {
       <dt>Model type</dt><dd>Multi-variable risk regression with logistic transform</dd>
       <dt>Calibration</dt><dd>3-season backtest against synthetic dataset</dd>
       <dt>Reported R²</dt><dd>0.82 (synthetic backtest only)</dd>
-      <dt>Use</dt><dd>Demonstration of operational risk modelling for fruit export supply chains. Commercial deployment available on request.</dd>
+      <dt>Use</dt><dd>Portfolio demonstration of operational risk modelling for fruit export supply chains.</dd>
       <dt>Status</dt><dd><span class="status-sync">&#x25D0; RESEARCH PROTOTYPE</span></dd>
     </dl>`
   },
@@ -2032,18 +2032,18 @@ const _docContent = {
   'terms': {
     eyebrow: 'TERMS OF USE',
     title: 'Terms of use',
-    body: `<p>APOPHENIA is an independent research and demonstration project in operational analytics for fruit export supply chains.</p>
+    body: `<p>APOPHENIA is an independent portfolio project demonstrating operational risk modelling, data engineering, and executive dashboard design applied to NZ kiwifruit export supply chains. Published under the MIT licence.</p>
       <h4>Permitted use</h4>
       <ul>
         <li>Professional review, portfolio demonstration, and research reference</li>
         <li>Scenario modelling and operational risk methodology illustration</li>
-        <li>Evaluation for potential commercial deployment or customisation</li>
+        <li>Educational and analytical exploration of supply chain risk models</li>
       </ul>
       <h4>Important notes</h4>
       <ul>
-        <li>This is a demonstration version built on synthetic data — not validated for live operational decisions without customisation</li>
+        <li>This is a demonstration prototype built on synthetic data — not validated for live operational decisions</li>
         <li>Not affiliated with, endorsed by, or commissioned by any grower organisation</li>
-        <li>Commercial deployment with proprietary data integration is available on request</li>
+        <li>Source code available at github.com/gabrielaoliveranz under the MIT licence</li>
       </ul>`
   },
   'privacy': {
@@ -2080,7 +2080,7 @@ const _docContent = {
         <p class="author-modal-role">Data Analyst · Operational Analytics · Tauranga, NZ</p>
         <p>20+ years of professional experience, with the last 14+ across operations, procurement, and data analytics — between Argentina and New Zealand. Specialised in turning operational complexity into data-driven decisions.</p>
         <p>APOPHENIA is an independent portfolio project demonstrating end-to-end data engineering, predictive modelling, and executive dashboard design — applied to NZ kiwifruit export supply chains.</p>
-        <p class="author-modal-availability"><em>Demonstration prototype available — commercial deployment, customisation, and integration with proprietary data sources available on request.</em></p>
+        <p class="author-modal-availability"><em>Currently exploring data analyst, BI, and analytics engineering opportunities across Aotearoa.</em></p>
         <div class="author-modal-links">
           <a href="https://www.linkedin.com/in/gabriela-olivera-nz" target="_blank" rel="noopener">LinkedIn</a>
           <a href="https://github.com/gabrielaoliveranz" target="_blank" rel="noopener">GitHub</a>
@@ -2106,22 +2106,16 @@ const _docContent = {
     </dl>`
   },
   'commercial': {
-    eyebrow: 'COMMERCIAL ENQUIRIES',
+    eyebrow: 'CONTACT',
     title: 'Get in touch',
-    body: `<p>APOPHENIA is a demonstration prototype. Commercial deployment, customisation, and integration with proprietary data sources are available on request.</p>
-      <h4>Use cases we support</h4>
-      <ul>
-        <li>Operational risk modelling for fruit and perishable export supply chains</li>
-        <li>Scenario simulation tools for executive decision-making</li>
-        <li>Custom data engineering and dashboard design</li>
-        <li>Methodology audits for synthetic vs proprietary data integration</li>
-      </ul>
-      <h4>Direct contact</h4>
+    body: `<p>Data Analyst exploring full-time and contract opportunities in operational analytics across Aotearoa.</p>
+      <h4>Contact</h4>
       <p>Email: <a href="mailto:gabriela.olivera.nz@gmail.com"><strong>gabriela.olivera.nz@gmail.com</strong></a></p>
       <p>LinkedIn: <a href="https://www.linkedin.com/in/gabriela-olivera-nz" target="_blank" rel="noopener">linkedin.com/in/gabriela-olivera-nz</a></p>
+      <p>GitHub: <a href="https://github.com/gabrielaoliveranz" target="_blank" rel="noopener">github.com/gabrielaoliveranz</a></p>
       <h4>Location</h4>
-      <p>Tauranga, Bay of Plenty · New Zealand</p>
-      <p style="margin-top:var(--s3); font-size:12px; color:var(--txt-dim); font-style:italic;">Independent project. Not affiliated with any grower organisation.</p>`
+      <p>Tauranga, Bay of Plenty · Aotearoa New Zealand</p>
+      <p style="margin-top:var(--s3); font-size:12px; color:var(--txt-dim); font-style:italic;">APOPHENIA is an independent portfolio project. Not affiliated with any grower organisation.</p>`
   },
 };
 
