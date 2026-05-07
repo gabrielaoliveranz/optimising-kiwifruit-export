@@ -1,13 +1,7 @@
 # Visualisations
 
-Visualisations of the kiwifruit export dataset across multiple tools.
+The primary interactive visualisation is the web simulator at `06_simulator/`.
 
-## Power BI
+## Roadmap
 
-`powerbi/` — `.pbix` dashboard, screenshots, and documentation. Status: in progress.
-
-## Python
-
-`python/` — matplotlib / seaborn charts for static reporting. Status: as needed.
-
-The web simulator at `06_simulator/` is the primary interactive visualisation; the Power BI dashboard provides traditional BI-style exploration of the same dataset.
+Power BI dashboard and supplementary Python visualisations are planned as parallel portfolio modules.
