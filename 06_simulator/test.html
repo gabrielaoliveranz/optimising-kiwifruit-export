@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>APOPHENIA — Unit Tests</title>
+  <style>
+    body { font-family: monospace; background: #0d1117; color: #e6edf3; padding: 2rem; margin: 0; }
+    h1 { font-size: 1rem; color: #58a6ff; margin: 0 0 1.5rem; letter-spacing: .05em; text-transform: uppercase; }
+    .suite { margin-bottom: 1.5rem; }
+    .suite-name { color: #8b949e; font-size: .85rem; margin-bottom: .4rem; }
+    .test { padding: .25rem 0; font-size: .88rem; }
+    .pass { color: #3fb950; }
+    .fail { color: #f85149; }
+    .err  { font-size: .78rem; color: #f85149; padding-left: 1.5rem; white-space: pre-wrap; }
+    .summary { margin-top: 1.5rem; padding-top: 1rem; border-top: 1px solid #30363d; font-size: 1rem; }
+    .all-pass { color: #3fb950; font-weight: bold; }
+    .has-fail { color: #f85149; font-weight: bold; }
+  </style>
+</head>
+<body>
+  <h1>APOPHENIA · Unit Test Runner</h1>
+  <div id="output"></div>
+
+  <script type="module">
+    // ── Jest-style API shims ──────────────────────────────────────────────────
+    const _suites = [];
+    let _current = null;
+
+    window.describe = (name, fn) => {
+      _current = { name, tests: [] };
+      _suites.push(_current);
+      fn();
+      _current = null;
+    };
+
+    window.test = (name, fn) => { _current.tests.push({ name, fn }); };
+
+    window.expect = (actual) => ({
+      toBe(expected) {
+        if (actual !== expected)
+          throw new Error(`Expected ${JSON.stringify(expected)}, got ${JSON.stringify(actual)}`);
+      },
+      toHaveProperty(key) {
+        if (actual == null || !(key in Object(actual)))
+          throw new Error(`Expected property "${key}" — keys: [${Object.keys(actual || {}).join(', ')}]`);
+      },
+      toHaveLength(n) {
+        if (!actual || actual.length !== n)
+          throw new Error(`Expected length ${n} — got ${actual?.length}`);
+      },
+    });
+
+    // ── Load test file (registers all describe/test calls) ───────────────────
+    await import('./assets/js/app.test.js?v=' + Date.now());
+
+    // ── Run all suites ────────────────────────────────────────────────────────
+    let passed = 0, failed = 0;
+    const out = document.getElementById('output');
+
+    for (const suite of _suites) {
+      const suiteEl = document.createElement('div');
+      suiteEl.className = 'suite';
+      suiteEl.innerHTML = `<div class="suite-name">▸ ${suite.name}</div>`;
+
+      for (const t of suite.tests) {
+        const el = document.createElement('div');
+        try {
+          const result = t.fn();
+          if (result && typeof result.then === 'function') await result;
+          el.className = 'test pass';
+          el.textContent = `  ✓  ${t.name}`;
+          passed++;
+        } catch (e) {
+          el.className = 'test fail';
+          el.innerHTML = `  ✗  ${t.name}<div class="err">${e.message}</div>`;
+          failed++;
+        }
+        suiteEl.appendChild(el);
+      }
+      out.appendChild(suiteEl);
+    }
+
+    const total = passed + failed;
+    const s = document.createElement('div');
+    s.className = 'summary';
+    s.innerHTML = failed === 0
+      ? `<span class="all-pass">${passed}/${total} passed ✓</span>`
+      : `<span class="has-fail">${passed}/${total} passed — ${failed} failed ✗</span>`;
+    out.appendChild(s);
+  </script>
+</body>
+</html>
