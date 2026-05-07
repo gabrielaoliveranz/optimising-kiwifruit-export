@@ -1,11 +1,13 @@
-﻿"""
-=============================================================================
-OPTIMISING KIWIFRUIT EXPORT PERFORMANCE — APOPHENIA 2026
-Script: generate_edi_simulation.py  [v2 — recalibrated]
-Stage: ETL Phase 0 — Synthetic EDI Data Generation
-Author: Gabriela Olivera | Data Analytics Portfolio
-=============================================================================
+﻿# =============================================================================
+# APOPHENIA — HORTICULTURAL EXPORT RISK INTELLIGENCE AGENT
+# Bay of Plenty Corridor · Independent Research Project
+# Script: generate_edi_simulation.py
+# Stage:  ETL Phase 0 — Synthetic EDI Data Generation
+# Author: Gabriela Olivera | Data Analytics Portfolio
+# Version: 4.1.0 | 2026-05
+# =============================================================================
 
+"""
 CALIBRATION CHANGES v1 → v2:
   1. MTS fail rate: 33% → target 6-12%
      - Reduced dm_season_std from 0.85-1.10 → 0.45-0.65

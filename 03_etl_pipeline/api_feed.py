@@ -1,11 +1,13 @@
-﻿"""
-=============================================================================
-OPTIMISING KIWIFRUIT EXPORT PERFORMANCE — APOPHENIA 2026
-Script: 07_api_feed.py
-Stage: Integration — SQLite DB → Apophenia Simulator JSON Feed
-Author: Gabriela Olivera | Data Analytics Portfolio
-=============================================================================
+﻿# =============================================================================
+# APOPHENIA — HORTICULTURAL EXPORT RISK INTELLIGENCE AGENT
+# Bay of Plenty Corridor · Independent Research Project
+# Script: api_feed.py
+# Stage:  Integration — Live API Feed → Simulator JSON Payload
+# Author: Gabriela Olivera | Data Analytics Portfolio
+# Version: 4.1.0 | 2026-05
+# =============================================================================
 
+"""
 WHAT THIS SCRIPT DOES:
   Reads kiwifruit_export.db and generates the JSON payload that the
   Apophenia simulator expects. Two modes:

@@ -1,11 +1,13 @@
-﻿"""
-=============================================================================
-OPTIMISING KIWIFRUIT EXPORT PERFORMANCE — APOPHENIA 2026
-Script: 05_sql_analysis.py
-Stage: Analysis — 6 SQL Queries against kiwifruit_export.db
-Author: Gabriela Olivera | Data Analytics Portfolio
-=============================================================================
+﻿# =============================================================================
+# APOPHENIA — HORTICULTURAL EXPORT RISK INTELLIGENCE AGENT
+# Bay of Plenty Corridor · Independent Research Project
+# Script: 05_sql_analysis.py
+# Stage:  Analysis — SQL Queries, kiwifruit_export.db
+# Author: Gabriela Olivera | Data Analytics Portfolio
+# Version: 4.1.0 | 2026-05
+# =============================================================================
 
+"""
 RESEARCH QUESTIONS ANSWERED:
   Q1. MTS Compliance      — What % of BOP production falls below MTS Green
                             (15.5%) and how does it vary by season?

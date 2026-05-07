@@ -1,11 +1,13 @@
-﻿"""
-=============================================================================
-OPTIMISING KIWIFRUIT EXPORT PERFORMANCE — APOPHENIA 2026
-Script: 03_transform.py
-Stage: ETL Phase 2 — Star Schema Assembly & Normalisation
-Author: Gabriela Olivera | Data Analytics Portfolio
-=============================================================================
+﻿# =============================================================================
+# APOPHENIA — HORTICULTURAL EXPORT RISK INTELLIGENCE AGENT
+# Bay of Plenty Corridor · Independent Research Project
+# Script: 03_transform.py
+# Stage:  ETL Phase 2 — Star Schema Assembly
+# Author: Gabriela Olivera | Data Analytics Portfolio
+# Version: 4.1.0 | 2026-05
+# =============================================================================
 
+"""
 WHAT THIS SCRIPT DOES:
   Joins all cleaned datasets into a Star Schema ready for SQL analysis.
   Produces 5 output files:

@@ -1,11 +1,13 @@
-﻿"""
-=============================================================================
-OPTIMISING KIWIFRUIT EXPORT PERFORMANCE — APOPHENIA 2026
-Script: 02_clean_raw_data.py
-Stage: ETL Phase 1 — Raw Data Cleaning & Filtering
-Author: Gabriela Olivera | Data Analytics Portfolio
-=============================================================================
+﻿# =============================================================================
+# APOPHENIA — HORTICULTURAL EXPORT RISK INTELLIGENCE AGENT
+# Bay of Plenty Corridor · Independent Research Project
+# Script: 02_clean_raw_data.py
+# Stage:  ETL Phase 1 — Raw Data Cleaning
+# Author: Gabriela Olivera | Data Analytics Portfolio
+# Version: 4.1.0 | 2026-05
+# =============================================================================
 
+"""
 WHAT THIS SCRIPT DOES:
   1. NZTA TMS files (tms_2021_03/04/05/06.csv)
      - Detects and repairs duplicate column headers

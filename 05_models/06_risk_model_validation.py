@@ -1,11 +1,13 @@
-﻿"""
-=============================================================================
-OPTIMISING KIWIFRUIT EXPORT PERFORMANCE — APOPHENIA 2026
-Script: 06_risk_model_validation.py
-Stage: Modelling — Risk Score Validation via Logistic Regression
-Author: Gabriela Olivera | Data Analytics Portfolio
-=============================================================================
+﻿# =============================================================================
+# APOPHENIA — HORTICULTURAL EXPORT RISK INTELLIGENCE AGENT
+# Bay of Plenty Corridor · Independent Research Project
+# Script: 06_risk_model_validation.py
+# Stage:  Modelling — Risk Score Validation
+# Author: Gabriela Olivera | Data Analytics Portfolio
+# Version: 4.1.0 | 2026-05
+# =============================================================================
 
+"""
 WHAT THIS SCRIPT DOES:
   Validates the composite Risk Score model against the historical dataset
   using logistic regression. Answers two questions:

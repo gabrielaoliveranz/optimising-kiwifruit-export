@@ -1,11 +1,13 @@
-﻿"""
-=============================================================================
-OPTIMISING KIWIFRUIT EXPORT PERFORMANCE — APOPHENIA 2026
-Script: 04_load.py
-Stage: ETL Phase 3 — Load Star Schema into SQLite Database
-Author: Gabriela Olivera | Data Analytics Portfolio
-=============================================================================
+﻿# =============================================================================
+# APOPHENIA — HORTICULTURAL EXPORT RISK INTELLIGENCE AGENT
+# Bay of Plenty Corridor · Independent Research Project
+# Script: 04_load.py
+# Stage:  ETL Phase 3 — SQLite Database Load
+# Author: Gabriela Olivera | Data Analytics Portfolio
+# Version: 4.1.0 | 2026-05
+# =============================================================================
 
+"""
 WHAT THIS SCRIPT DOES:
   Loads the 5 Star Schema CSVs into a SQLite database with:
   - Typed columns (INTEGER, REAL, TEXT, DATE)
