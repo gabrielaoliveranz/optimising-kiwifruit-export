@@ -224,6 +224,11 @@ YIELD_TRAYS_PER_HA_WEEK = {
 # =============================================================================
 
 def pack_week_to_date(season_start: date, pack_week: int) -> date:
+    """Convert a pack week number to a calendar date anchored to season_start.
+
+    Pack week 11 maps to season_start; subsequent weeks add whole-week offsets.
+    Used to assign submission_date to every maturity reading and pallet record.
+    """
     offset_weeks = pack_week - 11
     return season_start + timedelta(weeks=offset_weeks)
 
@@ -280,6 +285,11 @@ def compute_tzg(dm: float, variety: str) -> float:
 
 
 def tzg_to_grade(tzg: float, mts_pass: bool) -> str:
+    """Map a continuous Taste Grade score to a letter grade.
+
+    Returns 'F' for any fruit that failed MTS regardless of tzg score.
+    Grade thresholds: A+ ≥ 0.80 · A ≥ 0.60 · B ≥ 0.40 · C ≥ 0.20 · D otherwise.
+    """
     if not mts_pass:
         return "F"
     if tzg >= 0.80: return "A+"
@@ -610,6 +620,11 @@ def generate_fruit_loss_records(submissions: pd.DataFrame) -> pd.DataFrame:
 # =============================================================================
 
 def main():
+    """Entry point: run all four EDI table generation functions in sequence.
+
+    Generates grower register, maturity readings, pallet submissions, and
+    fruit loss records. Writes CSV outputs to 01_data_raw/zgl_edi_simulation/.
+    """
     print("=" * 70)
     print("  APOPHENIA — EDI Simulation Data Generation  [v2 — recalibrated]")
     print("  Industry Quality Manual 2026 | Grower Payments Booklet 2026")

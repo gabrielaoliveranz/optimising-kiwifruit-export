@@ -85,6 +85,11 @@ TASTE_MAX    = 0.95    # NZD/tray max taste bonus
 log_lines = []
 
 def log(msg: str, level: str = "INFO"):
+    """Emit a formatted log line to stdout and append it to the run log buffer.
+
+    Level tags: INFO ✅ · WARN ⚠️ · ERROR ❌ · FIND 🔍.
+    All lines are collected in log_lines for inclusion in the transform report.
+    """
     tag = {"INFO": "✅", "WARN": "⚠️ ", "ERROR": "❌", "FIND": "🔍"}.get(level, "•")
     line = f"  {tag} {msg}"
     print(line)
@@ -96,6 +101,12 @@ def log(msg: str, level: str = "INFO"):
 # =============================================================================
 
 def load_sources() -> dict:
+    """Load all cleaned source files from 02_data_processed/ and the EDI simulation folder.
+
+    Returns a dict keyed by source name (e.g. 'nzta_daily', 'zgl_maturity').
+    Missing files are logged as WARN or ERROR; the pipeline continues with
+    whatever data is available so partial runs can still produce output.
+    """
     log("Loading all cleaned source files...")
 
     sources = {}
@@ -603,6 +614,11 @@ def build_fact_table(sources: dict, dim_time: pd.DataFrame,
 
     # OTIF formula — identical to Apophenia simulator
     def compute_otif(row):
+        """Compute OTIF% for one submission row using the Apophenia simulator formula.
+
+        Applies congestion, rainfall, regulatory, and MTS-breach penalties to
+        OTIF_BASE. Floor is 52.0 to avoid implausibly low scores.
+        """
         cong_f = (row["congestion_index"] / 100) ** 1.3
         rain_f = (min(row["rainfall_mm_7d"], 120) / 120) ** 1.2
         reg_f  = (row["reg_index"] / 100) ** 1.2
@@ -616,6 +632,11 @@ def build_fact_table(sources: dict, dim_time: pd.DataFrame,
     # ── Risk Score ─────────────────────────────────────────────────────────
     # Identical formula to Apophenia simulator STATE computation
     def compute_risk_score(row):
+        """Compute risk score (1–100) for one row, matching Apophenia simulator logic.
+
+        Weighted combination of DM factor, pest, congestion, rainfall, and regulatory
+        inputs via a logistic-sigmoid on DM and power-law scaling on logistics factors.
+        """
         import math
         dm        = row["dm_pct_avg"]
         pest      = row.get("pest_indicator_x", 20)   # default if not joined
@@ -708,6 +729,11 @@ def build_fact_table(sources: dict, dim_time: pd.DataFrame,
 # =============================================================================
 
 def write_transform_report(tables: dict):
+    """Write a Markdown transform report summarising row counts and schema for each output table.
+
+    Saves to 02_data_processed/transform_report.md. Includes table grain, key counts,
+    and the full run log captured in log_lines during this pipeline execution.
+    """
     now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
     lines = [
@@ -814,6 +840,12 @@ def write_transform_report(tables: dict):
 # =============================================================================
 
 def main():
+    """Entry point: orchestrate full ETL Phase 2 — star schema assembly.
+
+    Loads all cleaned sources, builds all dimension and fact tables, writes
+    Parquet and CSV outputs to 02_data_processed/, and generates a Markdown
+    transform report summarising the run.
+    """
     print("=" * 70)
     print("  OPTIMISING KIWIFRUIT EXPORT — ETL Phase 2: Star Schema Assembly")
     print("  APOPHENIA | Gabriela Olivera | Data Analytics Portfolio")
