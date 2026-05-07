@@ -39,13 +39,15 @@ const APO = (() => {
   /* ── RISK MODEL (Calibrated against public industry quality standards) ─── */
   function _computeRisk() {
     const s = _state.sliders;
-    const dm   = s.dm < 15.5 ? 40 * Math.exp(-(s.dm - 14) / 1.5) : s.dm < 16.1 ? 10 : 0;
-    const pest = s.pest * 0.28;
-    const rain = Math.max(0, s.rain - 15) * 0.32;
-    const cong = s.cong * 0.22;
-    const reg  = s.reg  * 0.12;
-    const vsi  = (s.cong > 55 && s.dwell > 20) ? 10 : 0;
-    const raw  = dm + pest + rain + cong + reg + vsi;
+    const dm      = s.dm < 15.5 ? 40 * Math.exp(-(s.dm - 14) / 1.5) : s.dm < 16.1 ? 10 : 0;
+    const pest    = s.pest    * 0.28;
+    const rain    = Math.max(0, s.rain - 15) * 0.32;
+    const cong    = s.cong    * 0.22;
+    const reg     = s.reg     * 0.12;
+    const vsi     = (s.cong > 55 && s.dwell > 20) ? 10 : 0;
+    const cyclone = s.cyclone * 0.10;
+    const frost   = s.frost   * 0.08;
+    const raw     = dm + pest + rain + cong + reg + vsi + cyclone + frost;
     return Math.round(100 / (1 + Math.exp(-0.06 * (raw - 50))));
   }
 
@@ -695,11 +697,13 @@ const APO = (() => {
   function _updateHeatmap() {
     const el=document.getElementById('heatmap'); if(!el) return;
     if(!el.children.length) for(let i=0;i<50;i++){const d=document.createElement('div');d.className='hm-cell';el.appendChild(d);}
-    const p=_state.sliders.pest;
+    const p=_state.sliders.pest, cy=_state.sliders.cyclone, fr=_state.sliders.frost;
+    // Zone multipliers: cyclone peaks coastal (zone 0), frost peaks inland (zone 4)
+    const cyM=[1.3,1.2,1.0,0.8,0.7], frM=[0.7,0.8,1.0,1.2,1.3];
     Array.from(el.children).forEach((c,i)=>{
       const zone=Math.floor(i/10);
       const zp=[p*.7,p*.8,p*.9,p*1.2,p*1.45][zone]||p;
-      const val=Math.max(0,Math.min(100,zp+(Math.random()-.5)*14));
+      const val=Math.max(0,Math.min(100,zp+cy*0.10*cyM[zone]+fr*0.08*frM[zone]+(Math.random()-.5)*14));
       const t=val/100;
       c.style.background=`rgba(${Math.round(_lerp(0,239,t))},${Math.round(_lerp(99,68,t))},${Math.round(_lerp(56,68,t))},${(0.18+t*0.62).toFixed(2)})`;
     });
@@ -1057,7 +1061,7 @@ const APO = (() => {
     const _sdef = CONFIG.sliders.find(s => s.id === key); const unit = _sdef ? _sdef.unit : '';
     const d=document.getElementById('sv_'+key);
     if(d) d.innerHTML=val+`<span class="si-unit">${unit}</span>`;
-    _updateDOM(); _drawGis(); _updateCharts(); _updateReport();
+    _updateDOM(); _drawGis(); _updateCharts(); _updateReport(); _updateHeatmap();
   }
 
   /* ── KEYBOARD TAB NAV ───────────────────────────────────────── */

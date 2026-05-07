@@ -25,20 +25,24 @@ function _clamp(key, raw) {
 
 function computeRisk(raw) {
   const s = {
-    dm:    _clamp('dm',    raw.dm),
-    pest:  _clamp('pest',  raw.pest),
-    cong:  _clamp('cong',  raw.cong),
-    rain:  _clamp('rain',  raw.rain),
-    reg:   _clamp('reg',   raw.reg),
-    dwell: _clamp('dwell', raw.dwell),
+    dm:      _clamp('dm',      raw.dm),
+    pest:    _clamp('pest',    raw.pest),
+    cong:    _clamp('cong',    raw.cong),
+    rain:    _clamp('rain',    raw.rain),
+    reg:     _clamp('reg',     raw.reg),
+    dwell:   _clamp('dwell',   raw.dwell),
+    cyclone: _clamp('cyclone', raw.cyclone),
+    frost:   _clamp('frost',   raw.frost),
   };
-  const dm   = s.dm < 15.5 ? 40 * Math.exp(-(s.dm - 14) / 1.5) : s.dm < 16.1 ? 10 : 0;
-  const pest = s.pest * 0.28;
-  const rain = Math.max(0, s.rain - 15) * 0.32;
-  const cong = s.cong * 0.22;
-  const reg  = s.reg  * 0.12;
-  const vsi  = (s.cong > 55 && s.dwell > 20) ? 10 : 0;
-  const total = dm + pest + rain + cong + reg + vsi;
+  const dm      = s.dm < 15.5 ? 40 * Math.exp(-(s.dm - 14) / 1.5) : s.dm < 16.1 ? 10 : 0;
+  const pest    = s.pest    * 0.28;
+  const rain    = Math.max(0, s.rain - 15) * 0.32;
+  const cong    = s.cong    * 0.22;
+  const reg     = s.reg     * 0.12;
+  const vsi     = (s.cong > 55 && s.dwell > 20) ? 10 : 0;
+  const cyclone = s.cyclone * 0.10;
+  const frost   = s.frost   * 0.08;
+  const total   = dm + pest + rain + cong + reg + vsi + cyclone + frost;
   return Math.round(100 / (1 + Math.exp(-0.06 * (total - 50))));
 }
 
