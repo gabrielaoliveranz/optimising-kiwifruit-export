@@ -61,7 +61,7 @@ optimising-kiwifruit-export/
 │   └── sprint_logs/            ← architectural decisions and rationale per sprint
 │
 ├── 01_data_raw/
-│   └── zgl_edi_simulation/     ← synthetic EDI CSVs (grower register, maturity readings,
+│   └── synthetic_edi_simulation/  ← synthetic EDI CSVs (grower register, maturity readings,
 │                                  pallet submissions, fruit loss records)
 │
 ├── 02_data_processed/
@@ -115,7 +115,7 @@ optimising-kiwifruit-export/
 
 | Module | Inputs | Outputs |
 |--------|--------|---------|
-| `generate_edi_simulation.py` | None (standalone generator) | `01_data_raw/zgl_edi_simulation/*.csv` — 4 tables, 4 synthetic seasons |
+| `generate_edi_simulation.py` | None (standalone generator) | `01_data_raw/synthetic_edi_simulation/synthetic_*.csv` — 4 tables, 4 synthetic seasons |
 | `02_clean_raw_data.py` | Raw public datasets (Stats NZ, NZTA) | `02_data_processed/*.csv` — cleaned, validated |
 | `03_transform.py` | Cleaned CSVs + EDI simulation | `02_data_processed/kiwifruit_export.db` — star schema |
 | `04_load.py` | Transformed tables | SQLite load confirmation + integrity report |
