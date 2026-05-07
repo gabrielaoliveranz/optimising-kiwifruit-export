@@ -2,6 +2,10 @@
 >
 > APOPHENIA answers that question.
 
+![APOPHENIA executive dashboard](06_simulator/assets/preview/hero.png)
+
+![APOPHENIA dashboard demo](06_simulator/assets/preview/dashboard-demo.gif)
+
 # APOPHENIA™
 
 **Operational Risk Intelligence Simulator — NZ Kiwifruit Export**
