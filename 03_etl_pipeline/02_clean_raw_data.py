@@ -779,7 +779,7 @@ def write_audit_report(results: dict):
         "3. If TMS files contain no BOP data: download BOP-specific export from",
         "   NZTA OpenData portal (filter Region 04 before download)",
         "4. Resolve horticulture survey encoding — open in Excel, re-save as UTF-8 CSV",
-        "5. Generate EDI simulation data (`01_data_raw/zgl_edi_simulation/`)",
+        "5. Generate EDI simulation data (`01_data_raw/synthetic_edi_simulation/`)",
         "",
         "---",
         "",

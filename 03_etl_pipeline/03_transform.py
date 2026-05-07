@@ -38,14 +38,14 @@ HOW TO RUN:
   python 03_etl_pipeline/03_transform.py
   Run from project root: G:\\My Drive\\optimising-kiwifruit-export\\
 
-INPUTS (from 02_data_processed/ and 01_data_raw/zgl_edi_simulation/):
+INPUTS (from 02_data_processed/ and 01_data_raw/synthetic_edi_simulation/):
   nzta_daily_bop_clean.csv
   nzta_sh2_bop_clean.csv
   stats_nz_exports_clean.csv
   stats_nz_horticulture_clean.csv
-  zgl_maturity_readings.csv
-  zgl_pallet_submissions.csv
-  zgl_grower_register.csv
+  synthetic_maturity_readings.csv
+  synthetic_pallet_submissions.csv
+  synthetic_grower_register.csv
 
 OUTPUTS (all in 02_data_processed/star_schema/):
   dim_time.csv
@@ -71,7 +71,7 @@ warnings.filterwarnings("ignore")
 
 PROJECT_ROOT = Path(__file__).parent.parent
 PROCESSED    = PROJECT_ROOT / "02_data_processed"
-ZGL_SIM      = PROJECT_ROOT / "01_data_raw" / "zgl_edi_simulation"
+SYN_SIM      = PROJECT_ROOT / "01_data_raw" / "synthetic_edi_simulation"
 STAR         = PROCESSED / "star_schema"
 STAR.mkdir(exist_ok=True)
 
@@ -143,12 +143,12 @@ def load_sources() -> dict:
 
     # EDI simulation
     for name, fname in [
-        ("zgl_maturity",    "zgl_maturity_readings.csv"),
-        ("zgl_submissions", "zgl_pallet_submissions.csv"),
-        ("zgl_growers",     "zgl_grower_register.csv"),
-        ("zgl_losses",      "zgl_fruit_loss_records.csv"),
+        ("syn_maturity",    "synthetic_maturity_readings.csv"),
+        ("syn_submissions", "synthetic_pallet_submissions.csv"),
+        ("syn_growers",     "synthetic_grower_register.csv"),
+        ("syn_losses",      "synthetic_fruit_loss_records.csv"),
     ]:
-        p = ZGL_SIM / fname
+        p = SYN_SIM / fname
         if p.exists():
             sources[name] = pd.read_csv(p, low_memory=False)
             log(f"{fname} → {len(sources[name]):,} rows")
@@ -436,11 +436,11 @@ def build_dim_fruit_quality(sources: dict) -> pd.DataFrame:
     """
     log("Building Dim_FruitQuality...")
 
-    if "zgl_maturity" not in sources:
-        log("zgl_maturity_readings.csv not found", "ERROR")
+    if "syn_maturity" not in sources:
+        log("synthetic_maturity_readings.csv not found", "ERROR")
         return pd.DataFrame()
 
-    mat = sources["zgl_maturity"].copy()
+    mat = sources["syn_maturity"].copy()
 
     # Derive growing method
     mat["growing_method"] = mat["variety"].apply(
@@ -500,11 +500,11 @@ def build_dim_grower(sources: dict, dim_corridor: pd.DataFrame) -> pd.DataFrame:
     """
     log("Building Dim_Grower...")
 
-    if "zgl_growers" not in sources:
-        log("zgl_grower_register.csv not found", "ERROR")
+    if "syn_growers" not in sources:
+        log("synthetic_grower_register.csv not found", "ERROR")
         return pd.DataFrame()
 
-    growers = sources["zgl_growers"].copy()
+    growers = sources["syn_growers"].copy()
 
     # Join corridor_key from dim_corridor
     growers = growers.merge(
@@ -567,11 +567,11 @@ def build_fact_table(sources: dict, dim_time: pd.DataFrame,
     """
     log("Building Fact_ExportTransactions...")
 
-    if "zgl_submissions" not in sources:
-        log("zgl_pallet_submissions.csv not found", "ERROR")
+    if "syn_submissions" not in sources:
+        log("synthetic_pallet_submissions.csv not found", "ERROR")
         return pd.DataFrame()
 
-    subs = sources["zgl_submissions"].copy()
+    subs = sources["syn_submissions"].copy()
 
     # ── Join fruit_key from dim_fruit_quality ──────────────────────────────
     fruit_keys = dim_fruit[["fruit_key", "kpin", "season", "pack_week"]].copy()

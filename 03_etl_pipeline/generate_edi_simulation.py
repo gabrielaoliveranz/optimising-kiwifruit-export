@@ -30,11 +30,11 @@ SEASON LOGIC:
   and each subzone has a mean offset and its own std modifier.
   This produces realistic within-season AND between-season variation.
 
-OUTPUTS (01_data_raw/zgl_edi_simulation/):
-  zgl_grower_register.csv      445 growers, 5 BOP subzones
-  zgl_maturity_readings.csv    28,480 DM readings (4 seasons × 445 × 16 weeks)
-  zgl_pallet_submissions.csv   ~180K-220K submission records
-  zgl_fruit_loss_records.csv   Loss events with CCP cause codes
+OUTPUTS (01_data_raw/synthetic_edi_simulation/):
+  synthetic_grower_register.csv      445 growers, 5 BOP subzones
+  synthetic_maturity_readings.csv    28,480 DM readings (4 seasons × 445 × 16 weeks)
+  synthetic_pallet_submissions.csv   ~180K-220K submission records
+  synthetic_fruit_loss_records.csv   Loss events with CCP cause codes
 =============================================================================
 """
 
@@ -48,7 +48,7 @@ from datetime import date, timedelta
 # =============================================================================
 
 PROJECT_ROOT = Path(__file__).parent.parent
-OUTPUT_DIR   = PROJECT_ROOT / "01_data_raw" / "zgl_edi_simulation"
+OUTPUT_DIR   = PROJECT_ROOT / "01_data_raw" / "synthetic_edi_simulation"
 OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
 
 RANDOM_SEED = 42
@@ -334,8 +334,8 @@ def generate_grower_register() -> pd.DataFrame:
             kpin += 1
 
     df = pd.DataFrame(rows)
-    df.to_csv(OUTPUT_DIR / "zgl_grower_register.csv", index=False)
-    print(f"  ✅ zgl_grower_register.csv — {len(df)} growers | "
+    df.to_csv(OUTPUT_DIR / "synthetic_grower_register.csv", index=False)
+    print(f"  ✅ synthetic_grower_register.csv — {len(df)} growers | "
           f"PSA history: {df['psa_history'].mean():.1%} of growers")
     return df
 
@@ -415,9 +415,9 @@ def generate_maturity_readings(growers: pd.DataFrame) -> pd.DataFrame:
                 })
 
     df = pd.DataFrame(rows)
-    df.to_csv(OUTPUT_DIR / "zgl_maturity_readings.csv", index=False)
+    df.to_csv(OUTPUT_DIR / "synthetic_maturity_readings.csv", index=False)
     fail_rate = (~df["mts_pass"]).mean()
-    print(f"  ✅ zgl_maturity_readings.csv — {len(df):,} readings | "
+    print(f"  ✅ synthetic_maturity_readings.csv — {len(df):,} readings | "
           f"MTS fail rate: {fail_rate:.1%} (target: 6-12%)")
     return df
 
@@ -529,12 +529,12 @@ def generate_pallet_submissions(growers: pd.DataFrame,
                 })
 
     df = pd.DataFrame(rows)
-    df.to_csv(OUTPUT_DIR / "zgl_pallet_submissions.csv", index=False)
+    df.to_csv(OUTPUT_DIR / "synthetic_pallet_submissions.csv", index=False)
 
     total_trays = df["trays_submitted"].sum()
     total_ret_m = df["total_return_nzd"].sum() / 1_000_000
     mts_fail    = (~df["mts_pass"]).mean()
-    print(f"  ✅ zgl_pallet_submissions.csv — {len(df):,} submissions | "
+    print(f"  ✅ synthetic_pallet_submissions.csv — {len(df):,} submissions | "
           f"{total_trays:,.0f} trays | "
           f"NZD {total_ret_m:,.1f}M | MTS fail: {mts_fail:.1%}")
     return df
@@ -609,9 +609,9 @@ def generate_fruit_loss_records(submissions: pd.DataFrame) -> pd.DataFrame:
         })
 
     df = pd.DataFrame(rows)
-    df.to_csv(OUTPUT_DIR / "zgl_fruit_loss_records.csv", index=False)
+    df.to_csv(OUTPUT_DIR / "synthetic_fruit_loss_records.csv", index=False)
     mts_count = (df["primary_cause"] == "MTS_BREACH").sum()
-    print(f"  ✅ zgl_fruit_loss_records.csv — {len(df):,} loss events | "
+    print(f"  ✅ synthetic_fruit_loss_records.csv — {len(df):,} loss events | "
           f"MTS breach: {mts_count:,} | "
           f"Market block risk: {df['market_block_risk'].sum():,}")
     return df
@@ -625,7 +625,7 @@ def main():
     """Entry point: run all four EDI table generation functions in sequence.
 
     Generates grower register, maturity readings, pallet submissions, and
-    fruit loss records. Writes CSV outputs to 01_data_raw/zgl_edi_simulation/.
+    fruit loss records. Writes CSV outputs to 01_data_raw/synthetic_edi_simulation/.
     """
     print("=" * 70)
     print("  APOPHENIA — EDI Simulation Data Generation  [v2 — recalibrated]")
