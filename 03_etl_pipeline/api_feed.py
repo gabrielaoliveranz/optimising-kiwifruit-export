@@ -1,6 +1,6 @@
-"""
+﻿"""
 =============================================================================
-OPTIMISING KIWIFRUIT EXPORT PERFORMANCE — ZGL 2026
+OPTIMISING KIWIFRUIT EXPORT PERFORMANCE — APOPHENIA 2026
 Script: 07_api_feed.py
 Stage: Integration — SQLite DB → Apophenia Simulator JSON Feed
 Author: Gabriela Olivera | Data Analytics Portfolio
@@ -82,7 +82,7 @@ OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
 # NZ timezone offset
 NZ_TZ = timezone(timedelta(hours=12))
 
-# ZGL 2026 constants — must match simulator
+# 2026 calibration constants — must match simulator
 REG_INDEX_DEFAULT = 15.0   # regulatory compliance baseline
 
 # =============================================================================
@@ -335,7 +335,7 @@ def fetch_live_apis(agg: dict) -> dict:
             data=post_data,
             method="POST",
             headers={"Content-Type": "application/x-www-form-urlencoded",
-                     "User-Agent": "APOPHENIA-ZGL/4.0 (portfolio; contact via GitHub)"},
+                     "User-Agent": "APOPHENIA/4.0 (portfolio; contact via GitHub)"},
         )
         with urllib.request.urlopen(req, timeout=5) as resp:
             op = json.loads(resp.read().decode("utf-8"))

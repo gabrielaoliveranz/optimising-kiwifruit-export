@@ -1,6 +1,6 @@
-"""
+﻿"""
 =============================================================================
-OPTIMISING KIWIFRUIT EXPORT PERFORMANCE — ZGL 2026
+OPTIMISING KIWIFRUIT EXPORT PERFORMANCE — APOPHENIA 2026
 Script: 05_sql_analysis.py
 Stage: Analysis — 6 SQL Queries against kiwifruit_export.db
 Author: Gabriela Olivera | Data Analytics Portfolio
@@ -123,7 +123,7 @@ crosses ~40% (congFactor = 0.4^1.3 ≈ 0.30, causing >2.5pt OTIF drop).
 ("Q3", "DM% Elasticity — TZG Payment & Return per 0.1% DM",
 """
 Research Question 3: What is the NZD elasticity of DM%?
-How much is each additional 0.1% DM worth in Taste Zespri Payment?
+How much is each additional 0.1% DM worth in Quality Bonus Payment?
 """,
 """
 SELECT
@@ -298,7 +298,7 @@ def run_queries():
     print("=" * 70)
     print("  OPTIMISING KIWIFRUIT EXPORT — SQL Analysis")
     print("  6 Research Questions | kiwifruit_export.db")
-    print("  ZGL 2026 | Gabriela Olivera | Data Analytics Portfolio")
+    print("  APOPHENIA | Gabriela Olivera | Data Analytics Portfolio")
     print("=" * 70)
 
     if not DB_PATH.exists():

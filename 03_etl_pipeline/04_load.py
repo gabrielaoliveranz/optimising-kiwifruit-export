@@ -1,6 +1,6 @@
-"""
+﻿"""
 =============================================================================
-OPTIMISING KIWIFRUIT EXPORT PERFORMANCE — ZGL 2026
+OPTIMISING KIWIFRUIT EXPORT PERFORMANCE — APOPHENIA 2026
 Script: 04_load.py
 Stage: ETL Phase 3 — Load Star Schema into SQLite Database
 Author: Gabriela Olivera | Data Analytics Portfolio
@@ -347,7 +347,7 @@ VALIDATION_QUERIES = {
 def main():
     print("=" * 70)
     print("  OPTIMISING KIWIFRUIT EXPORT — ETL Phase 3: Load to SQLite")
-    print("  ZGL 2026 | Gabriela Olivera | Data Analytics Portfolio")
+    print("  APOPHENIA | Gabriela Olivera | Data Analytics Portfolio")
     print("=" * 70)
     print()
 

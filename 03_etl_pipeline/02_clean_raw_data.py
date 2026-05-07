@@ -1,6 +1,6 @@
-"""
+﻿"""
 =============================================================================
-OPTIMISING KIWIFRUIT EXPORT PERFORMANCE — ZGL 2026
+OPTIMISING KIWIFRUIT EXPORT PERFORMANCE — APOPHENIA 2026
 Script: 02_clean_raw_data.py
 Stage: ETL Phase 1 — Raw Data Cleaning & Filtering
 Author: Gabriela Olivera | Data Analytics Portfolio
@@ -68,7 +68,7 @@ RAW_STATS    = PROJECT_ROOT / "01_data_raw" / "stats_nz"
 PROCESSED    = PROJECT_ROOT / "02_data_processed"
 PROCESSED.mkdir(exist_ok=True)
 
-# ZGL 2026 calibration constants
+# 2026 calibration constants
 BOP_REGION_CODE  = "04 - Bay of Plenty"
 SH2_PREFIX       = "002"
 SEASON_MONTHS    = [3, 4, 5, 6]        # Pack weeks 11-26 = March → June
@@ -699,7 +699,7 @@ def write_audit_report(results: dict):
     lines = [
         "# Data Integrity Audit Report",
         f"**Generated:** {now}  ",
-        "**Project:** Optimising Kiwifruit Export Performance — ZGL 2026  ",
+        "**Project:** OPTIMISING KIWIFRUIT EXPORT PERFORMANCE — APOPHENIA 2026  ",
         "**Author:** Gabriela Olivera | Data Analytics Portfolio  ",
         "",
         "---",
@@ -777,11 +777,11 @@ def write_audit_report(results: dict):
         "3. If TMS files contain no BOP data: download BOP-specific export from",
         "   NZTA OpenData portal (filter Region 04 before download)",
         "4. Resolve horticulture survey encoding — open in Excel, re-save as UTF-8 CSV",
-        "5. Generate ZGL EDI simulation data (`01_data_raw/zgl_edi_simulation/`)",
+        "5. Generate EDI simulation data (`01_data_raw/zgl_edi_simulation/`)",
         "",
         "---",
         "",
-        "*Calibrated against ZGL Quality Manual 2026 | Grower Payments Booklet 2026*  ",
+        "*Calibrated against industry Quality Manual 2026 | Grower Payments Booklet 2026*  ",
         "*Gabriela Olivera | Data Analytics Portfolio*  ",
     ]
 
@@ -798,7 +798,7 @@ def write_audit_report(results: dict):
 def main():
     print("=" * 70)
     print("  OPTIMISING KIWIFRUIT EXPORT — ETL Phase 1: Raw Data Cleaning")
-    print("  ZGL 2026 | Gabriela Olivera | Data Analytics Portfolio")
+    print("  APOPHENIA | Gabriela Olivera | Data Analytics Portfolio")
     print("=" * 70)
     print()
 

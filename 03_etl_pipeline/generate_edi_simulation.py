@@ -1,8 +1,8 @@
-"""
+﻿"""
 =============================================================================
-OPTIMISING KIWIFRUIT EXPORT PERFORMANCE — ZGL 2026
-Script: generate_zgl_edi_simulation.py  [v2 — recalibrated]
-Stage: ETL Phase 0 — Synthetic ZGL EDI Data Generation
+OPTIMISING KIWIFRUIT EXPORT PERFORMANCE — APOPHENIA 2026
+Script: generate_edi_simulation.py  [v2 — recalibrated]
+Stage: ETL Phase 0 — Synthetic EDI Data Generation
 Author: Gabriela Olivera | Data Analytics Portfolio
 =============================================================================
 
@@ -10,7 +10,7 @@ CALIBRATION CHANGES v1 → v2:
   1. MTS fail rate: 33% → target 6-12%
      - Reduced dm_season_std from 0.85-1.10 → 0.45-0.65
      - Increased dm_season_avg for difficult years to stay above MTS floor
-     - Rationale: ZGL publicly reports ~5-10% reject rates at maturity gate
+     - Rationale: industry benchmarks report ~5-10% reject rates at maturity gate
 
   2. Total returns: NZD 4-6M → target ~280-320M per season
      - Recalibrated yield_trays_per_ha to reflect real BOP productivity
@@ -32,7 +32,7 @@ OUTPUTS (01_data_raw/zgl_edi_simulation/):
   zgl_grower_register.csv      445 growers, 5 BOP subzones
   zgl_maturity_readings.csv    28,480 DM readings (4 seasons × 445 × 16 weeks)
   zgl_pallet_submissions.csv   ~180K-220K submission records
-  zgl_fruit_loss_records.csv   Loss events with ZGL CCP cause codes
+  zgl_fruit_loss_records.csv   Loss events with CCP cause codes
 =============================================================================
 """
 
@@ -53,7 +53,7 @@ RANDOM_SEED = 42
 rng = np.random.default_rng(RANDOM_SEED)
 
 # =============================================================================
-# ZGL 2026 CALIBRATION CONSTANTS
+# CALIBRATION CONSTANTS
 # =============================================================================
 
 MTS = {
@@ -261,9 +261,9 @@ def dm_seasonal_arc(pack_week: int, season_avg: float,
 
 def compute_tzg(dm: float, variety: str) -> float:
     """
-    Compute Taste Zespri Grade score (0.0 → 1.0 Green, 0.0 → 0.86 SunGold).
+    Compute Taste Grade score (0.0 → 1.0 Green, 0.0 → 0.86 SunGold).
     Returns 0.0 if dm < MTS — no taste payment on failed fruit.
-    Calibrated to ZGL Grower Payments Booklet 2026.
+    Calibrated to industry Grower Payments standards 2026.
     """
     if "SunGold" in variety or "Gold" in variety:
         mts_key, max_tzg = "SunGold", 0.86
@@ -336,7 +336,7 @@ def generate_maturity_readings(growers: pd.DataFrame) -> pd.DataFrame:
     """
     One DM% reading per KPIN × pack week × season = 28,480 records.
 
-    Each reading = pool composite of 90 fruit (ZGL QM 2026 spec).
+    Each reading = pool composite of 90 fruit (industry QM 2026 spec).
 
     Grower persistent effect: drawn once per grower, applied every season.
     This models real-world grower management quality — some consistently
@@ -428,7 +428,7 @@ def generate_pallet_submissions(growers: pd.DataFrame,
     a sample of the BOP grower pool, not the full population.
     Financial outputs are scaled accordingly in 03_transform.py.
 
-    Payment logic (ZGL Grower Payments Booklet 2026):
+    Payment logic (Grower Payments Booklet 2026):
     - Submit payment: always calculated on trays_submitted
     - MTS fail: submit payment reversed (total_return = 0)
     - Taste payment: TZG × $0.95 × trays_exported (only if MTS pass)
@@ -536,7 +536,7 @@ def generate_fruit_loss_records(submissions: pd.DataFrame) -> pd.DataFrame:
     """
     Individual loss event records for batches where trays_lost > 5.
 
-    CCP cause codes from ZGL Quality Manual 2026:
+    CCP cause codes from industry Quality Manual 2026:
     - PEST_CCP2/2A: pest index 0-40% (increased sampling)
     - PEST_CCP3:    pest index >40% Japan, >60% EU/US (market block)
     - MTS_BREACH:   DM below threshold — clearance rejection
@@ -611,8 +611,8 @@ def generate_fruit_loss_records(submissions: pd.DataFrame) -> pd.DataFrame:
 
 def main():
     print("=" * 70)
-    print("  ZGL EDI SIMULATION — Data Generation  [v2 — recalibrated]")
-    print("  ZGL Quality Manual 2026 | Grower Payments Booklet 2026")
+    print("  APOPHENIA — EDI Simulation Data Generation  [v2 — recalibrated]")
+    print("  Industry Quality Manual 2026 | Grower Payments Booklet 2026")
     print("  Seasons: 2022/23 → 2025/26 | Pack weeks 11–26")
     print("  Author: Gabriela Olivera | Data Analytics Portfolio")
     print("=" * 70)
@@ -670,8 +670,8 @@ def main():
         print(f"    {f.name:<42} {rows:>8,} rows  {size_kb:>7.1f} KB")
 
     print()
-    print("  ⚠️  All KPINs are fictional. No real Zespri grower data used.")
-    print("  ⚠️  Distributions calibrated from ZGL 2026 public standards only.")
+    print("  ⚠️  All KPINs are fictional. No real proprietary grower data used.")
+    print("  ⚠️  Distributions calibrated from industry 2026 public standards only.")
     print("=" * 70)
 
 

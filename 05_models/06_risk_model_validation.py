@@ -1,6 +1,6 @@
-"""
+﻿"""
 =============================================================================
-OPTIMISING KIWIFRUIT EXPORT PERFORMANCE — ZGL 2026
+OPTIMISING KIWIFRUIT EXPORT PERFORMANCE — APOPHENIA 2026
 Script: 06_risk_model_validation.py
 Stage: Modelling — Risk Score Validation via Logistic Regression
 Author: Gabriela Olivera | Data Analytics Portfolio
@@ -53,7 +53,7 @@ DB_PATH      = PROJECT_ROOT / "02_data_processed" / "star_schema" / "kiwifruit_e
 MODELS_DIR   = PROJECT_ROOT / "05_models"
 MODELS_DIR.mkdir(exist_ok=True)
 
-# ZGL 2026 constants — must match simulator and ETL pipeline
+# 2026 calibration constants — must match simulator and ETL pipeline
 MTS_GREEN   = 15.5
 MTS_SUNGOLD = 16.1
 OTIF_TARGET = 88.0
@@ -494,7 +494,7 @@ def save_report(m1_metrics, m1_r2, m1_coefs,
     lines = [
         "# Risk Score Model Validation Report",
         f"**Generated:** {now}  ",
-        "**Project:** Optimising Kiwifruit Export Performance — ZGL 2026  ",
+        "**Project:** OPTIMISING KIWIFRUIT EXPORT PERFORMANCE — APOPHENIA 2026  ",
         "**Author:** Gabriela Olivera | Data Analytics Portfolio  ",
         "**Method:** Logistic Regression (binary classification)  ",
         "**Database:** kiwifruit_export.db — 17,592 transactions, 28,480 maturity readings  ",
@@ -547,7 +547,7 @@ def save_report(m1_metrics, m1_r2, m1_coefs,
         "",
         "## Model 2 — OTIF < 88% Prediction",
         "",
-        "**Target:** `otif_pct < 88` (below ZGL operations target)  ",
+        "**Target:** `otif_pct < 88` (below industry operations target)  ",
         "**Dataset:** `fact_export_transactions` — 17,592 submissions  ",
         "",
         "| Metric | Value |",
@@ -608,13 +608,13 @@ def save_report(m1_metrics, m1_r2, m1_coefs,
         "(Q5 SQL analysis). The model has strong binary discriminative power "
         "at the ELEVATED threshold.",
         "",
-        "5. **Each 0.1% DM above MTS adds ~$0.021/tray** in Taste Zespri "
+        "5. **Each 0.1% DM above MTS adds ~$0.021/tray** in quality bonus "
         "Payment, with a non-linear cliff at the MTS threshold "
         "(Q3 elasticity analysis).",
         "",
         "---",
         "",
-        "*Calibrated against ZGL Quality Manual 2026 | Grower Payments Booklet 2026*  ",
+        "*Calibrated against industry Quality Manual 2026 | Grower Payments Booklet 2026*  ",
         "*Gabriela Olivera | Data Analytics Portfolio*  ",
     ]
 
@@ -631,7 +631,7 @@ def save_report(m1_metrics, m1_r2, m1_coefs,
 def main():
     print("=" * 70)
     print("  OPTIMISING KIWIFRUIT EXPORT — Risk Score Model Validation")
-    print("  Logistic Regression | ZGL 2026")
+    print("  Logistic Regression | APOPHENIA 2026")
     print("  Gabriela Olivera | Data Analytics Portfolio")
     print("=" * 70)
     print()

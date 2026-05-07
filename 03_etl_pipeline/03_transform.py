@@ -1,6 +1,6 @@
-"""
+﻿"""
 =============================================================================
-OPTIMISING KIWIFRUIT EXPORT PERFORMANCE — ZGL 2026
+OPTIMISING KIWIFRUIT EXPORT PERFORMANCE — APOPHENIA 2026
 Script: 03_transform.py
 Stage: ETL Phase 2 — Star Schema Assembly & Normalisation
 Author: Gabriela Olivera | Data Analytics Portfolio
@@ -73,7 +73,7 @@ ZGL_SIM      = PROJECT_ROOT / "01_data_raw" / "zgl_edi_simulation"
 STAR         = PROCESSED / "star_schema"
 STAR.mkdir(exist_ok=True)
 
-# ZGL 2026 constants — identical to simulator and generator
+# 2026 calibration constants — must match simulator and generator
 MTS_GREEN    = 15.5
 MTS_SUNGOLD  = 16.1
 MTS_RUBY     = 17.2
@@ -128,7 +128,7 @@ def load_sources() -> dict:
         sources["stats_exports"] = pd.read_csv(p)
         log(f"stats_nz_exports_clean.csv → {len(sources['stats_exports'])} rows")
 
-    # ZGL EDI simulation
+    # EDI simulation
     for name, fname in [
         ("zgl_maturity",    "zgl_maturity_readings.csv"),
         ("zgl_submissions", "zgl_pallet_submissions.csv"),
@@ -232,7 +232,7 @@ def fix_stats_nz_fob(sources: dict) -> pd.DataFrame:
 
 def build_dim_time(sources: dict) -> pd.DataFrame:
     """
-    Build Dim_Time from NZTA traffic dates + ZGL submission dates.
+    Build Dim_Time from NZTA traffic dates + EDI submission dates.
 
     Covers: 2018-01-01 → 2026-09-30
     Grain: one row per calendar date
@@ -408,7 +408,7 @@ def build_dim_corridor(sources: dict) -> pd.DataFrame:
 
 def build_dim_fruit_quality(sources: dict) -> pd.DataFrame:
     """
-    Build Dim_FruitQuality from ZGL maturity readings.
+    Build Dim_FruitQuality from maturity readings.
 
     Grain: one row per KPIN × season × pack_week
     Primary key: fruit_key (auto-increment)
@@ -440,7 +440,7 @@ def build_dim_fruit_quality(sources: dict) -> pd.DataFrame:
     # Pest indicator from PSA penalty flag
     mat["pest_indicator"] = mat["psa_penalty_applied"].astype(int)
 
-    # Maturity area = KPIN + pack_week (ZGL QM definition)
+    # Maturity area = KPIN + pack_week (quality manual definition)
     mat["maturity_area"] = mat["kpin"].astype(str) + "_" + mat["pack_week"].astype(str)
 
     # Select and rename to match Data Dictionary
@@ -713,7 +713,7 @@ def write_transform_report(tables: dict):
     lines = [
         "# ETL Transform Report — Star Schema Assembly",
         f"**Generated:** {now}  ",
-        "**Project:** Optimising Kiwifruit Export Performance — ZGL 2026  ",
+        "**Project:** OPTIMISING KIWIFRUIT EXPORT PERFORMANCE — APOPHENIA 2026  ",
         "**Author:** Gabriela Olivera | Data Analytics Portfolio  ",
         "",
         "---",
@@ -816,7 +816,7 @@ def write_transform_report(tables: dict):
 def main():
     print("=" * 70)
     print("  OPTIMISING KIWIFRUIT EXPORT — ETL Phase 2: Star Schema Assembly")
-    print("  ZGL 2026 | Gabriela Olivera | Data Analytics Portfolio")
+    print("  APOPHENIA | Gabriela Olivera | Data Analytics Portfolio")
     print("=" * 70)
     print()
 
