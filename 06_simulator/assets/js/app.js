@@ -572,7 +572,7 @@ const APO = (() => {
     _setText('gs_return',  '$'+(_state.totalReturn/1e6).toFixed(1)+'M');
     _setText('simAgentCount', _state.agents.length);
     /* Analytics KPI strip */
-    _setVC('bi_kpi_exportval','$'+Math.round(sR/1e6)+'M','green');
+    _setVC('bi_kpi_exportval','$'+Math.round(sR)+'M','green');
     _setVC('bi_kpi_cod','$'+cod.toLocaleString(), cod>2000?'warn':'gold');
     _setVC('bi_kpi_risk', risk, risk>60?'crit':risk>25?'warn':'green');
     _setVC('bi_kpi_otif', otif+'%', otif>=90?'green':'warn');
