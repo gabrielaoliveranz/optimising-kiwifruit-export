@@ -126,7 +126,7 @@ export const CONFIG = Object.freeze({
       unit:         '%',
       defaultValue: 16.2,
       ticks:        ['14%', 'MTS 15.5%', '17.2%', '20%'],
-      defaultBadge: 'Baseline — TZG active'
+      defaultBadge: 'Baseline — Premium active'
     },
     {
       id:           'pest',

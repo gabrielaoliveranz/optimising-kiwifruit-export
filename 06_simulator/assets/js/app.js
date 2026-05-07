@@ -188,8 +188,8 @@ const APO = (() => {
     if(!ag.mts_pass) return 'CRITICAL: DM below 15.5% MTS threshold. Market access blocked. Do not submit.';
     if(ag.risk_score>60) return `High risk (${ag.risk_score}/100). Rainfall and congestion compounding delay. Prioritise cold storage upon arrival.`;
     if(ag.risk_score>25) return `Moderate risk (${ag.risk_score}/100). SH2 congestion at ${_state.sliders.cong}% — monitor DM erosion in transit.`;
-    if(ag.dm>17) return `Premium tier confirmed. DM ${ag.dm}% qualifies SunGold Ultra at ${_computePayment(ag.dm).rate}. TZG uplift active.`;
-    return `Stable conditions. TZG payments accruing at ${_computePayment(ag.dm).rate}. No corrective action required.`;
+    if(ag.dm>17) return `Premium tier confirmed. DM ${ag.dm}% qualifies SunGold Ultra at ${_computePayment(ag.dm).rate}. Premium uplift active.`;
+    return `Stable conditions. Premium tier payments accruing at ${_computePayment(ag.dm).rate}. No corrective action required.`;
   }
 
   /* ── MAPBOX REGIONAL MAP ────────────────────────────────────── */
@@ -496,7 +496,7 @@ const APO = (() => {
     _setText('riskScore', risk);
     const sc=document.getElementById('riskScore');
     if(sc) sc.className='rg-score'+(risk>60?' critical':risk>25?' warn':'');
-    _setText('riskVerdict', risk>60?'Critical risk. Immediate corrective action required. MTS breach imminent.':risk>25?'Elevated risk. Monitor SH2 congestion and DM levels closely.':'Low risk environment. Export operations within normal parameters. TZG payments accruing.');
+    _setText('riskVerdict', risk>60?'Critical risk. Immediate corrective action required. MTS breach imminent.':risk>25?'Elevated risk. Monitor SH2 congestion and DM levels closely.':'Low risk environment. Export operations within normal parameters. Premium tier payments accruing.');
     _setText('arcLabel', risk>60?'CRITICAL':risk>25?'ELEVATED':'LOW RISK');
     _drawArcGauge(risk);
     _updateHeroSparkline();
@@ -511,7 +511,7 @@ const APO = (() => {
     _setVC('kv_margin', mg+'%',         Math.abs(+mg)<3?'green':Math.abs(+mg)<8?'warn':'crit');
     const _kd=(id,up,txt)=>{const e=document.getElementById(id);if(e)e.innerHTML=(up?'<span class="up">▲</span>':'<span class="down">▼</span>')+' '+txt;};
     _kd('kd_otif',   otif>=90,          'On-Time In-Full · SH2 + Rainfall');
-    _kd('kd_returns', ret>=370,          'Seasonal estimate · TZG-adjusted');
+    _kd('kd_returns', ret>=370,          'Seasonal estimate · premium-adjusted');
     _kd('kd_freight', +fv<5,             'vs baseline · SH2 congestion driver');
     _kd('kd_margin',  Math.abs(+mg)<3,   'Net impact across DM + Logistics');
     /* Banners */
@@ -559,7 +559,7 @@ const APO = (() => {
       const o=Math.round(otif*(c.km<50?1.03:c.km>80?0.91:0.98)); const col=o>=90?'green':o>=75?'warn':'crit';
       return `<div class="corridor-item"><div class="corr-name">${c.name.split('–')[0]}</div><div class="corr-track"><div class="corr-fill ${col}" style="width:${o}%"></div></div><div class="corr-val">${o}%</div></div>`;
     }).join('');
-    /* TZG meter */
+    /* Quality meter */
     const tzg=Math.min(1,Math.max(0,(s.dm-15.5)/(17.5-15.5)));
     _setText('tzgCurrentVal', tzg.toFixed(2)); _setText('tzgScore', tzg.toFixed(2));
     const tf=document.getElementById('tzgBarFill'); if(tf) tf.style.width=(tzg*100)+'%';
@@ -855,7 +855,7 @@ const APO = (() => {
 
     _ChartRegistry.register('biChart4', () => {
       return {type:'doughnut',data:{
-        labels:['TZG Bonus','Base Submit','Advance'],
+        labels:['Quality Bonus','Base Submit','Advance'],
         datasets:[{data:[53,320,80],
           backgroundColor:['#003d2b','#2d5f4a','rgba(0,61,43,.35)'],
           borderColor:'#ffffff',borderWidth:3}]
@@ -1356,7 +1356,7 @@ const APO = (() => {
         const base=s.dm>=15.5?320:0;
         const adv=s.dm>=15.5?80:0;
         return {type:'doughnut',data:{
-          labels:['TZG Taste Bonus','Base Submit','Advance'],
+          labels:['Quality Bonus','Base Submit','Advance'],
           datasets:[{data:[taste,base,adv],
             backgroundColor:[CF.gold,CF.green,CF.mid],
             borderColor:'#f8faf8',borderWidth:3}]
@@ -1718,9 +1718,9 @@ const APO = (() => {
       doc.setFont('helvetica', 'bold'); doc.setFontSize(12); doc.setTextColor(26, 35, 25);
       doc.text('Payment Pool Summary', 14, 201);
       doc.setFontSize(10);
-      [['TZG Tier', pay.cat],
+      [['Payment Tier', pay.cat],
        ['Base Submit Rate', 'NZD $' + pay.submit.toFixed(2) + '/tray'],
-       ['TZG Taste Bonus',  'NZD $' + pay.taste.toFixed(2)  + '/tray'],
+       ['Quality Bonus',     'NZD $' + pay.taste.toFixed(2)  + '/tray'],
        ['Total Return',     'NZD $' + pay.total.toFixed(2)  + '/tray'],
        ['Estimated Season Pool', 'NZD $' + Math.round(pay.total * s.vol) + 'M']
       ].forEach(([lbl, val], i) => {
@@ -1756,11 +1756,11 @@ const APO = (() => {
         return `Current risk is ${lv} — ${risk}/100. ${s.dm >= 16.1 ? 'Dry Matter above MTS threshold.' : 'WARNING: Dry Matter below MTS threshold.'} ${lv === 'Low' ? 'Operations within normal parameters.' : 'Review corridor conditions immediately.'}`;
       }
       if (m.includes('mts')) {
-        return `MTS threshold is 16.1% Dry Matter. Current DM: ${s.dm}% — ${s.dm >= 16.1 ? 'PASS. TZG payments active.' : 'FAIL. Payments suspended until threshold met.'}`;
+        return `MTS threshold is 16.1% Dry Matter. Current DM: ${s.dm}% — ${s.dm >= 16.1 ? 'PASS. Premium tier payments active.' : 'FAIL. Payments suspended until threshold met.'}`;
       }
       if (m.includes('tzg') || m.includes('payment')) {
         const pool = Math.round(pay.total * s.vol);
-        return `Current TZG tier: ${pay.cat}. Return per tray: NZD $${pay.total.toFixed(2)}. Estimated pool: NZD $${pool}M across all corridors.`;
+        return `Current payment tier: ${pay.cat}. Return per tray: NZD $${pay.total.toFixed(2)}. Estimated pool: NZD $${pool}M across all corridors.`;
       }
       if (m.includes('otif') || m.includes('corridor')) {
         return `OTIF performance: ${otif}% across active corridors. Ōpōtiki showing highest transit risk (VSI 2.5, 97km). Katikati performing best (VSI 1.6, 52km).`;
@@ -1768,7 +1768,7 @@ const APO = (() => {
       if (m.includes('cod') || m.includes('delay') || m.includes('cost')) {
         return `Cost of Delay estimated at NZD $${cod}K under current congestion levels. Reduce SH2 congestion index below 25% to minimise exposure.`;
       }
-      return `Current status: Risk ${risk}/100 · DM ${s.dm}% · OTIF ${otif}%. Ask me about risk, MTS status, TZG payments, corridor OTIF, or Cost of Delay.`;
+      return `Current status: Risk ${risk}/100 · DM ${s.dm}% · OTIF ${otif}%. Ask me about risk, MTS status, Premium tier payments, corridor OTIF, or Cost of Delay.`;
     }
   };
 
