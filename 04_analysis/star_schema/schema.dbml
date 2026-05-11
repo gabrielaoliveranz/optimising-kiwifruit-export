@@ -1,0 +1,80 @@
+// =============================================================================
+// APOPHENIA — HORTICULTURAL EXPORT RISK INTELLIGENCE AGENT
+// Bay of Plenty Corridor · Independent Research Project
+// Star Schema — Analytics Layer
+// Author: Gabriela Olivera | Data Analytics Portfolio
+// =============================================================================
+
+
+Table dim_date {
+  date_id integer [pk]
+  date date [not null, unique]
+  day integer [not null]
+  month integer [not null]
+  year integer [not null]
+  pack_week integer [note: 'Wk1 to Wk26']
+  season text [not null, note: '2025/26, 2024/25, etc.']
+  milestone text [note: 'Peak MainPack, Late Season, Port Close']
+  is_weekend integer [not null, default: 0]
+}
+
+
+Table dim_grower {
+  grower_id integer [pk]
+  grower_name text [not null]
+  subzone text [not null, note: 'Katikati, Te Puke, Opotiki']
+  region text [not null, default: 'Bay of Plenty']
+  certification_status text [note: 'GlobalGAP, Organic, Standard']
+  onboarded_date date
+}
+
+
+Table dim_corridor {
+  corridor_id integer [pk]
+  corridor_name text [not null, unique]
+  origin_subzone text [not null]
+  destination_port text [not null, default: 'Tauranga']
+  distance_km real [not null]
+  typical_transit_h real [not null]
+}
+
+
+Table dim_variety {
+  variety_id integer [pk]
+  variety_name text [not null, unique, note: 'SunGold G3, Green Hayward']
+  tier text [not null, note: 'Premium, Ultra, Standard']
+  is_premium integer [not null, default: 0]
+  mts_threshold real [not null, note: 'Minimum DM percent to pass MTS']
+}
+
+
+Table dim_packhouse {
+  packhouse_id integer [pk]
+  packhouse_name text [not null, unique]
+  pte_mode text [not null, note: 'Modern or Legacy']
+  pte_score integer [not null, note: '100 Modern, 65 Legacy']
+  capacity_trays integer
+}
+
+
+Table fact_pallet_submissions {
+  submission_id integer [pk, increment]
+
+  grower_id integer [not null, ref: > dim_grower.grower_id]
+  corridor_id integer [not null, ref: > dim_corridor.corridor_id]
+  date_id integer [not null, ref: > dim_date.date_id]
+  variety_id integer [not null, ref: > dim_variety.variety_id]
+  packhouse_id integer [not null, ref: > dim_packhouse.packhouse_id]
+
+  pallet_count integer [not null, default: 1]
+  tray_count integer [not null]
+  dry_matter_pct real [not null]
+  payment_per_tray_nzd real [not null]
+  total_value_nzd real [not null]
+
+  mts_passed integer [not null, note: '1 if DM above threshold']
+  otif_status text [not null, note: 'OnTime, Late, Cancelled']
+  delay_hours real [not null, default: 0]
+
+  submitted_at datetime [not null]
+}
