@@ -36,3 +36,4 @@ build/
 # Data — exclude raw DB if too large (uncomment if needed)
 # *.db
 # *.sqlite
+02_data_processed/star_schema/transform_report.md
