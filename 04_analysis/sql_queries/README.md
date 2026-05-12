@@ -1,23 +1,26 @@
-# SQL Queries
+# SQL Queries v2 — Star Schema
 
-Six documented research queries against `02_data_processed/kiwifruit_export.db`. Each query answers a specific business question relevant to operational risk in NZ kiwifruit export.
+Queries refactored against the star schema (`02_data_processed/star_schema/apophenia_star.db`).
+Demonstrates JOINs, CTEs, and window functions across 5 dimensions + 1 fact table.
 
-## Queries
+## Schema reference
 
-| ID | Question |
-|----|----------|
-| Q1 | What % of BOP production falls below MTS Green (15.5%)? How does it vary by season and variety? |
-| Q2 | In which pack weeks does SH2 congestion cause greatest OTIF degradation? |
-| Q3 | What is the NZD elasticity of dry-matter percentage in grower payments? |
-| Q4 | Which BOP subzone has the highest DM variance between seasons? |
-| Q5 | Does the composite Risk Score predict OTIF < 88% episodes? |
-| Q6 | What was the highest-risk pack week in the dataset and what caused it? |
+| Table | Role |
+|---|---|
+| `fact_export_transactions` | Central fact table — one row per consignment |
+| `dim_season` | Season metadata (variety, year, MTS thresholds) |
+| `dim_packhouse` | Packhouse → subzone → corridor mapping |
+| `dim_fruit_quality` | DM %, MTS pass/fail per subzone per season |
+| `dim_route` | SH2 corridor segments, dwell baselines |
+| `dim_time` | Pack week calendar, ISO week, season position |
 
-## Run the queries
+## Query catalogue
 
-```bash
-cd ..
-python 04_analysis/05_sql_analysis.py
-```
+Queries are numbered `q1_…sql` through `q6_…sql` (to be added). Each file contains:
+- Business question header comment
+- CTE or JOIN structure using star schema tables
+- Window function(s) where applicable
 
-Output is saved to `query_results.md` in this folder, with full markdown tables and interpretation notes.
+## Legacy queries
+
+v1 queries (written against the monolithic `kiwifruit_export.db`) are preserved in `../legacy_queries/`.
