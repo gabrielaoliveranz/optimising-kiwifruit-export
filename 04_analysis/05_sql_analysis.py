@@ -29,7 +29,7 @@ HOW TO RUN:
 
 OUTPUT:
   Prints formatted results to terminal.
-  Saves: 04_analysis/sql_queries/query_results.md
+  Saves: 04_analysis/legacy_queries/query_results.md
 =============================================================================
 """
 
@@ -45,7 +45,7 @@ from datetime import datetime
 
 PROJECT_ROOT = Path(__file__).parent.parent
 DB_PATH      = PROJECT_ROOT / "02_data_processed" / "star_schema" / "kiwifruit_export.db"
-SQL_DIR      = PROJECT_ROOT / "04_analysis" / "sql_queries"
+SQL_DIR      = PROJECT_ROOT / "04_analysis" / "legacy_queries"
 SQL_DIR.mkdir(parents=True, exist_ok=True)
 
 # =============================================================================

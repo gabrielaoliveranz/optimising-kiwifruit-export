@@ -23,4 +23,4 @@ cd ..
 python 04_analysis/05_sql_analysis.py
 ```
 
-Output is saved to `query_results.md` in this folder, with full markdown tables and interpretation notes.
+Output is saved to `query_results.md` in this folder (kept isolated from `../sql_queries/` so re-running this script never overwrites the v2 dashboard queries), with full markdown tables and interpretation notes.
