@@ -76,7 +76,7 @@ from datetime import datetime, timezone, timedelta
 # PATHS
 # =============================================================================
 
-PROJECT_ROOT = Path(__file__).parent
+PROJECT_ROOT = Path(__file__).parent.parent
 DB_PATH      = PROJECT_ROOT / "02_data_processed" / "star_schema" / "kiwifruit_export.db"
 OUTPUT_DIR   = PROJECT_ROOT / "07_reports" / "api_payloads"
 OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
