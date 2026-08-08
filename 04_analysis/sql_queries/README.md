@@ -16,13 +16,15 @@ Demonstrates JOINs, CTEs, and window functions across 5 dimensions + 1 fact tabl
 
 > **Note:** an earlier draft of this README described a different table set
 > (`fact_export_transactions`, `dim_season`, `dim_route`, `dim_fruit_quality`) —
-> that was the schema of the original `kiwifruit_export.db` build (documented in
-> `transform_report.md`, same folder), not the current `apophenia_star.db`.
-> `apophenia_star.db` is a simplified, derived version of that earlier star
-> schema, rebuilt for the Power BI dashboard currently in use. The v1 queries
-> written against the original schema are preserved in `../legacy_queries/` and
-> still have documentation value — they show the schema's evolution across the
-> project.
+> that was the schema of `kiwifruit_export.db` (documented in
+> `transform_report.md`, same folder), not `apophenia_star.db`.
+> `apophenia_star.db` is a simplified, redesigned schema built specifically
+> for this v2 query set and the Power BI dashboard — it's a separate
+> deliverable, not a replacement for `kiwifruit_export.db`, which remains
+> the operational schema behind the live simulator and the risk model (see
+> "Two databases" in `08_documentation/ARCHITECTURE.md`). The v1 queries in
+> `../legacy_queries/` are still live, not archival — they run against
+> `kiwifruit_export.db` and are not affected by this schema.
 
 ## Query catalogue
 

@@ -1,7 +1,12 @@
 # Legacy SQL Queries (v1)
 
-> **Superseded.** These are v1 queries against the monolithic fact table (`kiwifruit_export.db` / `fact_export_transactions`).
-> See `../sql_queries/` for v2 queries refactored against the star schema (`apophenia_star.db`).
+> **Not superseded — still live.** These queries run against
+> `kiwifruit_export.db`, the operational schema that also feeds the
+> live simulator and the risk model (see "Two databases" in
+> `08_documentation/ARCHITECTURE.md`). `../sql_queries/` is a v2 query
+> set written against a separate, redesigned schema
+> (`apophenia_star.db`) for the Power BI dashboard — a different
+> deliverable, not a replacement for these.
 
 Six documented research queries against `02_data_processed/kiwifruit_export.db`. Each query answers a specific business question relevant to operational risk in NZ kiwifruit export.
 

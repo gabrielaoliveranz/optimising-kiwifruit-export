@@ -69,11 +69,14 @@ optimising-kiwifruit-export/
 │   ├── nzta_sh2_bop_clean.csv · nzta_daily_bop_clean.csv
 │   ├── integrity_audit_report.md
 │   └── star_schema/
-│       ├── apophenia_star.db      ← current star schema (fact_pallet_submissions +
-│       │                            dim_date, dim_grower, dim_corridor, dim_variety, dim_packhouse)
-│       ├── kiwifruit_export.db    ← original star schema (fact_export_transactions +
-│       │                            dim_time, dim_corridor, dim_fruit_quality, dim_grower)
-│       ├── *.csv                  ← dimension/fact exports from the original schema
+│       ├── kiwifruit_export.db    ← operational schema (fact_export_transactions +
+│       │                            dim_time, dim_corridor, dim_fruit_quality, dim_grower) —
+│       │                            feeds the live simulator, v1 queries, risk model
+│       ├── apophenia_star.db      ← separate, redesigned schema (fact_pallet_submissions +
+│       │                            dim_date, dim_grower, dim_corridor, dim_variety, dim_packhouse) —
+│       │                            powers v2 queries + Power BI only. See "Two databases" in
+│       │                            08_documentation/ARCHITECTURE.md.
+│       ├── *.csv                  ← dimension/fact exports from kiwifruit_export.db
 │       └── transform_report.md    ← ETL transform log and design decisions
 │
 ├── 03_etl_pipeline/
