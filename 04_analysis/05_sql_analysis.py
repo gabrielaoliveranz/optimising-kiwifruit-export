@@ -35,17 +35,17 @@ OUTPUT:
 
 import re
 import sqlite3
+import sys
 import pandas as pd
 from pathlib import Path
 from datetime import datetime
 
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+from config import DB_PATH, SQL_DIR  # noqa: E402
+
 # =============================================================================
 # PATHS
 # =============================================================================
-
-PROJECT_ROOT = Path(__file__).parent.parent
-DB_PATH      = PROJECT_ROOT / "02_data_processed" / "star_schema" / "kiwifruit_export.db"
-SQL_DIR      = PROJECT_ROOT / "04_analysis" / "legacy_queries"
 SQL_DIR.mkdir(parents=True, exist_ok=True)
 
 # =============================================================================

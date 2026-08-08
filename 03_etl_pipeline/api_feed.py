@@ -67,18 +67,20 @@ HOW TO RUN:
 import sqlite3
 import json
 import argparse
+import sys
 import urllib.request
 import urllib.parse
 from pathlib import Path
 from datetime import datetime, timezone, timedelta
 
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+from config import DB_PATH, API_PAYLOADS_DIR  # noqa: E402
+
 # =============================================================================
 # PATHS
 # =============================================================================
 
-PROJECT_ROOT = Path(__file__).parent.parent
-DB_PATH      = PROJECT_ROOT / "02_data_processed" / "star_schema" / "kiwifruit_export.db"
-OUTPUT_DIR   = PROJECT_ROOT / "07_reports" / "api_payloads"
+OUTPUT_DIR = API_PAYLOADS_DIR
 OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
 
 # NZ timezone offset

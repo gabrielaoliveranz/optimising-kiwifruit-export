@@ -51,11 +51,15 @@ OUTPUT FILES (all in 02_data_processed/):
 =============================================================================
 """
 
+import sys
 import warnings
 import pandas as pd
 import chardet
 from datetime import datetime
 from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+from config import RAW_NZTA_DIR, RAW_STATS_DIR, PROCESSED_DIR  # noqa: E402
 
 warnings.filterwarnings("ignore")
 
@@ -63,10 +67,9 @@ warnings.filterwarnings("ignore")
 # CONFIGURATION
 # =============================================================================
 
-PROJECT_ROOT = Path(__file__).parent.parent  # script lives in 03_etl_pipeline/
-RAW_NZTA     = PROJECT_ROOT / "01_data_raw" / "nzta_sh2"
-RAW_STATS    = PROJECT_ROOT / "01_data_raw" / "stats_nz"
-PROCESSED    = PROJECT_ROOT / "02_data_processed"
+RAW_NZTA  = RAW_NZTA_DIR
+RAW_STATS = RAW_STATS_DIR
+PROCESSED = PROCESSED_DIR
 PROCESSED.mkdir(exist_ok=True)
 
 # 2026 calibration constants

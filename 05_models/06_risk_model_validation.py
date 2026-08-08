@@ -41,18 +41,19 @@ HOW TO RUN:
 """
 
 import sqlite3
+import sys
 import numpy as np
 import pandas as pd
 from pathlib import Path
 from datetime import datetime
 
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+from config import DB_PATH, MODELS_DIR  # noqa: E402
+
 # =============================================================================
 # PATHS
 # =============================================================================
 
-PROJECT_ROOT = Path(__file__).parent.parent
-DB_PATH      = PROJECT_ROOT / "02_data_processed" / "star_schema" / "kiwifruit_export.db"
-MODELS_DIR   = PROJECT_ROOT / "05_models"
 MODELS_DIR.mkdir(exist_ok=True)
 
 # 2026 calibration constants — must match simulator and ETL pipeline

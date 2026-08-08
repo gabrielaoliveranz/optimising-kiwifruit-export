@@ -9,16 +9,19 @@
 import csv
 import logging
 import sqlite3
+import sys
 from datetime import date, datetime, timedelta
 from pathlib import Path
 from typing import Optional
 
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent.parent))
+from config import SYNTHETIC_EDI_DIR, STAR_DB_PATH  # noqa: E402
+
 # ---------------------------------------------------------------------------
 # Paths
 # ---------------------------------------------------------------------------
-BASE_DIR = Path(__file__).resolve().parent.parent.parent
-CSV_DIR  = BASE_DIR / "01_data_raw" / "synthetic_edi_simulation"
-DB_PATH  = BASE_DIR / "02_data_processed" / "star_schema" / "apophenia_star.db"
+CSV_DIR = SYNTHETIC_EDI_DIR
+DB_PATH = STAR_DB_PATH
 
 # ---------------------------------------------------------------------------
 # Logging

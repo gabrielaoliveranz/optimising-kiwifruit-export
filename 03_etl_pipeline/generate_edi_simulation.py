@@ -38,17 +38,20 @@ OUTPUTS (01_data_raw/synthetic_edi_simulation/):
 =============================================================================
 """
 
+import sys
 import numpy as np
 import pandas as pd
 from pathlib import Path
 from datetime import date, timedelta
 
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+from config import SYNTHETIC_EDI_DIR  # noqa: E402
+
 # =============================================================================
 # CONFIGURATION
 # =============================================================================
 
-PROJECT_ROOT = Path(__file__).parent.parent
-OUTPUT_DIR   = PROJECT_ROOT / "01_data_raw" / "synthetic_edi_simulation"
+OUTPUT_DIR = SYNTHETIC_EDI_DIR
 OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
 
 RANDOM_SEED = 42

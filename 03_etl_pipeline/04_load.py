@@ -39,17 +39,19 @@ SCHEMA CREATED:
 """
 
 import sqlite3
+import sys
 import pandas as pd
 from pathlib import Path
 from datetime import datetime
+
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+from config import STAR_SCHEMA_DIR, DB_PATH  # noqa: E402
 
 # =============================================================================
 # PATHS
 # =============================================================================
 
-PROJECT_ROOT = Path(__file__).parent.parent
-STAR         = PROJECT_ROOT / "02_data_processed" / "star_schema"
-DB_PATH      = STAR / "kiwifruit_export.db"
+STAR = STAR_SCHEMA_DIR
 
 log_lines = []
 

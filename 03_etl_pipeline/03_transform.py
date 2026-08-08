@@ -57,11 +57,20 @@ OUTPUTS (all in 02_data_processed/star_schema/):
 =============================================================================
 """
 
+import sys
 import warnings
 import pandas as pd
 import numpy as np
 from pathlib import Path
 from datetime import datetime
+
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+from config import (  # noqa: E402
+    PROJECT_ROOT,
+    PROCESSED_DIR,
+    SYNTHETIC_EDI_DIR,
+    STAR_SCHEMA_DIR,
+)
 
 warnings.filterwarnings("ignore")
 
@@ -69,10 +78,9 @@ warnings.filterwarnings("ignore")
 # PATHS
 # =============================================================================
 
-PROJECT_ROOT = Path(__file__).parent.parent
-PROCESSED    = PROJECT_ROOT / "02_data_processed"
-SYN_SIM      = PROJECT_ROOT / "01_data_raw" / "synthetic_edi_simulation"
-STAR         = PROCESSED / "star_schema"
+PROCESSED = PROCESSED_DIR
+SYN_SIM   = SYNTHETIC_EDI_DIR
+STAR      = STAR_SCHEMA_DIR
 STAR.mkdir(exist_ok=True)
 
 # 2026 calibration constants — must match simulator and generator
