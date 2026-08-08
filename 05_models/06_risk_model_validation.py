@@ -36,7 +36,7 @@ WHY LOGISTIC REGRESSION:
 HOW TO RUN:
   pip install scikit-learn
   python 05_models/06_risk_model_validation.py
-  Run from project root: G:\\My Drive\\optimising-kiwifruit-export\\
+  Run from the project root.
 =============================================================================
 """
 

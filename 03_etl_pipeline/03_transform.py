@@ -36,7 +36,7 @@ WHAT THIS SCRIPT DOES:
 
 HOW TO RUN:
   python 03_etl_pipeline/03_transform.py
-  Run from project root: G:\\My Drive\\optimising-kiwifruit-export\\
+  Run from the project root.
 
 INPUTS (from 02_data_processed/ and 01_data_raw/synthetic_edi_simulation/):
   nzta_daily_bop_clean.csv

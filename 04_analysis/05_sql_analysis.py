@@ -25,7 +25,7 @@ RESEARCH QUESTIONS ANSWERED:
 
 HOW TO RUN:
   python 04_analysis/05_sql_analysis.py
-  Run from project root: G:\\My Drive\\optimising-kiwifruit-export\\
+  Run from the project root.
 
 OUTPUT:
   Prints formatted results to terminal.

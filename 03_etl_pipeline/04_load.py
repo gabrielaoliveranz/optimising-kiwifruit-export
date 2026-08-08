@@ -27,7 +27,7 @@ WHY SQLITE:
 
 HOW TO RUN:
   python 03_etl_pipeline/04_load.py
-  Run from project root: G:\\My Drive\\optimising-kiwifruit-export\\
+  Run from the project root.
 
 SCHEMA CREATED:
   dim_time              (date_key PK)

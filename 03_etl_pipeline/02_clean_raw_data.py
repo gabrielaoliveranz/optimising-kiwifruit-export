@@ -40,8 +40,7 @@ HOW TO RUN:
   pip install pandas chardet
   python 03_etl_pipeline/02_clean_raw_data.py
 
-  Run from the project root:
-  G:\\My Drive\\optimising-kiwifruit-export\\
+  Run from the project root.
 
 OUTPUT FILES (all in 02_data_processed/):
   nzta_sh2_bop_clean.csv          TMS 15-min aggregated to daily, BOP+SH2

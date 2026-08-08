@@ -21,14 +21,14 @@
     },
     {
       "parameters": {
-        "command": "python \"G:\\My Drive\\optimising-kiwifruit-export\\07_api_feed.py\" --live --live-apis"
+        "command": "python \"G:\\My Drive\\optimising-kiwifruit-export\\03_etl_pipeline\\api_feed.py\" --live --live-apis"
       },
       "id": "a1b2c3d4-0002-4000-8000-apo002execute",
       "name": "Run ETL Feed",
       "type": "n8n-nodes-base.executeCommand",
       "typeVersion": 1,
       "position": [440, 300],
-      "notes": "Runs 07_api_feed.py --live --live-apis. Calls Open-Meteo, Frankfurter, Overpass APIs. Writes payload_live.json to 07_reports/api_payloads/"
+      "notes": "Runs api_feed.py --live --live-apis. Calls Open-Meteo, Frankfurter, Overpass APIs. Writes payload_live.json to 07_reports/api_payloads/"
     },
     {
       "parameters": {
