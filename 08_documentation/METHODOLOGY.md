@@ -53,6 +53,22 @@ A multi-variable regression with logistic transform combining five operational d
 - Subzone granularity below packhouse level is not supported
 - Pricing inputs are assumed constant within forecast windows
 
+### Congestion proxy: pack-week estimate (NZTA data unusable)
+
+`kiwifruit_export.db` stores `congestion_index = 91.8` for every row — a miscalibration identified during model validation. A constant carries zero predictive variance, so it cannot meaningfully inform a variable that holds 15% of the composite Risk Score weight.
+
+`api_feed.py`'s `estimate_congestion()` replaces it with a pack-week step function, calibrated to the documented MainPack congestion pattern on SH2:
+
+| Pack week | Season phase | Estimated congestion |
+|-----------|--------------|----------------------|
+| < 13 | KiwiStart | 15% |
+| 13–15 | Early MainPack | 22% |
+| 16–19 | Peak MainPack | 38% |
+| 20–22 | Late MainPack | 32% |
+| ≥ 23 | Late season | 18% |
+
+This is a disclosed estimate, not a measurement — `build_payload()`'s docstring and the payload's `congestion_note` field say so explicitly. Fixing it properly requires re-ingesting real SH2 traffic data from NZTA (the ~2.4GB raw files are not committed — see `01_data_raw/nzta_sh2/` and `.gitignore`) and recalibrating `congestion_index` from it.
+
 ---
 
 ## Recommendation logic

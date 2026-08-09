@@ -287,7 +287,7 @@ See [`08_documentation/METHODOLOGY.md`](08_documentation/METHODOLOGY.md) for the
 ## Known limitations
 
 - **Synthetic data**: all operational variables are generated from stochastic models calibrated against public benchmarks. Real-world performance will differ.
-- **Congestion proxy**: SH2 congestion index is modelled; live NZTA data integration is available via the n8n workflow but not enabled in the demonstration build.
+- **Congestion proxy**: `congestion_index` in `kiwifruit_export.db` is a miscalibrated constant (91.8 for every row — zero predictive variance). The live payload substitutes a disclosed pack-week estimate (`estimate_congestion()` in `api_feed.py`) instead. Fixing it properly requires re-ingesting real NZTA SH2 traffic data — see [`08_documentation/METHODOLOGY.md`](08_documentation/METHODOLOGY.md#congestion-proxy-pack-week-estimate-nzta-data-unusable) for the full breakdown.
 - **Single corridor geography**: the current model covers Bay of Plenty pack corridors only. Extending to Hawke's Bay or Nelson would require additional corridor configuration in `config.js`.
 - **Payment tiers**: calibrated to 2026 Grower Payments Booklet rates. Annual recalibration required for production use.
 - **Browser requirement**: ES modules require a local server. Opening `index.html` via `file://` will not work.
