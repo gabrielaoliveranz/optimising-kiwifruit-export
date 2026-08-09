@@ -69,11 +69,11 @@ import json
 import logging
 import sqlite3
 import sys
-import urllib.parse
-import urllib.request
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Any, Optional
+
+from api_retry import get_with_retry
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 from config import API_PAYLOADS_DIR, DB_PATH, configure_logging  # noqa: E402
@@ -317,15 +317,18 @@ def fetch_live_apis(agg: dict[str, Any]) -> dict[str, Any]:
     # ── A) Open-Meteo — BOP 7-day rainfall ──────────────────────────
     # Tauranga coords: lat=-37.69, lon=176.17
     try:
-        om_url = (
-            "https://api.open-meteo.com/v1/forecast"
-            "?latitude=-37.69&longitude=176.17"
-            "&daily=precipitation_sum"
-            "&forecast_days=7"
-            "&timezone=Pacific%2FAuckland"
+        response = get_with_retry(
+            "https://api.open-meteo.com/v1/forecast",
+            params={
+                "latitude": -37.69,
+                "longitude": 176.17,
+                "daily": "precipitation_sum",
+                "forecast_days": 7,
+                "timezone": "Pacific/Auckland",
+            },
+            timeout=5,
         )
-        with urllib.request.urlopen(om_url, timeout=5) as resp:
-            om = json.loads(resp.read().decode("utf-8"))
+        om = response.json()
 
         precip = om.get("daily", {}).get("precipitation_sum", [])
         if precip:
@@ -345,9 +348,12 @@ def fetch_live_apis(agg: dict[str, Any]) -> dict[str, Any]:
 
     # ── B) Frankfurter — NZD/EUR + NZD/JPY ───────────────────────────
     try:
-        fx_url = "https://api.frankfurter.app/latest?from=NZD&to=EUR,JPY"
-        with urllib.request.urlopen(fx_url, timeout=5) as resp:
-            fx_data = json.loads(resp.read().decode("utf-8"))
+        response = get_with_retry(
+            "https://api.frankfurter.app/latest",
+            params={"from": "NZD", "to": "EUR,JPY"},
+            timeout=5,
+        )
+        fx_data = response.json()
 
         rates = fx_data.get("rates", {})
         extras["fx"] = {
@@ -377,18 +383,16 @@ def fetch_live_apis(agg: dict[str, Any]) -> dict[str, Any]:
             "(bbox:-38.5,175.5,-37.0,176.8);"
             "out count;"
         )
-        post_data = urllib.parse.urlencode({"data": query}).encode("utf-8")
-        req = urllib.request.Request(
+        response = get_with_retry(
             "https://overpass-api.de/api/interpreter",
-            data=post_data,
             method="POST",
+            data={"data": query},
             headers={
-                "Content-Type": "application/x-www-form-urlencoded",
                 "User-Agent": "APOPHENIA/4.0 (portfolio; contact via GitHub)",
             },
+            timeout=5,
         )
-        with urllib.request.urlopen(req, timeout=5) as resp:
-            op = json.loads(resp.read().decode("utf-8"))
+        op = response.json()
 
         tags = op.get("elements", [{}])[0].get("tags", {})
         ways = int(tags.get("ways", tags.get("total", "0")))

@@ -7,6 +7,10 @@ pandas==3.0.2
 numpy==2.4.4
 chardet==7.5.1
 
+# Used by 03_etl_pipeline/api_retry.py (get_with_retry) for the live
+# API enrichment in api_feed.py's --live --live-apis mode.
+requests==2.34.2
+
 # Used by 05_models/06_risk_model_validation.py's logistic regression
 # model; the script falls back to a pure-numpy implementation if this
 # isn't installed, but the sklearn path is the preferred one.
