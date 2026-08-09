@@ -17,11 +17,27 @@ Interactive executive dashboard. Vanilla HTML/CSS/JavaScript with Chart.js and M
 
 3. Open `http://localhost:8000/index.html`
 
+## Testing
+
+`assets/js/app.test.js` (18 tests: CONFIG structure, risk model, payment
+engine, feed loader) runs two ways:
+
+- **In a browser:** open `test.html` (served the same way as `index.html`
+  above) for the visual Jest-style runner.
+- **Headless, in CI:** `node run-tests.mjs` — the test file only ever
+  exercises pure functions (no DOM/Canvas/WebGL API is touched), so it
+  runs correctly under plain Node without a browser at all. Reproduces
+  the same `describe`/`test`/`expect` shims `test.html` defines inline,
+  so both runners execute the exact same 18 tests. Wired into
+  `.github/workflows/tests.yml`.
+
 ## Architecture
 
 ```
 06_simulator/
 ├── index.html              # Semantic HTML structure only — no inline styles or scripts
+├── test.html                # Browser-based Jest-style test runner
+├── run-tests.mjs             # Headless Node runner for the same tests (CI)
 ├── assets/
 │   ├── css/
 │   │   └── main.css        # Complete design system — tokens, layout, components

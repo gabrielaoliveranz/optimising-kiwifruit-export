@@ -15,6 +15,7 @@
 [![Status](https://img.shields.io/badge/status-demonstration_prototype-006338)]()
 [![Python](https://img.shields.io/badge/python-3.10+-blue)]()
 [![License](https://img.shields.io/badge/license-MIT-lightgrey)]()
+[![Tests](https://github.com/gabrielaoliveranz/optimising-kiwifruit-export/actions/workflows/tests.yml/badge.svg)](https://github.com/gabrielaoliveranz/optimising-kiwifruit-export/actions/workflows/tests.yml)
 
 ---
 
