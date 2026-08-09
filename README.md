@@ -55,15 +55,25 @@ This separation means the entire simulator framework can be ported to a differen
 
 ```
 optimising-kiwifruit-export/
-├── README.md
-├── .gitignore · LICENSE
+├── README.md · CLAUDE.md · LICENSE · .gitignore
+├── config.py                   ← single home for PROJECT_ROOT, both DB paths, every
+│                                  processed-data/output directory, shared logging setup
+├── requirements.txt · requirements-dev.txt
+├── .github/workflows/tests.yml ← pytest + the JS suite, on every push/PR
+├── tests/                      ← pytest coverage for api_feed.py and api_retry.py
 │
 ├── 00_project_management/
+│   ├── README.md
 │   └── sprint_logs/            ← architectural decisions and rationale per sprint
 │
 ├── 01_data_raw/
-│   └── synthetic_edi_simulation/  ← synthetic EDI CSVs (grower register, maturity readings,
-│                                  pallet submissions, fruit loss records)
+│   ├── synthetic_edi_simulation/  ← synthetic EDI CSVs (grower register, maturity readings,
+│   │                                pallet submissions, fruit loss records)
+│   ├── stats_nz/                ← Stats NZ exports + horticulture survey source CSVs
+│   ├── mpi_phyto/                ← MPI/KVH biosecurity and Psa PDFs
+│   ├── niwa_climate/             ← Open-Meteo BOP season/forecast samples
+│   └── nzta_sh2/                 ← raw SH2 traffic data — not committed (~2.4 GB); see
+│                                    "Reproducibility from a clean clone" below
 │
 ├── 02_data_processed/
 │   ├── stats_nz_exports_clean.csv · stats_nz_horticulture_clean.csv
@@ -86,6 +96,7 @@ optimising-kiwifruit-export/
 │   ├── 03_transform.py             ← star schema assembly
 │   ├── 04_load.py                  ← SQLite loader
 │   ├── api_feed.py                 ← live API ingestion → payload_live.json
+│   ├── api_retry.py                ← bounded-retry HTTP helper (Open-Meteo, Frankfurter, Overpass)
 │   └── n8n_workflows/
 │       └── apophenia_live_feed.json
 │
@@ -95,20 +106,23 @@ optimising-kiwifruit-export/
 │   ├── sql_queries/            ← v2 queries (q7-q11 + window function practice) against apophenia_star.db
 │   ├── notebooks/              ← EDA notebooks (planned)
 │   ├── visualisations/         ← Power BI dashboard + supplementary visuals
-│   └── star_schema/            ← ERD diagram, DBML, and standalone schema.sql for apophenia_star.db
+│   └── star_schema/            ← load_star_schema.py (loader), ERD diagram, DBML, and
+│                                  standalone schema.sql for apophenia_star.db
 │
 ├── 05_models/
-│   └── 06_risk_model_validation.py ← 3-season backtest, R² = 0.82
+│   ├── 06_risk_model_validation.py ← 3-season backtest, R² = 0.82
+│   └── model_validation_report.md  ← generated validation report
 │
 ├── 06_simulator/               ← frontend product
 │   ├── index.html              ← entry point (semantic HTML, no inline CSS/JS)
 │   ├── test.html               ← browser unit test runner
+│   ├── run-tests.mjs            ← headless Node runner for the same 18 tests (CI)
 │   ├── vercel.json
 │   ├── payload_live.json       ← live ETL payload
 │   ├── config.local.example.js ← token template (commit-safe)
 │   ├── config.local.js         ← local Mapbox token (.gitignored)
 │   └── assets/
-│       ├── hero-orchard.webp · gabriela.webp
+│       ├── hero-orchard.webp · gabriela.webp · preview/
 │       ├── css/
 │       │   └── main.css        ← complete design system (tokens, layout, components)
 │       └── js/
@@ -117,6 +131,7 @@ optimising-kiwifruit-export/
 │           └── app.test.js     ← 18 unit tests (CONFIG integrity, risk model, feed loader)
 │
 ├── 07_reports/
+│   ├── api_payloads/           ← generated payload_*.json + seasons_js_snippet.js
 │   └── presentation_slides/    ← Power BI dashboard (.pbix) + screenshot
 │
 └── 08_documentation/
@@ -131,11 +146,12 @@ optimising-kiwifruit-export/
 
 | Module | Inputs | Outputs |
 |--------|--------|---------|
-| `generate_edi_simulation.py` | None (standalone generator) | `01_data_raw/synthetic_edi_simulation/synthetic_*.csv` — 4 tables, 4 synthetic seasons |
+| `generate_edi_simulation.py` | None (standalone generator, fixed seed) | `01_data_raw/synthetic_edi_simulation/synthetic_*.csv` — 4 tables, 4 synthetic seasons |
 | `02_clean_raw_data.py` | Raw public datasets (Stats NZ, NZTA) | `02_data_processed/*.csv` — cleaned, validated |
-| `03_transform.py` | Cleaned CSVs + EDI simulation | `02_data_processed/star_schema/kiwifruit_export.db` — star schema |
-| `04_load.py` | Transformed tables | SQLite load confirmation + integrity report |
-| `api_feed.py` | Open-Meteo · Frankfurter · Mapbox APIs | `06_simulator/payload_live.json` |
+| `03_transform.py` | Cleaned CSVs + EDI simulation | `02_data_processed/star_schema/*.csv` — star schema tables |
+| `04_load.py` | Star schema CSVs | `02_data_processed/star_schema/kiwifruit_export.db` + integrity report |
+| `load_star_schema.py` | `01_data_raw/synthetic_edi_simulation/*.csv` (direct, bypasses the pipeline above) | `02_data_processed/star_schema/apophenia_star.db` |
+| `api_feed.py` | `kiwifruit_export.db` + Open-Meteo · Frankfurter · Overpass APIs | `07_reports/api_payloads/payload_*.json` |
 | `05_sql_analysis.py` | `kiwifruit_export.db` | `04_analysis/legacy_queries/query_results.md` |
 | `06_risk_model_validation.py` | `kiwifruit_export.db` | Backtest report + model validation summary |
 | `06_simulator` (browser) | `payload_live.json` | Interactive dashboard · PDF export |

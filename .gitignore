@@ -29,6 +29,11 @@ Thumbs.db
 .idea/
 *.swp
 
+# DB Browser for SQLite project files — local tool state (open tabs,
+# window layout, sometimes a hardcoded absolute machine path), no
+# cross-machine value
+*.sqbpro
+
 # Build / cache
 node_modules/
 .cache/
