@@ -415,6 +415,34 @@ def fetch_live_apis(agg: dict[str, Any]) -> dict[str, Any]:
 # =============================================================================
 
 
+def estimate_congestion(pw: int) -> int:
+    """
+    Corrected congestion estimate based on pack_week position in the
+    season (peak MainPack ~35-45%), replacing the miscalibrated
+    constant 91.8 — see build_payload()'s docstring. MainPack weeks
+    16-22 historically show 30-45% congestion on SH2.
+    """
+    if pw < 13:
+        return 15  # KiwiStart — low volume
+    if pw < 16:
+        return 22  # Early MainPack
+    if pw < 20:
+        return 38  # Peak MainPack — highest volume
+    if pw < 23:
+        return 32  # Late MainPack — tapering
+    return 18  # Late season
+
+
+def estimate_pest(mts_fail_pct: float) -> float:
+    """
+    Pest index derived from MTS fail rate as a proxy — higher fail
+    rate correlates with higher pest pressure + climate stress.
+    Clamped to [5, 100] so a season with an unusually clean or
+    catastrophic MTS record still produces a plausible slider value.
+    """
+    return min(100, max(5, mts_fail_pct * 2.5))
+
+
 def build_payload(
     season: str,
     agg: dict[str, Any],
@@ -443,24 +471,8 @@ def build_payload(
     now = datetime.now(NZ_TZ).isoformat()
     pw = pack_week or agg.get("last_pack_week", 17)
 
-    # Corrected congestion estimate (pack_week based)
-    # MainPack weeks 16-22 historically show 30-45% congestion on SH2
-    # This replaces the miscalibrated constant 91.8
-    def estimate_congestion(pw: int) -> int:
-        if pw < 13:
-            return 15  # KiwiStart — low volume
-        if pw < 16:
-            return 22  # Early MainPack
-        if pw < 20:
-            return 38  # Peak MainPack — highest volume
-        if pw < 23:
-            return 32  # Late MainPack — tapering
-        return 18  # Late season
-
-    # Pest index: derive from MTS fail rate as proxy
-    # Higher fail rate correlates with higher pest pressure + climate stress
     mts_fail_pct = 100 - agg.get("mts_pass_pct", 88)
-    pest_estimate = min(100, max(5, mts_fail_pct * 2.5))
+    pest_estimate = estimate_pest(mts_fail_pct)
 
     payload = {
         # Core simulator inputs (STATE object)

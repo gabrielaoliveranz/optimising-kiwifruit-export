@@ -7,3 +7,6 @@
 # Formats every .py file to PEP 8 at an 88-character line limit (see
 # CLAUDE.md). Run with: ruff format .
 ruff==0.16.2
+
+# Runs the tests in tests/. Run with: pytest tests/ -v
+pytest==9.1.1
