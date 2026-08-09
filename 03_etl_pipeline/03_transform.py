@@ -1,4 +1,4 @@
-﻿# =============================================================================
+# =============================================================================
 # APOPHENIA — HORTICULTURAL EXPORT RISK INTELLIGENCE AGENT
 # Bay of Plenty Corridor · Independent Research Project
 # Script: 03_transform.py
@@ -57,20 +57,26 @@ OUTPUTS (all in 02_data_processed/star_schema/):
 =============================================================================
 """
 
+import logging
 import sys
 import warnings
-import pandas as pd
-import numpy as np
-from pathlib import Path
 from datetime import datetime
+from pathlib import Path
+
+import numpy as np
+import pandas as pd
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 from config import (  # noqa: E402
-    PROJECT_ROOT,
     PROCESSED_DIR,
-    SYNTHETIC_EDI_DIR,
+    PROJECT_ROOT,
     STAR_SCHEMA_DIR,
+    SYNTHETIC_EDI_DIR,
+    configure_logging,
+    strip_emoji,
 )
+
+logger = logging.getLogger(__name__)
 
 warnings.filterwarnings("ignore")
 
@@ -79,30 +85,40 @@ warnings.filterwarnings("ignore")
 # =============================================================================
 
 PROCESSED = PROCESSED_DIR
-SYN_SIM   = SYNTHETIC_EDI_DIR
-STAR      = STAR_SCHEMA_DIR
+SYN_SIM = SYNTHETIC_EDI_DIR
+STAR = STAR_SCHEMA_DIR
 STAR.mkdir(exist_ok=True)
 
 # 2026 calibration constants — must match simulator and generator
-MTS_GREEN    = 15.5
-MTS_SUNGOLD  = 16.1
-MTS_RUBY     = 17.2
-OTIF_BASE    = 97.5
-BASE_RATE    = 3.20    # NZD/tray blended pool
-TASTE_MAX    = 0.95    # NZD/tray max taste bonus
+MTS_GREEN = 15.5
+MTS_SUNGOLD = 16.1
+MTS_RUBY = 17.2
+OTIF_BASE = 97.5
+BASE_RATE = 3.20  # NZD/tray blended pool
+TASTE_MAX = 0.95  # NZD/tray max taste bonus
 
 # Audit log
-log_lines = []
+log_lines: list[str] = []
 
-def log(msg: str, level: str = "INFO"):
-    """Emit a formatted log line to stdout and append it to the run log buffer.
+
+def log(msg: str, level: str = "INFO") -> None:
+    """
+    Append a formatted line (with its emoji level-tag) to log_lines for
+    inclusion in transform_report.md exactly as before, and separately
+    emit the console-facing copy through `logging` with the tag stripped
+    (a Windows cp1252 terminal can raise UnicodeEncodeError on it).
 
     Level tags: INFO ✅ · WARN ⚠️ · ERROR ❌ · FIND 🔍.
-    All lines are collected in log_lines for inclusion in the transform report.
     """
     tag = {"INFO": "✅", "WARN": "⚠️ ", "ERROR": "❌", "FIND": "🔍"}.get(level, "•")
     line = f"  {tag} {msg}"
-    print(line)
+    log_level = {
+        "INFO": logging.INFO,
+        "WARN": logging.WARNING,
+        "ERROR": logging.ERROR,
+        "FIND": logging.DEBUG,
+    }.get(level, logging.INFO)
+    logger.log(log_level, strip_emoji(line))
     log_lines.append(line)
 
 
@@ -110,7 +126,8 @@ def log(msg: str, level: str = "INFO"):
 # LOAD ALL CLEAN SOURCES
 # =============================================================================
 
-def load_sources() -> dict:
+
+def load_sources() -> dict[str, pd.DataFrame]:
     """Load all cleaned source files from 02_data_processed/ and the EDI simulation folder.
 
     Returns a dict keyed by source name (e.g. 'nzta_daily', 'zgl_maturity').
@@ -151,10 +168,10 @@ def load_sources() -> dict:
 
     # EDI simulation
     for name, fname in [
-        ("syn_maturity",    "synthetic_maturity_readings.csv"),
+        ("syn_maturity", "synthetic_maturity_readings.csv"),
         ("syn_submissions", "synthetic_pallet_submissions.csv"),
-        ("syn_growers",     "synthetic_grower_register.csv"),
-        ("syn_losses",      "synthetic_fruit_loss_records.csv"),
+        ("syn_growers", "synthetic_grower_register.csv"),
+        ("syn_losses", "synthetic_fruit_loss_records.csv"),
     ]:
         p = SYN_SIM / fname
         if p.exists():
@@ -170,7 +187,8 @@ def load_sources() -> dict:
 # FIX STATS NZ FOB BUG
 # =============================================================================
 
-def fix_stats_nz_fob(sources: dict) -> pd.DataFrame:
+
+def fix_stats_nz_fob(sources: dict[str, pd.DataFrame]) -> pd.DataFrame:
     """
     The Phase 1 script mapped total_fob_nzd to the wrong column.
     The raw file has 11 columns but the aggregated total is in
@@ -182,16 +200,25 @@ def fix_stats_nz_fob(sources: dict) -> pd.DataFrame:
 
     Re-read from raw to get the correct figure.
     """
-    raw_path = PROJECT_ROOT / "01_data_raw" / "stats_nz" / \
-               "stats_nz_kiwifruit_exports_historical.csv"
+    raw_path = (
+        PROJECT_ROOT
+        / "01_data_raw"
+        / "stats_nz"
+        / "stats_nz_kiwifruit_exports_historical.csv"
+    )
 
     col_names = [
         "year",
-        "gold_qty_kg",    "gold_fob_nzd",
-        "green_qty_kg",   "green_fob_nzd",
-        "red_qty_kg",     "red_fob_nzd",
-        "total_qty_kg",   "total_fob_nzd",
-        "all_codes_qty_kg", "all_codes_fob_nzd"
+        "gold_qty_kg",
+        "gold_fob_nzd",
+        "green_qty_kg",
+        "green_fob_nzd",
+        "red_qty_kg",
+        "red_fob_nzd",
+        "total_qty_kg",
+        "total_fob_nzd",
+        "all_codes_qty_kg",
+        "all_codes_fob_nzd",
     ]
 
     try:
@@ -201,7 +228,7 @@ def fix_stats_nz_fob(sources: dict) -> pd.DataFrame:
             header=None,
             names=col_names,
             na_values=["", '".."', ".."],
-            encoding="utf-8"
+            encoding="utf-8",
         )
     except Exception:
         df = pd.read_csv(
@@ -210,7 +237,7 @@ def fix_stats_nz_fob(sources: dict) -> pd.DataFrame:
             header=None,
             names=col_names,
             na_values=["", '".."', ".."],
-            encoding="latin-1"
+            encoding="latin-1",
         )
 
     df["year"] = pd.to_numeric(df["year"], errors="coerce")
@@ -219,30 +246,34 @@ def fix_stats_nz_fob(sources: dict) -> pd.DataFrame:
 
     for col in col_names[1:]:
         df[col] = pd.to_numeric(
-            df[col].astype(str).str.replace('"', '').str.strip(),
-            errors="coerce"
+            df[col].astype(str).str.replace('"', "").str.strip(), errors="coerce"
         ).fillna(0)
 
     # Use all_codes_fob_nzd as the authoritative total
     # (includes all HS codes — most complete figure)
-    df["total_export_fob_nzd"]   = df["all_codes_fob_nzd"]
+    df["total_export_fob_nzd"] = df["all_codes_fob_nzd"]
     df["total_export_fob_nzd_m"] = (df["total_export_fob_nzd"] / 1_000_000).round(2)
-    df["gold_fob_nzd_m"]         = (df["gold_fob_nzd"] / 1_000_000).round(2)
-    df["green_fob_nzd_m"]        = (df["green_fob_nzd"] / 1_000_000).round(2)
-    df["red_fob_nzd_m"]          = (df["red_fob_nzd"] / 1_000_000).round(2)
+    df["gold_fob_nzd_m"] = (df["gold_fob_nzd"] / 1_000_000).round(2)
+    df["green_fob_nzd_m"] = (df["green_fob_nzd"] / 1_000_000).round(2)
+    df["red_fob_nzd_m"] = (df["red_fob_nzd"] / 1_000_000).round(2)
 
     # vol_index: 2024 = 100 baseline
     ref = df.loc[df["year"] == 2024, "total_export_fob_nzd_m"].values
     if len(ref) > 0 and ref[0] > 0:
         df["vol_index"] = (df["total_export_fob_nzd_m"] / ref[0] * 100).round(1)
     else:
-        df["vol_index"] = (df["total_export_fob_nzd_m"] /
-                           df["total_export_fob_nzd_m"].mean() * 100).round(1)
+        df["vol_index"] = (
+            df["total_export_fob_nzd_m"] / df["total_export_fob_nzd_m"].mean() * 100
+        ).round(1)
 
-    log(f"Stats NZ FOB fix: 2025 total = "
-        f"NZD {df.loc[df['year']==2025,'total_export_fob_nzd_m'].values[0]:,.1f}M ✓")
-    log(f"Stats NZ FOB fix: 2024 vol_index = "
-        f"{df.loc[df['year']==2024,'vol_index'].values[0]:.1f} (baseline=100)")
+    log(
+        f"Stats NZ FOB fix: 2025 total = "
+        f"NZD {df.loc[df['year'] == 2025, 'total_export_fob_nzd_m'].values[0]:,.1f}M ✓"
+    )
+    log(
+        f"Stats NZ FOB fix: 2024 vol_index = "
+        f"{df.loc[df['year'] == 2024, 'vol_index'].values[0]:.1f} (baseline=100)"
+    )
 
     return df
 
@@ -251,7 +282,8 @@ def fix_stats_nz_fob(sources: dict) -> pd.DataFrame:
 # DIM_TIME
 # =============================================================================
 
-def build_dim_time(sources: dict) -> pd.DataFrame:
+
+def build_dim_time(sources: dict[str, pd.DataFrame]) -> pd.DataFrame:
     """
     Build Dim_Time from NZTA traffic dates + EDI submission dates.
 
@@ -271,39 +303,41 @@ def build_dim_time(sources: dict) -> pd.DataFrame:
     all_dates = pd.date_range("2018-01-01", "2026-09-30", freq="D")
     df = pd.DataFrame({"date": all_dates})
 
-    df["date_key"]     = df["date"].dt.strftime("%Y%m%d").astype(int)
-    df["iso_week"]     = df["date"].dt.isocalendar().week.astype(int)
-    df["iso_year"]     = df["date"].dt.isocalendar().year.astype(int)
-    df["month"]        = df["date"].dt.month
-    df["year"]         = df["date"].dt.year
-    df["pack_week"]    = df["iso_week"]
+    df["date_key"] = df["date"].dt.strftime("%Y%m%d").astype(int)
+    df["iso_week"] = df["date"].dt.isocalendar().week.astype(int)
+    df["iso_year"] = df["date"].dt.isocalendar().year.astype(int)
+    df["month"] = df["date"].dt.month
+    df["year"] = df["date"].dt.year
+    df["pack_week"] = df["iso_week"]
 
     # Season year: April-March (Southern Hemisphere export season)
     df["season_year"] = df.apply(
-        lambda r: f"{r['year']}/{str(r['year']+1)[2:]}"
-        if r["month"] >= 4
-        else f"{r['year']-1}/{str(r['year'])[2:]}",
-        axis=1
+        lambda r: (
+            f"{r['year']}/{str(r['year'] + 1)[2:]}"
+            if r["month"] >= 4
+            else f"{r['year'] - 1}/{str(r['year'])[2:]}"
+        ),
+        axis=1,
     )
 
     # Season phase
     df["season_phase"] = df["pack_week"].apply(
-        lambda w: "KiwiStart" if w < 14
-                  else "MainPack" if w <= 22
-                  else "Late"
+        lambda w: "KiwiStart" if w < 14 else "MainPack" if w <= 22 else "Late"
     )
 
     # Is pack season active?
     df["is_pack_season"] = df["month"].isin([3, 4, 5, 6, 7, 8])
 
     # Add rainfall from NZTA daily if available (proxy — real NIWA data goes here)
-    df["rainfall_mm_7d"] = np.nan   # placeholder for Open-Meteo join
+    df["rainfall_mm_7d"] = np.nan  # placeholder for Open-Meteo join
 
     out = STAR / "dim_time.csv"
     df.to_csv(out, index=False)
-    log(f"dim_time.csv → {len(df):,} rows | "
+    log(
+        f"dim_time.csv → {len(df):,} rows | "
         f"{df['season_year'].nunique()} seasons | "
-        f"date_key range: {df['date_key'].min()}→{df['date_key'].max()}")
+        f"date_key range: {df['date_key'].min()}→{df['date_key'].max()}"
+    )
     return df
 
 
@@ -311,7 +345,8 @@ def build_dim_time(sources: dict) -> pd.DataFrame:
 # DIM_CORRIDOR
 # =============================================================================
 
-def build_dim_corridor(sources: dict) -> pd.DataFrame:
+
+def build_dim_corridor(sources: dict[str, pd.DataFrame]) -> pd.DataFrame:
     """
     Build Dim_Corridor from NZTA traffic data + subzone definitions.
 
@@ -329,43 +364,45 @@ def build_dim_corridor(sources: dict) -> pd.DataFrame:
     log("Building Dim_Corridor...")
 
     # Subzone reference table — from Master Context + MPI data
-    subzone_ref = pd.DataFrame([
-        {
-            "subzone":                  "Te Puke",
-            "highway":                  "SH2",
-            "distance_port_km":         28,
-            "base_risk_weight":         0.35,
-            "psa_incidence_historical": 0.18,
-        },
-        {
-            "subzone":                  "Katikati",
-            "highway":                  "SH2",
-            "distance_port_km":         52,
-            "base_risk_weight":         0.20,
-            "psa_incidence_historical": 0.09,
-        },
-        {
-            "subzone":                  "Tauranga",
-            "highway":                  "SH2",
-            "distance_port_km":         12,
-            "base_risk_weight":         0.18,
-            "psa_incidence_historical": 0.12,
-        },
-        {
-            "subzone":                  "Pongakawa",
-            "highway":                  "SH2",
-            "distance_port_km":         35,
-            "base_risk_weight":         0.15,
-            "psa_incidence_historical": 0.14,
-        },
-        {
-            "subzone":                  "Opotiki",
-            "highway":                  "SH2",
-            "distance_port_km":         97,
-            "base_risk_weight":         0.12,
-            "psa_incidence_historical": 0.22,
-        },
-    ])
+    subzone_ref = pd.DataFrame(
+        [
+            {
+                "subzone": "Te Puke",
+                "highway": "SH2",
+                "distance_port_km": 28,
+                "base_risk_weight": 0.35,
+                "psa_incidence_historical": 0.18,
+            },
+            {
+                "subzone": "Katikati",
+                "highway": "SH2",
+                "distance_port_km": 52,
+                "base_risk_weight": 0.20,
+                "psa_incidence_historical": 0.09,
+            },
+            {
+                "subzone": "Tauranga",
+                "highway": "SH2",
+                "distance_port_km": 12,
+                "base_risk_weight": 0.18,
+                "psa_incidence_historical": 0.12,
+            },
+            {
+                "subzone": "Pongakawa",
+                "highway": "SH2",
+                "distance_port_km": 35,
+                "base_risk_weight": 0.15,
+                "psa_incidence_historical": 0.14,
+            },
+            {
+                "subzone": "Opotiki",
+                "highway": "SH2",
+                "distance_port_km": 97,
+                "base_risk_weight": 0.12,
+                "psa_incidence_historical": 0.22,
+            },
+        ]
+    )
 
     # Compute congestion stats from real NZTA data
     if "nzta_daily" in sources and "congestion_index" in sources["nzta_daily"].columns:
@@ -373,34 +410,39 @@ def build_dim_corridor(sources: dict) -> pd.DataFrame:
 
         # Recalibrate: use p25 as "normal" baseline, p75 as "congested"
         ci_median = nzta["congestion_index"].median()
-        ci_p75    = nzta["congestion_index"].quantile(0.75)
-        ci_max    = nzta["congestion_index"].max()
+        ci_p75 = nzta["congestion_index"].quantile(0.75)
+        ci_max = nzta["congestion_index"].max()
 
-        log(f"NZTA congestion_index — median: {ci_median:.1f}, "
-            f"p75: {ci_p75:.1f}, max: {ci_max:.1f}", "FIND")
-        log("Note: high median (92) reflects baseline miscalibration. "
-            "Congestion_index recalibrated in dim_corridor using relative scale.", "WARN")
+        log(
+            f"NZTA congestion_index — median: {ci_median:.1f}, "
+            f"p75: {ci_p75:.1f}, max: {ci_max:.1f}",
+            "FIND",
+        )
+        log(
+            "Note: high median (92) reflects baseline miscalibration. "
+            "Congestion_index recalibrated in dim_corridor using relative scale.",
+            "WARN",
+        )
 
         # Rescale congestion_index to 0-100 relative to actual data range
         ci_min = nzta["congestion_index"].min()
         if ci_max > ci_min:
             nzta["congestion_index_scaled"] = (
-                (nzta["congestion_index"] - ci_min) /
-                (ci_max - ci_min) * 100
+                (nzta["congestion_index"] - ci_min) / (ci_max - ci_min) * 100
             ).round(1)
         else:
             nzta["congestion_index_scaled"] = 25.0
 
         # Weekly average congestion per pack week
         if "pack_week" in nzta.columns:
-            weekly_cong = (nzta.groupby("pack_week")["congestion_index_scaled"]
-                          .mean()
-                          .round(1)
-                          .reset_index()
-                          .rename(columns={"congestion_index_scaled":
-                                           "avg_congestion_by_week"}))
-            log(f"Weekly congestion computed for "
-                f"{len(weekly_cong)} pack weeks", "FIND")
+            weekly_cong = (
+                nzta.groupby("pack_week")["congestion_index_scaled"]
+                .mean()
+                .round(1)
+                .reset_index()
+                .rename(columns={"congestion_index_scaled": "avg_congestion_by_week"})
+            )
+            log(f"Weekly congestion computed for {len(weekly_cong)} pack weeks", "FIND")
 
         # Overall average for subzone table
         avg_cong = nzta["congestion_index_scaled"].mean()
@@ -412,9 +454,15 @@ def build_dim_corridor(sources: dict) -> pd.DataFrame:
     subzone_ref["corridor_key"] = range(1, len(subzone_ref) + 1)
 
     # Reorder columns — PK first
-    cols = ["corridor_key", "subzone", "highway", "distance_port_km",
-            "congestion_index_avg", "base_risk_weight",
-            "psa_incidence_historical"]
+    cols = [
+        "corridor_key",
+        "subzone",
+        "highway",
+        "distance_port_km",
+        "congestion_index_avg",
+        "base_risk_weight",
+        "psa_incidence_historical",
+    ]
     subzone_ref = subzone_ref[cols]
 
     out = STAR / "dim_corridor.csv"
@@ -427,7 +475,8 @@ def build_dim_corridor(sources: dict) -> pd.DataFrame:
 # DIM_FRUIT_QUALITY
 # =============================================================================
 
-def build_dim_fruit_quality(sources: dict) -> pd.DataFrame:
+
+def build_dim_fruit_quality(sources: dict[str, pd.DataFrame]) -> pd.DataFrame:
     """
     Build Dim_FruitQuality from maturity readings.
 
@@ -465,12 +514,25 @@ def build_dim_fruit_quality(sources: dict) -> pd.DataFrame:
     mat["maturity_area"] = mat["kpin"].astype(str) + "_" + mat["pack_week"].astype(str)
 
     # Select and rename to match Data Dictionary
-    dim = mat[[
-        "kpin", "season", "subzone", "variety", "growing_method",
-        "pack_week", "reading_date", "dm_pct", "mts_threshold",
-        "mts_status", "tzg_score", "tzg_grade", "pest_indicator",
-        "maturity_area", "sample_size"
-    ]].copy()
+    dim = mat[
+        [
+            "kpin",
+            "season",
+            "subzone",
+            "variety",
+            "growing_method",
+            "pack_week",
+            "reading_date",
+            "dm_pct",
+            "mts_threshold",
+            "mts_status",
+            "tzg_score",
+            "tzg_grade",
+            "pest_indicator",
+            "maturity_area",
+            "sample_size",
+        ]
+    ].copy()
 
     # Add fruit_key PK
     dim = dim.reset_index(drop=True)
@@ -478,18 +540,23 @@ def build_dim_fruit_quality(sources: dict) -> pd.DataFrame:
 
     # Summary stats for audit
     pass_rate = (dim["mts_status"] == "PASS").mean()
-    log(f"dim_fruit_quality: {len(dim):,} records | "
+    log(
+        f"dim_fruit_quality: {len(dim):,} records | "
         f"MTS pass rate: {pass_rate:.1%} | "
         f"Varieties: {dim['variety'].nunique()} | "
-        f"Seasons: {dim['season'].nunique()}")
+        f"Seasons: {dim['season'].nunique()}"
+    )
 
     # DM distribution by variety
     dm_by_var = dim.groupby("variety")["dm_pct"].agg(["mean", "std", "min", "max"])
     for variety, row in dm_by_var.iterrows():
-        log(f"  {variety:<20} "
+        log(
+            f"  {variety:<20} "
             f"mean={row['mean']:.2f}%  "
             f"std={row['std']:.2f}%  "
-            f"range=[{row['min']:.1f}, {row['max']:.1f}]", "FIND")
+            f"range=[{row['min']:.1f}, {row['max']:.1f}]",
+            "FIND",
+        )
 
     out = STAR / "dim_fruit_quality.csv"
     dim.to_csv(out, index=False)
@@ -501,7 +568,10 @@ def build_dim_fruit_quality(sources: dict) -> pd.DataFrame:
 # DIM_GROWER (extends grower register)
 # =============================================================================
 
-def build_dim_grower(sources: dict, dim_corridor: pd.DataFrame) -> pd.DataFrame:
+
+def build_dim_grower(
+    sources: dict[str, pd.DataFrame], dim_corridor: pd.DataFrame
+) -> pd.DataFrame:
     """
     Build Dim_Grower — denormalised grower reference table.
     Joins grower register with corridor metadata.
@@ -519,7 +589,7 @@ def build_dim_grower(sources: dict, dim_corridor: pd.DataFrame) -> pd.DataFrame:
         dim_corridor[["subzone", "corridor_key", "distance_port_km"]],
         on="subzone",
         how="left",
-        suffixes=("", "_corridor")
+        suffixes=("", "_corridor"),
     )
 
     # Use corridor distance if grower distance is missing
@@ -534,9 +604,11 @@ def build_dim_grower(sources: dict, dim_corridor: pd.DataFrame) -> pd.DataFrame:
 
     out = STAR / "dim_grower.csv"
     growers.to_csv(out, index=False)
-    log(f"dim_grower.csv → {len(growers)} growers | "
+    log(
+        f"dim_grower.csv → {len(growers)} growers | "
         f"Subzones: {growers['subzone'].nunique()} | "
-        f"Organic: {growers['organic'].sum()} growers")
+        f"Organic: {growers['organic'].sum()} growers"
+    )
     return growers
 
 
@@ -544,11 +616,15 @@ def build_dim_grower(sources: dict, dim_corridor: pd.DataFrame) -> pd.DataFrame:
 # FACT_EXPORT_TRANSACTIONS
 # =============================================================================
 
-def build_fact_table(sources: dict, dim_time: pd.DataFrame,
-                     dim_corridor: pd.DataFrame,
-                     dim_fruit: pd.DataFrame,
-                     dim_grower: pd.DataFrame,
-                     stats_exports: pd.DataFrame) -> pd.DataFrame:
+
+def build_fact_table(
+    sources: dict[str, pd.DataFrame],
+    dim_time: pd.DataFrame,
+    dim_corridor: pd.DataFrame,
+    dim_fruit: pd.DataFrame,
+    dim_grower: pd.DataFrame,
+    stats_exports: pd.DataFrame,
+) -> pd.DataFrame:
     """
     Build Fact_ExportTransactions — the central analytical table.
 
@@ -593,37 +669,43 @@ def build_fact_table(sources: dict, dim_time: pd.DataFrame,
     subs["submission_date"] = pd.to_datetime(subs["submission_date"], errors="coerce")
     subs["date_key"] = subs["submission_date"].dt.strftime("%Y%m%d").astype("Int64")
 
-    time_keys = dim_time[["date_key", "pack_week", "season_phase",
-                           "is_pack_season"]].copy()
+    time_keys = dim_time[
+        ["date_key", "pack_week", "season_phase", "is_pack_season"]
+    ].copy()
     subs = subs.merge(time_keys, on=["date_key", "pack_week"], how="left")
 
     # ── OTIF computation ───────────────────────────────────────────────────
     # Use corridor avg congestion as proxy (pack-week specific would need join)
     # Congestion lookup: use dim_corridor avg as baseline
-    cong_default = dim_corridor["congestion_index_avg"].mean() \
-                   if len(dim_corridor) > 0 else 25.0
+    cong_default = (
+        dim_corridor["congestion_index_avg"].mean() if len(dim_corridor) > 0 else 25.0
+    )
 
     # Rain proxy: use pack_week to estimate seasonal rainfall pattern
     # (real NIWA data joins here in production — this is the placeholder)
-    def estimate_rain(pack_week):
+    def estimate_rain(pack_week: int) -> float:
         """
         Estimated 7-day rainfall mm by pack week for BOP.
         Based on NIWA BOP climate normals — April peaks, June drier.
         Pack week 11-13 (March): ~28mm, 14-16 (April): ~32mm,
         17-19 (May): ~22mm, 20-22 (June): ~18mm, 23-26 (July+): ~15mm
         """
-        if pack_week < 14:   return 28.0
-        if pack_week < 17:   return 32.0
-        if pack_week < 20:   return 22.0
-        if pack_week < 23:   return 18.0
+        if pack_week < 14:
+            return 28.0
+        if pack_week < 17:
+            return 32.0
+        if pack_week < 20:
+            return 22.0
+        if pack_week < 23:
+            return 18.0
         return 15.0
 
     subs["congestion_index"] = cong_default
-    subs["rainfall_mm_7d"]   = subs["pack_week"].apply(estimate_rain)
-    subs["reg_index"]        = 15.0   # default regulatory load
+    subs["rainfall_mm_7d"] = subs["pack_week"].apply(estimate_rain)
+    subs["reg_index"] = 15.0  # default regulatory load
 
     # OTIF formula — identical to Apophenia simulator
-    def compute_otif(row):
+    def compute_otif(row: pd.Series) -> float:
         """Compute OTIF% for one submission row using the Apophenia simulator formula.
 
         Applies congestion, rainfall, regulatory, and MTS-breach penalties to
@@ -631,40 +713,47 @@ def build_fact_table(sources: dict, dim_time: pd.DataFrame,
         """
         cong_f = (row["congestion_index"] / 100) ** 1.3
         rain_f = (min(row["rainfall_mm_7d"], 120) / 120) ** 1.2
-        reg_f  = (row["reg_index"] / 100) ** 1.2
+        reg_f = (row["reg_index"] / 100) ** 1.2
         mts_breach = not row["mts_pass"]
-        drop = (cong_f * 8.5) + (rain_f * 5.5) + (reg_f * 3.0) + \
-               (12.0 if mts_breach else 0)
+        drop = (
+            (cong_f * 8.5)
+            + (rain_f * 5.5)
+            + (reg_f * 3.0)
+            + (12.0 if mts_breach else 0)
+        )
         return round(max(52.0, OTIF_BASE - drop), 2)
 
     subs["otif_pct"] = subs.apply(compute_otif, axis=1)
 
     # ── Risk Score ─────────────────────────────────────────────────────────
     # Identical formula to Apophenia simulator STATE computation
-    def compute_risk_score(row):
+    def compute_risk_score(row: pd.Series) -> int:
         """Compute risk score (1–100) for one row, matching Apophenia simulator logic.
 
         Weighted combination of DM factor, pest, congestion, rainfall, and regulatory
         inputs via a logistic-sigmoid on DM and power-law scaling on logistics factors.
         """
         import math
-        dm        = row["dm_pct_avg"]
-        pest      = row.get("pest_indicator_x", 20)   # default if not joined
-        cong      = row["congestion_index"]
-        rain      = row["rainfall_mm_7d"]
-        reg       = row["reg_index"]
 
-        dm_factor  = 1 / (1 + math.exp(-2.2 * (dm - MTS_GREEN)))
-        pest_f     = (min(pest, 100) / 100) ** 1.4
-        cong_f     = (cong / 100) ** 1.3
-        rain_f     = (min(rain, 120) / 120) ** 1.2
-        reg_f      = (reg / 100) ** 1.2
+        dm = row["dm_pct_avg"]
+        pest = row.get("pest_indicator_x", 20)  # default if not joined
+        cong = row["congestion_index"]
+        rain = row["rainfall_mm_7d"]
+        reg = row["reg_index"]
 
-        raw = ((1 - dm_factor) * 0.35 +
-               pest_f          * 0.25 +
-               cong_f          * 0.15 +
-               rain_f          * 0.15 +
-               reg_f           * 0.10)
+        dm_factor = 1 / (1 + math.exp(-2.2 * (dm - MTS_GREEN)))
+        pest_f = (min(pest, 100) / 100) ** 1.4
+        cong_f = (cong / 100) ** 1.3
+        rain_f = (min(rain, 120) / 120) ** 1.2
+        reg_f = (reg / 100) ** 1.2
+
+        raw = (
+            (1 - dm_factor) * 0.35
+            + pest_f * 0.25
+            + cong_f * 0.15
+            + rain_f * 0.15
+            + reg_f * 0.10
+        )
 
         return int(min(100, max(1, round(raw * 100))))
 
@@ -674,40 +763,58 @@ def build_fact_table(sources: dict, dim_time: pd.DataFrame,
     # $0.085 NZD per tray per 10km — operational estimate
     # Adjusted upward with congestion (higher congestion = higher cost)
     subs["freight_cost_nzd"] = (
-        subs["trays_exported"] *
-        0.0085 *
-        subs.get("distance_port_km", pd.Series([30.0] * len(subs))) *
-        (1 + subs["congestion_index"] / 200)
+        subs["trays_exported"]
+        * 0.0085
+        * subs.get("distance_port_km", pd.Series([30.0] * len(subs)))
+        * (1 + subs["congestion_index"] / 200)
     ).round(2)
 
     # ── Margin erosion ─────────────────────────────────────────────────────
     # % of potential return lost to quality + logistics + regulatory factors
     potential_return = subs["trays_submitted"] * (BASE_RATE + TASTE_MAX)
-    actual_return    = subs["total_return_nzd"]
+    actual_return = subs["total_return_nzd"]
     subs["margin_erosion_pct"] = (
-        (1 - actual_return / potential_return.replace(0, np.nan)) * 100
-    ).clip(0, 100).round(2)
+        ((1 - actual_return / potential_return.replace(0, np.nan)) * 100)
+        .clip(0, 100)
+        .round(2)
+    )
 
     # ── Final column selection ─────────────────────────────────────────────
     fact_cols = [
-        "export_id",          # PK (added below)
-        "date_key",           # FK → Dim_Time
-        "corridor_key",       # FK → Dim_Corridor
-        "fruit_key",          # FK → Dim_FruitQuality
-        "grower_key",         # FK → Dim_Grower
+        "export_id",  # PK (added below)
+        "date_key",  # FK → Dim_Time
+        "corridor_key",  # FK → Dim_Corridor
+        "fruit_key",  # FK → Dim_FruitQuality
+        "grower_key",  # FK → Dim_Grower
         # Context
-        "season", "subzone", "variety", "pack_week", "season_phase",
+        "season",
+        "subzone",
+        "variety",
+        "pack_week",
+        "season_phase",
         # Volume measures
-        "trays_submitted", "trays_exported", "trays_lost", "loss_pct",
+        "trays_submitted",
+        "trays_exported",
+        "trays_lost",
+        "loss_pct",
         # Quality measures
-        "dm_pct_avg", "tzg_score", "mts_pass",
+        "dm_pct_avg",
+        "tzg_score",
+        "mts_pass",
         # Financial measures
-        "submit_payment_nzd", "taste_payment_nzd",
-        "total_return_nzd", "freight_cost_nzd", "margin_erosion_pct",
+        "submit_payment_nzd",
+        "taste_payment_nzd",
+        "total_return_nzd",
+        "freight_cost_nzd",
+        "margin_erosion_pct",
         # Operational measures
-        "otif_pct", "risk_score",
+        "otif_pct",
+        "risk_score",
         # Context variables (for simulator feed)
-        "congestion_index", "rainfall_mm_7d", "reg_index", "vol_index",
+        "congestion_index",
+        "rainfall_mm_7d",
+        "reg_index",
+        "vol_index",
     ]
 
     # Keep only columns that exist
@@ -719,10 +826,10 @@ def build_fact_table(sources: dict, dim_time: pd.DataFrame,
     fact.to_csv(out, index=False)
 
     # Validation summary
-    total_ret  = fact["total_return_nzd"].sum() / 1_000_000
+    total_ret = fact["total_return_nzd"].sum() / 1_000_000
     total_trays = fact["trays_submitted"].sum()
-    avg_otif    = fact["otif_pct"].mean()
-    avg_risk    = fact["risk_score"].mean()
+    avg_otif = fact["otif_pct"].mean()
+    avg_risk = fact["risk_score"].mean()
 
     log(f"fact_export_transactions.csv → {len(fact):,} rows")
     log(f"  Total return (all seasons): NZD {total_ret:,.1f}M", "FIND")
@@ -738,7 +845,8 @@ def build_fact_table(sources: dict, dim_time: pd.DataFrame,
 # TRANSFORM REPORT
 # =============================================================================
 
-def write_transform_report(tables: dict):
+
+def write_transform_report(tables: dict[str, pd.DataFrame]) -> None:
     """Write a Markdown transform report summarising row counts and schema for each output table.
 
     Saves to 02_data_processed/transform_report.md. Includes table grain, key counts,
@@ -761,26 +869,28 @@ def write_transform_report(tables: dict):
     ]
 
     grains = {
-        "dim_time":                "One row per calendar date",
-        "dim_corridor":            "One row per BOP subzone / highway",
-        "dim_fruit_quality":       "One row per KPIN × season × pack week",
-        "dim_grower":              "One row per fictional grower (KPIN)",
-        "fact_export_transactions":"One row per KPIN × season × pack week (submission batch)",
+        "dim_time": "One row per calendar date",
+        "dim_corridor": "One row per BOP subzone / highway",
+        "dim_fruit_quality": "One row per KPIN × season × pack week",
+        "dim_grower": "One row per fictional grower (KPIN)",
+        "fact_export_transactions": "One row per KPIN × season × pack week (submission batch)",
     }
 
     pks = {
-        "dim_time":                "date_key",
-        "dim_corridor":            "corridor_key",
-        "dim_fruit_quality":       "fruit_key",
-        "dim_grower":              "grower_key",
-        "fact_export_transactions":"export_id",
+        "dim_time": "date_key",
+        "dim_corridor": "corridor_key",
+        "dim_fruit_quality": "fruit_key",
+        "dim_grower": "grower_key",
+        "fact_export_transactions": "export_id",
     }
 
     for name, df in tables.items():
         if df is not None and len(df) > 0:
-            lines.append(f"| {name} | {len(df):,} | "
-                        f"{pks.get(name,'—')} | "
-                        f"{grains.get(name,'—')} |")
+            lines.append(
+                f"| {name} | {len(df):,} | "
+                f"{pks.get(name, '—')} | "
+                f"{grains.get(name, '—')} |"
+            )
 
     lines += [
         "",
@@ -849,71 +959,62 @@ def write_transform_report(tables: dict):
 # MAIN
 # =============================================================================
 
-def main():
+
+def main() -> None:
     """Entry point: orchestrate full ETL Phase 2 — star schema assembly.
 
     Loads all cleaned sources, builds all dimension and fact tables, writes
     Parquet and CSV outputs to 02_data_processed/, and generates a Markdown
     transform report summarising the run.
     """
-    print("=" * 70)
-    print("  OPTIMISING KIWIFRUIT EXPORT — ETL Phase 2: Star Schema Assembly")
-    print("  APOPHENIA | Gabriela Olivera | Data Analytics Portfolio")
-    print("=" * 70)
-    print()
+    logger.info("=" * 70)
+    logger.info("OPTIMISING KIWIFRUIT EXPORT — ETL Phase 2: Star Schema Assembly")
+    logger.info("APOPHENIA | Gabriela Olivera | Data Analytics Portfolio")
+    logger.info("=" * 70)
 
     sources = load_sources()
-    print()
 
-    print("── STATS NZ FOB FIX ─────────────────────────────────────────────")
+    logger.info("── STATS NZ FOB FIX ──")
     stats_exports = fix_stats_nz_fob(sources)
-    print()
 
-    print("── DIM_TIME ──────────────────────────────────────────────────────")
+    logger.info("── DIM_TIME ──")
     dim_time = build_dim_time(sources)
-    print()
 
-    print("── DIM_CORRIDOR ──────────────────────────────────────────────────")
+    logger.info("── DIM_CORRIDOR ──")
     dim_corridor = build_dim_corridor(sources)
-    print()
 
-    print("── DIM_FRUIT_QUALITY ─────────────────────────────────────────────")
+    logger.info("── DIM_FRUIT_QUALITY ──")
     dim_fruit = build_dim_fruit_quality(sources)
-    print()
 
-    print("── DIM_GROWER ────────────────────────────────────────────────────")
+    logger.info("── DIM_GROWER ──")
     dim_grower = build_dim_grower(sources, dim_corridor)
-    print()
 
-    print("── FACT_EXPORT_TRANSACTIONS ──────────────────────────────────────")
+    logger.info("── FACT_EXPORT_TRANSACTIONS ──")
     fact = build_fact_table(
-        sources, dim_time, dim_corridor,
-        dim_fruit, dim_grower, stats_exports
+        sources, dim_time, dim_corridor, dim_fruit, dim_grower, stats_exports
     )
-    print()
 
-    print("── TRANSFORM REPORT ──────────────────────────────────────────────")
+    logger.info("── TRANSFORM REPORT ──")
     tables = {
-        "dim_time":                dim_time,
-        "dim_corridor":            dim_corridor,
-        "dim_fruit_quality":       dim_fruit,
-        "dim_grower":              dim_grower,
+        "dim_time": dim_time,
+        "dim_corridor": dim_corridor,
+        "dim_fruit_quality": dim_fruit,
+        "dim_grower": dim_grower,
         "fact_export_transactions": fact,
     }
     write_transform_report(tables)
 
-    print()
-    print("=" * 70)
-    print("  ETL Phase 2 COMPLETE")
-    print(f"  Output: {STAR}")
-    print()
-    print("  Star Schema files:")
+    logger.info("=" * 70)
+    logger.info("ETL Phase 2 COMPLETE")
+    logger.info(f"Output: {STAR}")
+    logger.info("Star Schema files:")
     for f in sorted(STAR.glob("*.csv")):
         size_kb = f.stat().st_size / 1024
         rows = sum(1 for _ in open(f)) - 1
-        print(f"    {f.name:<42} {rows:>8,} rows  {size_kb:>7.1f} KB")
-    print("=" * 70)
+        logger.info(f"  {f.name:<42} {rows:>8,} rows  {size_kb:>7.1f} KB")
+    logger.info("=" * 70)
 
 
 if __name__ == "__main__":
+    configure_logging()
     main()

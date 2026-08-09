@@ -1,0 +1,9 @@
+# APOPHENIA — development-only dependencies
+# Not needed to run the ETL pipeline itself; install alongside
+# requirements.txt only if you're doing this kind of dev work.
+
+-r requirements.txt
+
+# Formats every .py file to PEP 8 at an 88-character line limit (see
+# CLAUDE.md). Run with: ruff format .
+ruff==0.16.2

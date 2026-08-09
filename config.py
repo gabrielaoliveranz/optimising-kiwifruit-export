@@ -29,9 +29,26 @@ it via a one-line sys.path bootstrap:
 
 (three `.parent` calls for scripts two folders below the root, e.g.
 04_analysis/star_schema/load_star_schema.py).
+
+Also provides configure_logging(), the shared `logging` setup: INFO for
+progress, WARNING for degraded paths (e.g. a failed live API call),
+ERROR for failures. Each pipeline script's `if __name__ == "__main__":`
+block calls this once before main().
+
+And strip_emoji(), used where a script's own audit/report log
+(e.g. 02_clean_raw_data.py's integrity_audit_report.md,
+03_transform.py's transform_report.md) intentionally keeps its emoji
+level-tags in the written file, but the same message is also sent to
+the console via `logging` — where a Windows terminal on the cp1252
+code page can raise UnicodeEncodeError on them. Apply it only to the
+console-bound copy; leave the file-bound one untouched.
 """
 
+import logging
+import re
 from pathlib import Path
+
+LOG_FORMAT = "%(asctime)s %(levelname)-8s %(name)s: %(message)s"
 
 PROJECT_ROOT: Path = Path(__file__).resolve().parent
 
@@ -56,3 +73,23 @@ MODELS_DIR: Path = PROJECT_ROOT / "05_models"
 
 # ── Reports / outputs (07_reports/) ──────────────────────────────────
 API_PAYLOADS_DIR: Path = PROJECT_ROOT / "07_reports" / "api_payloads"
+
+
+def configure_logging(level: int = logging.INFO) -> None:
+    """Shared logging setup for every pipeline script's entry point."""
+    logging.basicConfig(level=level, format=LOG_FORMAT)
+
+
+# Covers the pictographic emoji/symbols actually used across this
+# codebase's print/log statements (rain cloud, currency exchange, road,
+# check mark, cross mark, warning sign, magnifying glass, ...) plus the
+# variation-selector-16 suffix some of them carry (e.g. warning sign).
+_EMOJI_PATTERN = re.compile(
+    "[\U0001f300-\U0001faff☀-➿️]+",
+    flags=re.UNICODE,
+)
+
+
+def strip_emoji(text: str) -> str:
+    """Remove pictographic emoji/symbols, collapsing the resulting gaps."""
+    return re.sub(r" {2,}", " ", _EMOJI_PATTERN.sub("", text)).strip()

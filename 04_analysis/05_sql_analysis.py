@@ -1,4 +1,4 @@
-﻿# =============================================================================
+# =============================================================================
 # APOPHENIA — HORTICULTURAL EXPORT RISK INTELLIGENCE AGENT
 # Bay of Plenty Corridor · Independent Research Project
 # Script: 05_sql_analysis.py
@@ -33,15 +33,19 @@ OUTPUT:
 =============================================================================
 """
 
+import logging
 import re
 import sqlite3
 import sys
-import pandas as pd
-from pathlib import Path
 from datetime import datetime
+from pathlib import Path
+
+import pandas as pd
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
-from config import DB_PATH, SQL_DIR  # noqa: E402
+from config import DB_PATH, SQL_DIR, configure_logging  # noqa: E402
+
+logger = logging.getLogger(__name__)
 
 # =============================================================================
 # PATHS
@@ -54,14 +58,15 @@ SQL_DIR.mkdir(parents=True, exist_ok=True)
 # =============================================================================
 
 QUERIES = [
-
-# ─────────────────────────────────────────────────────────────────────────────
-("Q1", "MTS Compliance Rate by Season & Variety",
-"""
+    # ─────────────────────────────────────────────────────────────────────────────
+    (
+        "Q1",
+        "MTS Compliance Rate by Season & Variety",
+        """
 Research Question 1: What % of BOP production falls below MTS Green (15.5%)?
 How does it vary by season and variety?
 """,
-"""
+        """
 SELECT
     f.season,
     f.variety,
@@ -81,21 +86,23 @@ FROM fact_export_transactions f
 GROUP BY f.season, f.variety
 ORDER BY f.season, mts_fail_pct DESC
 """,
-"""
+        """
 INTERPRETATION: MTS fail rate should be 6-12% in a normal season.
 2024/25 will show the highest fail rate due to climate stress.
 payment_reversed_nzd_k shows the direct financial cost of MTS breaches.
 Varieties with MTS thresholds closest to mean DM (e.g. SunGold at 16.1%)
 will show higher fail rates than Green (threshold 15.5%).
-"""),
-
-# ─────────────────────────────────────────────────────────────────────────────
-("Q2", "OTIF Degradation by Pack Week — SH2 Corridor Analysis",
-"""
+""",
+    ),
+    # ─────────────────────────────────────────────────────────────────────────────
+    (
+        "Q2",
+        "OTIF Degradation by Pack Week — SH2 Corridor Analysis",
+        """
 Research Question 2: In which pack weeks does SH2 congestion cause greatest
 OTIF degradation? Is there a non-linear threshold effect?
 """,
-"""
+        """
 SELECT
     f.pack_week,
     t.season_phase,
@@ -114,20 +121,22 @@ JOIN dim_time t ON f.date_key = t.date_key
 GROUP BY f.pack_week, t.season_phase
 ORDER BY f.pack_week
 """,
-"""
+        """
 INTERPRETATION: Look for pack weeks where below_target_pct spikes.
 MainPack weeks (14-22) are the critical window — highest volume,
 highest SH2 pressure. The non-linear effect appears when congestion
 crosses ~40% (congFactor = 0.4^1.3 ≈ 0.30, causing >2.5pt OTIF drop).
-"""),
-
-# ─────────────────────────────────────────────────────────────────────────────
-("Q3", "DM% Elasticity — TZG Payment & Return per 0.1% DM",
-"""
+""",
+    ),
+    # ─────────────────────────────────────────────────────────────────────────────
+    (
+        "Q3",
+        "DM% Elasticity — TZG Payment & Return per 0.1% DM",
+        """
 Research Question 3: What is the NZD elasticity of DM%?
 How much is each additional 0.1% DM worth in Quality Bonus Payment?
 """,
-"""
+        """
 SELECT
     ROUND(f.dm_pct_avg, 1)                                      AS dm_pct_band,
     COUNT(*)                                                    AS submissions,
@@ -143,21 +152,23 @@ WHERE f.mts_pass = 1                          -- MTS pass only (failed = $0)
 GROUP BY dm_pct_band
 ORDER BY dm_pct_band
 """,
-"""
+        """
 INTERPRETATION: The elasticity = change in avg_return_per_tray
 per 0.1% DM band. Above MTS (15.5%) the relationship is linear —
 each 0.1% DM adds approximately TASTE_MAX/45 = $0.021/tray.
 The cliff effect at MTS makes the marginal value of DM near the
 threshold much higher than anywhere else in the range.
-"""),
-
-# ─────────────────────────────────────────────────────────────────────────────
-("Q4", "BOP Subzone DM Variance Analysis — Katikati vs Ōpōtiki",
-"""
+""",
+    ),
+    # ─────────────────────────────────────────────────────────────────────────────
+    (
+        "Q4",
+        "BOP Subzone DM Variance Analysis — Katikati vs Ōpōtiki",
+        """
 Research Question 4: Which BOP subzone has the highest DM variance
 between seasons? Does Katikati show lower variance than Ōpōtiki?
 """,
-"""
+        """
 SELECT
     q.subzone,
     q.season,
@@ -186,21 +197,23 @@ JOIN (
 GROUP BY q.subzone, q.season
 ORDER BY q.subzone, q.season
 """,
-"""
+        """
 INTERPRETATION: Compare dm_std across subzones. Katikati (target: 0.65%)
 should show consistently lower std than Ōpōtiki (target: 0.85%).
 This is Research Question 4 — the key finding for the portfolio.
 A 31% higher variance in Ōpōtiki translates directly to higher
 MTS fail risk and less predictable grower payments.
-"""),
-
-# ─────────────────────────────────────────────────────────────────────────────
-("Q5", "Risk Score Predictive Power — Does It Predict OTIF < 88%?",
-"""
+""",
+    ),
+    # ─────────────────────────────────────────────────────────────────────────────
+    (
+        "Q5",
+        "Risk Score Predictive Power — Does It Predict OTIF < 88%?",
+        """
 Research Question 5: Does the composite Risk Score predict OTIF < 88%
 episodes? What is the precision and recall?
 """,
-"""
+        """
 SELECT
     risk_band,
     total,
@@ -224,22 +237,24 @@ FROM (
 )
 ORDER BY risk_band
 """,
-"""
+        """
 INTERPRETATION: A good Risk Score should show that HIGH risk bands
 have high detection_rate_pct (true positives — correctly flagging
 OTIF failures) and LOW risk bands have low detection_rate (few
 false alarms). If HIGH risk band has >80% OTIF<88, the model
 has strong predictive power. This validates the weight calibration:
 DM 35% | Pest 25% | Congestion 15% | Rain 15% | Reg 10%.
-"""),
-
-# ─────────────────────────────────────────────────────────────────────────────
-("Q6", "Worst Week — Highest Risk Pack Week in 4-Season Dataset",
-"""
+""",
+    ),
+    # ─────────────────────────────────────────────────────────────────────────────
+    (
+        "Q6",
+        "Worst Week — Highest Risk Pack Week in 4-Season Dataset",
+        """
 Research Question 6: What was the highest-risk pack week in the dataset
 and what combination of factors caused it?
 """,
-"""
+        """
 SELECT
     f.season,
     f.pack_week,
@@ -264,27 +279,28 @@ GROUP BY f.season, f.pack_week, t.season_phase, f.subzone
 ORDER BY avg_risk_score DESC
 LIMIT 20
 """,
-"""
+        """
 INTERPRETATION: The top rows show the worst season × pack_week × subzone
 combinations. Expect 2024/25 to dominate (climate stress year).
 Ōpōtiki rows should appear frequently due to high PSA incidence
 and distance penalties. The 'what caused it' answer is in the
 combination of avg_dm (near MTS floor), avg_congestion, and
 avg_rainfall for those rows.
-"""),
-
+""",
+    ),
 ]
 
 # =============================================================================
 # RUNNER
 # =============================================================================
 
+
 def _df_to_md(df: pd.DataFrame) -> str:
     """Generate markdown table without tabulate dependency."""
     cols = list(df.columns)
     header = "| " + " | ".join(str(c) for c in cols) + " |"
-    sep    = "| " + " | ".join("---" for _ in cols) + " |"
-    rows   = []
+    sep = "| " + " | ".join("---" for _ in cols) + " |"
+    rows = []
     for _, row in df.iterrows():
         vals = []
         for v in row:
@@ -296,16 +312,16 @@ def _df_to_md(df: pd.DataFrame) -> str:
     return "\n".join([header, sep] + rows)
 
 
-def run_queries():
-    print("=" * 70)
-    print("  OPTIMISING KIWIFRUIT EXPORT — SQL Analysis")
-    print("  6 Research Questions | kiwifruit_export.db")
-    print("  APOPHENIA | Gabriela Olivera | Data Analytics Portfolio")
-    print("=" * 70)
+def run_queries() -> None:
+    logger.info("=" * 70)
+    logger.info("OPTIMISING KIWIFRUIT EXPORT — SQL Analysis")
+    logger.info("6 Research Questions | kiwifruit_export.db")
+    logger.info("APOPHENIA | Gabriela Olivera | Data Analytics Portfolio")
+    logger.info("=" * 70)
 
     if not DB_PATH.exists():
-        print(f"\n  ❌ Database not found: {DB_PATH}")
-        print("  Run 03_etl_pipeline/04_load.py first.")
+        logger.error(f"Database not found: {DB_PATH}")
+        logger.error("Run 03_etl_pipeline/04_load.py first.")
         return
 
     conn = sqlite3.connect(DB_PATH)
@@ -322,29 +338,30 @@ def run_queries():
     ]
 
     for qid, title, rq, sql, interpretation in QUERIES:
-
-        print(f"\n{'─'*70}")
-        print(f"  {qid} — {title}")
-        print(f"{'─'*70}")
+        logger.info("─" * 70)
+        logger.info(f"{qid} — {title}")
+        logger.info("─" * 70)
 
         try:
             df = pd.read_sql_query(sql, conn)
 
             # Terminal output
-            pd.set_option('display.max_columns', 20)
-            pd.set_option('display.width', 120)
-            pd.set_option('display.float_format', '{:.3f}'.format)
-            print(df.to_string(index=False))
-            print(f"\n  → {len(df)} rows returned")
+            pd.set_option("display.max_columns", 20)
+            pd.set_option("display.width", 120)
+            pd.set_option("display.float_format", "{:.3f}".format)
+            logger.info(df.to_string(index=False))
+            logger.info(f"→ {len(df)} rows returned")
 
             # Key stats
             if len(df) > 0:
-                print(f"\n  KEY FINDINGS:")
+                logger.info("KEY FINDINGS:")
                 for col in df.columns:
-                    if df[col].dtype in ['float64', 'int64']:
-                        print(f"    {col}: min={df[col].min():.3f}  "
-                              f"max={df[col].max():.3f}  "
-                              f"avg={df[col].mean():.3f}")
+                    if df[col].dtype in ["float64", "int64"]:
+                        logger.info(
+                            f"  {col}: min={df[col].min():.3f}  "
+                            f"max={df[col].max():.3f}  "
+                            f"avg={df[col].mean():.3f}"
+                        )
 
             # Markdown output
             md_lines += [
@@ -366,7 +383,7 @@ def run_queries():
             ]
 
         except Exception as e:
-            print(f"  ❌ Query failed: {e}")
+            logger.error(f"Query failed: {e}")
             md_lines.append(f"## {qid} — ERROR: {e}\n\n---\n")
 
     conn.close()
@@ -377,17 +394,20 @@ def run_queries():
 
     # Save individual SQL files
     for qid, title, rq, sql, interpretation in QUERIES:
-        safe_title = re.sub(r'[^a-z0-9_]', '', title[:30].lower().replace(' ', '_').replace('—', ''))
+        safe_title = re.sub(
+            r"[^a-z0-9_]", "", title[:30].lower().replace(" ", "_").replace("—", "")
+        )
         sql_file = SQL_DIR / f"{qid.lower()}_{safe_title}.sql"
         sql_content = f"-- {qid}: {title}\n-- Author: Gabriela Olivera | Data Analytics Portfolio\n-- DB: kiwifruit_export.db\n{sql}"
         sql_file.write_text(sql_content, encoding="utf-8")
 
-    print(f"\n{'='*70}")
-    print(f"  Analysis complete.")
-    print(f"  Results saved: {SQL_DIR / 'query_results.md'}")
-    print(f"  SQL files saved: {SQL_DIR}")
-    print(f"{'='*70}")
+    logger.info("=" * 70)
+    logger.info("Analysis complete.")
+    logger.info(f"Results saved: {SQL_DIR / 'query_results.md'}")
+    logger.info(f"SQL files saved: {SQL_DIR}")
+    logger.info("=" * 70)
 
 
 if __name__ == "__main__":
+    configure_logging()
     run_queries()

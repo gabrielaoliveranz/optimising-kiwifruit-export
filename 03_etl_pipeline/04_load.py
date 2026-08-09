@@ -1,4 +1,4 @@
-﻿# =============================================================================
+# =============================================================================
 # APOPHENIA — HORTICULTURAL EXPORT RISK INTELLIGENCE AGENT
 # Bay of Plenty Corridor · Independent Research Project
 # Script: 04_load.py
@@ -38,14 +38,17 @@ SCHEMA CREATED:
 =============================================================================
 """
 
+import logging
 import sqlite3
 import sys
-import pandas as pd
 from pathlib import Path
-from datetime import datetime
+
+import pandas as pd
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
-from config import STAR_SCHEMA_DIR, DB_PATH  # noqa: E402
+from config import DB_PATH, STAR_SCHEMA_DIR, configure_logging, strip_emoji  # noqa: E402
+
+logger = logging.getLogger(__name__)
 
 # =============================================================================
 # PATHS
@@ -53,12 +56,20 @@ from config import STAR_SCHEMA_DIR, DB_PATH  # noqa: E402
 
 STAR = STAR_SCHEMA_DIR
 
-log_lines = []
+log_lines: list[str] = []
 
-def log(msg: str, level: str = "INFO"):
-    tag  = {"INFO": "✅", "WARN": "⚠️ ", "ERROR": "❌", "FIND": "🔍"}.get(level, "•")
+
+def log(msg: str, level: str = "INFO") -> None:
+    """Append to log_lines exactly as before; log the stripped copy to console."""
+    tag = {"INFO": "✅", "WARN": "⚠️ ", "ERROR": "❌", "FIND": "🔍"}.get(level, "•")
     line = f"  {tag} {msg}"
-    print(line)
+    log_level = {
+        "INFO": logging.INFO,
+        "WARN": logging.WARNING,
+        "ERROR": logging.ERROR,
+        "FIND": logging.DEBUG,
+    }.get(level, logging.INFO)
+    logger.log(log_level, strip_emoji(line))
     log_lines.append(line)
 
 
@@ -67,8 +78,7 @@ def log(msg: str, level: str = "INFO"):
 # =============================================================================
 
 DDL = {
-
-"dim_time": """
+    "dim_time": """
 CREATE TABLE IF NOT EXISTS dim_time (
     date_key        INTEGER PRIMARY KEY,   -- YYYYMMDD
     date            TEXT    NOT NULL,
@@ -82,8 +92,7 @@ CREATE TABLE IF NOT EXISTS dim_time (
     is_pack_season  INTEGER                -- 0 | 1 boolean
 )
 """,
-
-"dim_corridor": """
+    "dim_corridor": """
 CREATE TABLE IF NOT EXISTS dim_corridor (
     corridor_key                INTEGER PRIMARY KEY,
     subzone                     TEXT    NOT NULL,
@@ -94,8 +103,7 @@ CREATE TABLE IF NOT EXISTS dim_corridor (
     psa_incidence_historical    REAL
 )
 """,
-
-"dim_fruit_quality": """
+    "dim_fruit_quality": """
 CREATE TABLE IF NOT EXISTS dim_fruit_quality (
     fruit_key           INTEGER PRIMARY KEY,
     kpin                INTEGER NOT NULL,
@@ -115,8 +123,7 @@ CREATE TABLE IF NOT EXISTS dim_fruit_quality (
     sample_size         INTEGER
 )
 """,
-
-"dim_grower": """
+    "dim_grower": """
 CREATE TABLE IF NOT EXISTS dim_grower (
     grower_key          INTEGER PRIMARY KEY,
     kpin                INTEGER NOT NULL UNIQUE,
@@ -132,8 +139,7 @@ CREATE TABLE IF NOT EXISTS dim_grower (
     FOREIGN KEY (corridor_key) REFERENCES dim_corridor(corridor_key)
 )
 """,
-
-"fact_export_transactions": """
+    "fact_export_transactions": """
 CREATE TABLE IF NOT EXISTS fact_export_transactions (
     export_id               INTEGER PRIMARY KEY,
     -- Foreign keys
@@ -176,7 +182,7 @@ CREATE TABLE IF NOT EXISTS fact_export_transactions (
     FOREIGN KEY (fruit_key)   REFERENCES dim_fruit_quality(fruit_key),
     FOREIGN KEY (grower_key)  REFERENCES dim_grower(grower_key)
 )
-"""
+""",
 }
 
 # =============================================================================
@@ -192,7 +198,6 @@ INDEXES = [
     "CREATE INDEX IF NOT EXISTS idx_fact_mts_pass  ON fact_export_transactions(mts_pass)",
     "CREATE INDEX IF NOT EXISTS idx_fact_risk      ON fact_export_transactions(risk_score)",
     "CREATE INDEX IF NOT EXISTS idx_fact_date      ON fact_export_transactions(date_key)",
-
     # Dimension table indexes
     "CREATE INDEX IF NOT EXISTS idx_dim_fq_kpin    ON dim_fruit_quality(kpin)",
     "CREATE INDEX IF NOT EXISTS idx_dim_fq_season  ON dim_fruit_quality(season)",
@@ -220,7 +225,8 @@ COLUMN_MAPS = {
 # LOAD FUNCTION
 # =============================================================================
 
-def load_table(conn: sqlite3.Connection, table: str, csv_path: Path):
+
+def load_table(conn: sqlite3.Connection, table: str, csv_path: Path) -> int:
     """
     Load a single CSV into a SQLite table.
     Steps:
@@ -252,22 +258,29 @@ def load_table(conn: sqlite3.Connection, table: str, csv_path: Path):
 
     # Keep only CSV columns that exist in schema, in schema order
     valid_cols = [c for c in db_cols if c in df.columns]
-    missing    = [c for c in db_cols if c not in df.columns]
-    extra      = [c for c in df.columns if c not in db_cols]
+    missing = [c for c in db_cols if c not in df.columns]
+    extra = [c for c in df.columns if c not in db_cols]
 
     if missing:
-        log(f"{table}: {len(missing)} schema columns not in CSV — "
-            f"will be NULL: {missing}", "WARN")
+        log(
+            f"{table}: {len(missing)} schema columns not in CSV — "
+            f"will be NULL: {missing}",
+            "WARN",
+        )
     if extra:
-        log(f"{table}: {len(extra)} CSV columns not in schema — "
-            f"dropped: {extra[:5]}{'...' if len(extra)>5 else ''}", "WARN")
+        log(
+            f"{table}: {len(extra)} CSV columns not in schema — "
+            f"dropped: {extra[:5]}{'...' if len(extra) > 5 else ''}",
+            "WARN",
+        )
 
     df_load = df[valid_cols]
 
     # Load into SQLite — replace if table already exists
     conn.execute(f"DELETE FROM {table}")
-    df_load.to_sql(table, conn, if_exists="append", index=False,
-                   method="multi", chunksize=1000)
+    df_load.to_sql(
+        table, conn, if_exists="append", index=False, method="multi", chunksize=1000
+    )
 
     # Verify
     count = conn.execute(f"SELECT COUNT(*) FROM {table}").fetchone()[0]
@@ -287,7 +300,6 @@ VALIDATION_QUERIES = {
             AS mts_fail_pct
         FROM fact_export_transactions
     """,
-
     "Returns by season (NZD M)": """
         SELECT
             season,
@@ -297,7 +309,6 @@ VALIDATION_QUERIES = {
         GROUP BY season
         ORDER BY season
     """,
-
     "Avg DM by subzone": """
         SELECT
             subzone,
@@ -308,7 +319,6 @@ VALIDATION_QUERIES = {
         GROUP BY subzone
         ORDER BY dm_mean DESC
     """,
-
     "Risk score distribution": """
         SELECT
             CASE
@@ -323,14 +333,12 @@ VALIDATION_QUERIES = {
         GROUP BY risk_band
         ORDER BY MIN(risk_score)
     """,
-
     "FK integrity — orphan fact rows": """
         SELECT COUNT(*) AS orphan_rows
         FROM fact_export_transactions f
         LEFT JOIN dim_fruit_quality q ON f.fruit_key = q.fruit_key
         WHERE q.fruit_key IS NULL
     """,
-
     "Avg OTIF by season": """
         SELECT
             season,
@@ -348,40 +356,40 @@ VALIDATION_QUERIES = {
 # MAIN
 # =============================================================================
 
-def main():
-    print("=" * 70)
-    print("  OPTIMISING KIWIFRUIT EXPORT — ETL Phase 3: Load to SQLite")
-    print("  APOPHENIA | Gabriela Olivera | Data Analytics Portfolio")
-    print("=" * 70)
-    print()
+
+def main() -> None:
+    logger.info("=" * 70)
+    logger.info("OPTIMISING KIWIFRUIT EXPORT — ETL Phase 3: Load to SQLite")
+    logger.info("APOPHENIA | Gabriela Olivera | Data Analytics Portfolio")
+    logger.info("=" * 70)
 
     # Remove existing DB to start fresh
     if DB_PATH.exists():
         DB_PATH.unlink()
-        log(f"Existing database removed — fresh load")
+        log("Existing database removed — fresh load")
 
     conn = sqlite3.connect(DB_PATH)
 
     # Enable foreign key enforcement
     conn.execute("PRAGMA foreign_keys = ON")
-    conn.execute("PRAGMA journal_mode = WAL")    # better write performance
+    conn.execute("PRAGMA journal_mode = WAL")  # better write performance
     conn.execute("PRAGMA synchronous = NORMAL")
 
     # ── CREATE TABLES ──────────────────────────────────────────────
-    print("\n── CREATE TABLES ────────────────────────────────────────────────")
+    logger.info("── CREATE TABLES ──")
     for table, ddl in DDL.items():
         conn.execute(ddl)
         log(f"CREATE TABLE {table}")
     conn.commit()
 
     # ── LOAD DATA ──────────────────────────────────────────────────
-    print("\n── LOAD DATA ────────────────────────────────────────────────────")
+    logger.info("── LOAD DATA ──")
 
     load_order = [
-        ("dim_time",              STAR / "dim_time.csv"),
-        ("dim_corridor",          STAR / "dim_corridor.csv"),
-        ("dim_fruit_quality",     STAR / "dim_fruit_quality.csv"),
-        ("dim_grower",            STAR / "dim_grower.csv"),
+        ("dim_time", STAR / "dim_time.csv"),
+        ("dim_corridor", STAR / "dim_corridor.csv"),
+        ("dim_fruit_quality", STAR / "dim_fruit_quality.csv"),
+        ("dim_grower", STAR / "dim_grower.csv"),
         ("fact_export_transactions", STAR / "fact_export_transactions.csv"),
     ]
 
@@ -393,7 +401,7 @@ def main():
     conn.commit()
 
     # ── CREATE INDEXES ─────────────────────────────────────────────
-    print("\n── CREATE INDEXES ───────────────────────────────────────────────")
+    logger.info("── CREATE INDEXES ──")
     for idx_sql in INDEXES:
         conn.execute(idx_sql)
         idx_name = idx_sql.split("IF NOT EXISTS ")[1].split(" ON")[0]
@@ -401,31 +409,35 @@ def main():
     conn.commit()
 
     # ── VALIDATION ─────────────────────────────────────────────────
-    print("\n── VALIDATION QUERIES ───────────────────────────────────────────")
+    logger.info("── VALIDATION QUERIES ──")
 
     for title, query in VALIDATION_QUERIES.items():
-        print(f"\n  [{title}]")
+        logger.info(f"[{title}]")
         try:
             cursor = conn.execute(query)
-            cols   = [d[0] for d in cursor.description]
-            rows   = cursor.fetchall()
-            # Print as simple table
-            col_w = [max(len(c), max((len(str(r[i])) for r in rows), default=0))
-                     for i, c in enumerate(cols)]
+            cols = [d[0] for d in cursor.description]
+            rows = cursor.fetchall()
+            # Format as a simple table, one logger call per line
+            col_w = [
+                max(len(c), max((len(str(r[i])) for r in rows), default=0))
+                for i, c in enumerate(cols)
+            ]
             header = "  " + "  ".join(c.ljust(col_w[i]) for i, c in enumerate(cols))
-            sep    = "  " + "  ".join("-" * w for w in col_w)
-            print(header)
-            print(sep)
+            sep = "  " + "  ".join("-" * w for w in col_w)
+            logger.info(header)
+            logger.info(sep)
             for row in rows:
-                print("  " + "  ".join(str(v).ljust(col_w[i]) for i, v in enumerate(row)))
+                logger.info(
+                    "  " + "  ".join(str(v).ljust(col_w[i]) for i, v in enumerate(row))
+                )
         except Exception as e:
             log(f"Query failed: {e}", "ERROR")
 
     # ── DB SUMMARY ─────────────────────────────────────────────────
-    print("\n── DATABASE SUMMARY ─────────────────────────────────────────────")
+    logger.info("── DATABASE SUMMARY ──")
     db_size_kb = DB_PATH.stat().st_size / 1024
     log(f"Database: {DB_PATH.name}")
-    log(f"Size: {db_size_kb:,.1f} KB ({db_size_kb/1024:.1f} MB)")
+    log(f"Size: {db_size_kb:,.1f} KB ({db_size_kb / 1024:.1f} MB)")
     log(f"Total rows loaded: {total_rows:,}")
     log(f"Tables: {len(DDL)}")
     log(f"Indexes: {len(INDEXES)}")
@@ -437,14 +449,14 @@ def main():
 
     conn.close()
 
-    print("\n" + "=" * 70)
-    print("  ETL Phase 3 COMPLETE")
-    print(f"  DB ready: {DB_PATH}")
-    print()
-    print("  Next step: run SQL queries in 04_analysis/sql_queries/")
-    print("  Or open with DB Browser for SQLite to explore interactively.")
-    print("=" * 70)
+    logger.info("=" * 70)
+    logger.info("ETL Phase 3 COMPLETE")
+    logger.info(f"DB ready: {DB_PATH}")
+    logger.info("Next step: run SQL queries in 04_analysis/sql_queries/")
+    logger.info("Or open with DB Browser for SQLite to explore interactively.")
+    logger.info("=" * 70)
 
 
 if __name__ == "__main__":
+    configure_logging()
     main()

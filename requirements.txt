@@ -1,0 +1,13 @@
+# APOPHENIA — runtime dependencies
+# Every package imported directly anywhere in the pipeline scripts is
+# declared explicitly here and pinned — never left to resolve as a
+# transitive dependency. See CLAUDE.md.
+
+pandas==3.0.2
+numpy==2.4.4
+chardet==7.5.1
+
+# Used by 05_models/06_risk_model_validation.py's logistic regression
+# model; the script falls back to a pure-numpy implementation if this
+# isn't installed, but the sklearn path is the preferred one.
+scikit-learn==1.9.0

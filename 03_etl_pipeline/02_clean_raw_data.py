@@ -1,4 +1,4 @@
-﻿# =============================================================================
+# =============================================================================
 # APOPHENIA — HORTICULTURAL EXPORT RISK INTELLIGENCE AGENT
 # Bay of Plenty Corridor · Independent Research Project
 # Script: 02_clean_raw_data.py
@@ -11,9 +11,11 @@
 WHAT THIS SCRIPT DOES:
   1. NZTA TMS files (tms_2021_03/04/05/06.csv)
      - Detects and repairs duplicate column headers
-     - Filters to Region "04 - Bay of Plenty" AND SH2 (SITE_REFERENCE starts with "002")
+     - Filters to Region "04 - Bay of Plenty" AND SH2 (SITE_REFERENCE
+       starts with "002")
      - Aggregates 15-min intervals → daily totals per site
-     - Computes congestion_index (0-100) aligned with STATE.cong in Apophenia simulator
+     - Computes congestion_index (0-100) aligned with STATE.cong in
+       Apophenia simulator
      - Saves: 02_data_processed/nzta_sh2_bop_clean.csv
 
   2. NZTA daily counts (nzta_sh2_daily_counts_2024.csv)
@@ -51,15 +53,26 @@ OUTPUT FILES (all in 02_data_processed/):
 =============================================================================
 """
 
+import logging
 import sys
 import warnings
-import pandas as pd
-import chardet
 from datetime import datetime
 from pathlib import Path
+from typing import Optional
+
+import chardet
+import pandas as pd
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
-from config import RAW_NZTA_DIR, RAW_STATS_DIR, PROCESSED_DIR  # noqa: E402
+from config import (  # noqa: E402
+    PROCESSED_DIR,
+    RAW_NZTA_DIR,
+    RAW_STATS_DIR,
+    configure_logging,
+    strip_emoji,
+)
+
+logger = logging.getLogger(__name__)
 
 warnings.filterwarnings("ignore")
 
@@ -67,32 +80,48 @@ warnings.filterwarnings("ignore")
 # CONFIGURATION
 # =============================================================================
 
-RAW_NZTA  = RAW_NZTA_DIR
+RAW_NZTA = RAW_NZTA_DIR
 RAW_STATS = RAW_STATS_DIR
 PROCESSED = PROCESSED_DIR
 PROCESSED.mkdir(exist_ok=True)
 
 # 2026 calibration constants
-BOP_REGION_CODE  = "04 - Bay of Plenty"
-SH2_PREFIX       = "002"
-SEASON_MONTHS    = [3, 4, 5, 6]        # Pack weeks 11-26 = March → June
-BASE_HEAVY_DAILY = 800                  # Baseline heavy vehicles/day SH2 BOP
-                                        # (pre-COVID NZTA 2019 reference)
+BOP_REGION_CODE = "04 - Bay of Plenty"
+SH2_PREFIX = "002"
+SEASON_MONTHS = [3, 4, 5, 6]  # Pack weeks 11-26 = March → June
+BASE_HEAVY_DAILY = 800  # Baseline heavy vehicles/day SH2 BOP
+# (pre-COVID NZTA 2019 reference)
 
 # Audit log — accumulates messages, written to MD at the end
-audit = []
+audit: list[tuple[str, str, str]] = []
 
-def log(section: str, message: str, level: str = "INFO"):
-    timestamp = datetime.now().strftime("%H:%M:%S")
-    tag = {"INFO": "✅", "WARN": "⚠️", "ERROR": "❌", "FIND": "🔍"}.get(level, "•")
-    line = f"[{timestamp}] {tag} [{section}] {message}"
-    print(line)
+_LEVEL_TO_LOG_METHOD = {
+    "INFO": logging.INFO,
+    "WARN": logging.WARNING,
+    "ERROR": logging.ERROR,
+    "FIND": logging.DEBUG,
+}
+
+
+def log(section: str, message: str, level: str = "INFO") -> None:
+    """
+    Record one audit-trail entry: appends (section, level, message) to
+    `audit` for the integrity report exactly as before, and separately
+    emits the console-facing line through `logging` with emoji-tags
+    stripped (a Windows cp1252 terminal can raise UnicodeEncodeError on
+    them) — the report's own copy of `message` is untouched, so an
+    emoji a caller embedded directly in it (e.g. "✅ Saved: ...") still
+    appears in the written file as before.
+    """
+    log_level = _LEVEL_TO_LOG_METHOD.get(level, logging.INFO)
+    logger.log(log_level, strip_emoji(f"[{section}] {message}"))
     audit.append((section, level, message))
 
 
 # =============================================================================
 # UTILITY FUNCTIONS
 # =============================================================================
+
 
 def detect_encoding(filepath: Path) -> str:
     """
@@ -105,7 +134,10 @@ def detect_encoding(filepath: Path) -> str:
     result = chardet.detect(raw)
     encoding = result.get("encoding") or "utf-8"
     confidence = result.get("confidence", 0)
-    log("ENCODING", f"{filepath.name} → {encoding} (confidence: {confidence:.0%})")
+    log(
+        "ENCODING",
+        f"{filepath.name} → {encoding} (confidence: {confidence:.0%})",
+    )
     return encoding
 
 
@@ -131,8 +163,12 @@ def repair_duplicate_columns(df: pd.DataFrame, source_file: str) -> pd.DataFrame
             new_cols.append(col)
 
     if duplicates_found:
-        log("ANOMALY", f"{source_file}: duplicate columns → "
-            f"{list(set(duplicates_found))} — renamed with suffix.", "WARN")
+        log(
+            "ANOMALY",
+            f"{source_file}: duplicate columns → "
+            f"{list(set(duplicates_found))} — renamed with suffix.",
+            "WARN",
+        )
 
     df.columns = new_cols
     return df
@@ -150,8 +186,11 @@ def safe_read_csv(filepath: Path, **kwargs) -> pd.DataFrame:
         try:
             df = pd.read_csv(filepath, encoding=enc, **kwargs)
             df = repair_duplicate_columns(df, filepath.name)
-            log("READ", f"{filepath.name} → {len(df):,} rows, "
-                f"{len(df.columns)} cols, encoding={enc}")
+            log(
+                "READ",
+                f"{filepath.name} → {len(df):,} rows, "
+                f"{len(df.columns)} cols, encoding={enc}",
+            )
             return df
         except UnicodeDecodeError:
             continue
@@ -162,8 +201,11 @@ def safe_read_csv(filepath: Path, **kwargs) -> pd.DataFrame:
     raise ValueError(f"Could not read {filepath} with any encoding")
 
 
-def compute_congestion_index(heavy_count: float, light_count: float,
-                              baseline_heavy: float = BASE_HEAVY_DAILY) -> float:
+def compute_congestion_index(
+    heavy_count: float,
+    light_count: float,
+    baseline_heavy: float = BASE_HEAVY_DAILY,
+) -> float:
     """
     Compute congestion_index (0-100) aligned with STATE.cong in the
     Apophenia simulator.
@@ -187,7 +229,8 @@ def compute_congestion_index(heavy_count: float, light_count: float,
 # BLOCK 1 — NZTA TMS (15-min interval files)
 # =============================================================================
 
-def process_nzta_tms():
+
+def process_nzta_tms() -> Optional[pd.DataFrame]:
     """
     Process NZTA TMS 15-minute traffic files for the BOP / SH2 corridor.
 
@@ -211,7 +254,10 @@ def process_nzta_tms():
         log("TMS", "No tms_2021_*.csv files found in nzta_sh2/", "ERROR")
         return None
 
-    log("TMS", f"Found {len(tms_files)} TMS files: {[f.name for f in tms_files]}")
+    log(
+        "TMS",
+        f"Found {len(tms_files)} TMS files: {[f.name for f in tms_files]}",
+    )
 
     frames = []
 
@@ -221,18 +267,26 @@ def process_nzta_tms():
         df = safe_read_csv(filepath, low_memory=False)
 
         # Normalise column names
-        df.columns = (df.columns
-                      .str.strip()
-                      .str.upper()
-                      .str.replace(" ", "_", regex=False))
+        df.columns = (
+            df.columns.str.strip().str.upper().str.replace(" ", "_", regex=False)
+        )
 
         # Check required columns exist
-        required = ["START_DATE", "REGION_NAME", "SITE_REFERENCE",
-                    "CLASS_WEIGHT", "TRAFFIC_COUNT"]
+        required = [
+            "START_DATE",
+            "REGION_NAME",
+            "SITE_REFERENCE",
+            "CLASS_WEIGHT",
+            "TRAFFIC_COUNT",
+        ]
         missing_cols = [c for c in required if c not in df.columns]
         if missing_cols:
-            log("TMS", f"{filepath.name} missing columns: {missing_cols}. "
-                f"Available: {list(df.columns)}", "WARN")
+            log(
+                "TMS",
+                f"{filepath.name} missing columns: {missing_cols}. "
+                f"Available: {list(df.columns)}",
+                "WARN",
+            )
             col_map = {}
             for req in missing_cols:
                 matches = [c for c in df.columns if req[:4] in c]
@@ -243,27 +297,45 @@ def process_nzta_tms():
 
         # Report what's in the file before filtering
         if "REGION_NAME" in df.columns:
-            log("TMS", f"  Regions found: {df['REGION_NAME'].unique()}", "FIND")
+            log(
+                "TMS",
+                f"  Regions found: {df['REGION_NAME'].unique()}",
+                "FIND",
+            )
         if "SITE_REFERENCE" in df.columns:
-            log("TMS", f"  Site refs (first 10): "
-                f"{df['SITE_REFERENCE'].unique()[:10]}", "FIND")
+            log(
+                "TMS",
+                f"  Site refs (first 10): {df['SITE_REFERENCE'].unique()[:10]}",
+                "FIND",
+            )
 
         # Filter: Bay of Plenty
-        bop_mask = (
-            df["REGION_NAME"].str.contains("Bay of Plenty", case=False, na=False) |
-            df["REGION_NAME"].str.contains("04", na=False)
-        )
+        bop_mask = df["REGION_NAME"].str.contains(
+            "Bay of Plenty", case=False, na=False
+        ) | df["REGION_NAME"].str.contains("04", na=False)
         rows_before = len(df)
         df_bop = df[bop_mask].copy()
-        log("TMS", f"  BOP filter: {rows_before:,} → {len(df_bop):,} rows "
-            f"({rows_before - len(df_bop):,} removed)")
+        log(
+            "TMS",
+            f"  BOP filter: {rows_before:,} → {len(df_bop):,} rows "
+            f"({rows_before - len(df_bop):,} removed)",
+        )
 
         if len(df_bop) == 0:
-            log("TMS", f"  No BOP data in {filepath.name} — "
-                f"file covers other regions. Skipping.", "WARN")
-            audit.append(("TMS", "WARN",
-                f"{filepath.name}: regions = "
-                f"{list(df['REGION_NAME'].unique())} — none match BOP."))
+            log(
+                "TMS",
+                f"  No BOP data in {filepath.name} — "
+                f"file covers other regions. Skipping.",
+                "WARN",
+            )
+            audit.append(
+                (
+                    "TMS",
+                    "WARN",
+                    f"{filepath.name}: regions = "
+                    f"{list(df['REGION_NAME'].unique())} — none match BOP.",
+                )
+            )
             continue
 
         # Filter: SH2 only
@@ -273,22 +345,39 @@ def process_nzta_tms():
         log("TMS", f"  SH2 filter: {rows_before:,} → {len(df_sh2):,} rows")
 
         if len(df_sh2) == 0:
-            log("TMS", f"  No SH2 sites in BOP data. "
-                f"Sites available: {df_bop['SITE_REFERENCE'].unique()}", "WARN")
+            log(
+                "TMS",
+                f"  No SH2 sites in BOP data. Sites available: "
+                f"{df_bop['SITE_REFERENCE'].unique()}",
+                "WARN",
+            )
             continue
 
         frames.append(df_sh2)
 
     if not frames:
         log("TMS", "No BOP/SH2 data in any TMS file.", "WARN")
-        log("TMS", "TMS files likely cover Waikato/SH1. "
-            "nzta_sh2_daily_counts_2024.csv is the primary BOP source.", "INFO")
+        log(
+            "TMS",
+            "TMS files likely cover Waikato/SH1. "
+            "nzta_sh2_daily_counts_2024.csv is the primary BOP source.",
+            "INFO",
+        )
 
-        placeholder = pd.DataFrame(columns=[
-            "date", "site_reference", "site_description", "region_name",
-            "heavy_count", "light_count", "total_count", "congestion_index",
-            "pack_week", "season_phase"
-        ])
+        placeholder = pd.DataFrame(
+            columns=[
+                "date",
+                "site_reference",
+                "site_description",
+                "region_name",
+                "heavy_count",
+                "light_count",
+                "total_count",
+                "congestion_index",
+                "pack_week",
+                "season_phase",
+            ]
+        )
         out_path = PROCESSED / "nzta_sh2_bop_clean.csv"
         placeholder.to_csv(out_path, index=False)
         log("TMS", f"Placeholder saved: {out_path.name} (0 rows — see audit)")
@@ -298,9 +387,7 @@ def process_nzta_tms():
     log("TMS", f"Combined TMS (BOP+SH2): {len(combined):,} rows")
 
     # Parse datetime
-    combined["START_DATE"] = pd.to_datetime(
-        combined["START_DATE"], errors="coerce"
-    )
+    combined["START_DATE"] = pd.to_datetime(combined["START_DATE"], errors="coerce")
     null_dates = combined["START_DATE"].isna().sum()
     if null_dates > 0:
         log("TMS", f"  {null_dates} unparseable dates → dropped", "WARN")
@@ -311,30 +398,39 @@ def process_nzta_tms():
     # Impute null traffic counts
     null_counts = combined["TRAFFIC_COUNT"].isna().sum()
     if null_counts > 0:
-        log("TMS", f"  {null_counts} null TRAFFIC_COUNT → "
-            f"imputed with site/class median", "WARN")
+        log(
+            "TMS",
+            f"  {null_counts} null TRAFFIC_COUNT → imputed with site/class median",
+            "WARN",
+        )
         combined["TRAFFIC_COUNT"] = combined.groupby(
             ["SITE_REFERENCE", "CLASS_WEIGHT"]
         )["TRAFFIC_COUNT"].transform(lambda x: x.fillna(x.median()))
 
     # Aggregate 15-min → daily
-    daily = (combined
-             .groupby(["date", "SITE_REFERENCE", "SITE_DESCRIPTION",
-                       "REGION_NAME", "CLASS_WEIGHT"])
-             ["TRAFFIC_COUNT"]
-             .sum()
-             .reset_index())
+    daily = (
+        combined.groupby(
+            [
+                "date",
+                "SITE_REFERENCE",
+                "SITE_DESCRIPTION",
+                "REGION_NAME",
+                "CLASS_WEIGHT",
+            ]
+        )["TRAFFIC_COUNT"]
+        .sum()
+        .reset_index()
+    )
 
     daily_pivot = daily.pivot_table(
         index=["date", "SITE_REFERENCE", "SITE_DESCRIPTION", "REGION_NAME"],
         columns="CLASS_WEIGHT",
         values="TRAFFIC_COUNT",
-        aggfunc="sum"
+        aggfunc="sum",
     ).reset_index()
 
     daily_pivot.columns = [
-        str(c).lower().replace(" ", "_").replace("-", "_")
-        for c in daily_pivot.columns
+        str(c).lower().replace(" ", "_").replace("-", "_") for c in daily_pivot.columns
     ]
 
     if "heavy" not in daily_pivot.columns:
@@ -345,7 +441,8 @@ def process_nzta_tms():
     daily_pivot = daily_pivot.fillna(0)
     daily_pivot["total_count"] = daily_pivot["heavy"] + daily_pivot["light"]
     daily_pivot["congestion_index"] = daily_pivot.apply(
-        lambda row: compute_congestion_index(row["heavy"], row["light"]), axis=1
+        lambda row: compute_congestion_index(row["heavy"], row["light"]),
+        axis=1,
     )
 
     daily_pivot["date"] = pd.to_datetime(daily_pivot["date"])
@@ -355,15 +452,25 @@ def process_nzta_tms():
         lambda w: "KiwiStart" if w < 14 else "MainPack" if w <= 22 else "Late"
     )
 
-    result = daily_pivot.rename(columns={
-        "heavy": "heavy_count",
-        "light": "light_count",
-    })
+    result = daily_pivot.rename(
+        columns={
+            "heavy": "heavy_count",
+            "light": "light_count",
+        }
+    )
 
     output_cols = [
-        "date", "site_reference", "site_description", "region_name",
-        "heavy_count", "light_count", "total_count",
-        "congestion_index", "iso_week", "pack_week", "season_phase"
+        "date",
+        "site_reference",
+        "site_description",
+        "region_name",
+        "heavy_count",
+        "light_count",
+        "total_count",
+        "congestion_index",
+        "iso_week",
+        "pack_week",
+        "season_phase",
     ]
     output_cols = [c for c in output_cols if c in result.columns]
     result = result[output_cols].sort_values(["date", "site_reference"])
@@ -371,10 +478,22 @@ def process_nzta_tms():
     out_path = PROCESSED / "nzta_sh2_bop_clean.csv"
     result.to_csv(out_path, index=False)
     log("TMS", f"✅ Saved: {out_path.name} ({len(result):,} rows)")
-    log("TMS", f"  Date range: {result['date'].min()} → {result['date'].max()}")
-    log("TMS", f"  Sites: {result['site_reference'].nunique()} unique SH2 sites")
-    log("TMS", f"  Avg congestion_index: {result['congestion_index'].mean():.1f}")
-    log("TMS", f"  Max congestion_index: {result['congestion_index'].max():.1f}")
+    log(
+        "TMS",
+        f"  Date range: {result['date'].min()} → {result['date'].max()}",
+    )
+    log(
+        "TMS",
+        f"  Sites: {result['site_reference'].nunique()} unique SH2 sites",
+    )
+    log(
+        "TMS",
+        f"  Avg congestion_index: {result['congestion_index'].mean():.1f}",
+    )
+    log(
+        "TMS",
+        f"  Max congestion_index: {result['congestion_index'].max():.1f}",
+    )
 
     return result
 
@@ -383,7 +502,8 @@ def process_nzta_tms():
 # BLOCK 2 — NZTA Daily Counts 2024
 # =============================================================================
 
-def process_nzta_daily():
+
+def process_nzta_daily() -> Optional[pd.DataFrame]:
     """
     Process nzta_sh2_daily_counts_2024.csv — pre-aggregated daily file.
 
@@ -402,9 +522,7 @@ def process_nzta_daily():
 
     df = safe_read_csv(filepath, low_memory=False)
 
-    df.columns = (df.columns.str.strip()
-                  .str.lower()
-                  .str.replace(" ", "_", regex=False))
+    df.columns = df.columns.str.strip().str.lower().str.replace(" ", "_", regex=False)
 
     log("DAILY", f"Columns: {list(df.columns)}", "FIND")
 
@@ -424,9 +542,14 @@ def process_nzta_daily():
 
     # Identify columns dynamically
     region_col = next((c for c in df.columns if "region" in c), None)
-    site_col   = next((c for c in df.columns
-                       if "reference" in c
-                       or "sitereference" in c.replace("_", "")), None)
+    site_col = next(
+        (
+            c
+            for c in df.columns
+            if "reference" in c or "sitereference" in c.replace("_", "")
+        ),
+        None,
+    )
 
     log("DAILY", f"Region col: '{region_col}', Site col: '{site_col}'", "FIND")
 
@@ -439,7 +562,11 @@ def process_nzta_daily():
         df = df[bop_mask].copy()
         log("DAILY", f"BOP filter: {rows_before:,} → {len(df):,} rows")
     else:
-        log("DAILY", "Region column not found — skipping region filter", "WARN")
+        log(
+            "DAILY",
+            "Region column not found — skipping region filter",
+            "WARN",
+        )
 
     if site_col:
         sh2_mask = df[site_col].astype(str).str.startswith(SH2_PREFIX)
@@ -460,25 +587,25 @@ def process_nzta_daily():
         )
 
     # Aggregate to daily pivot
-    traffic_col = next((c for c in df.columns
-                        if "count" in c and "traffic" in c), None)
-    class_col   = next((c for c in df.columns
-                        if "class" in c or "weight" in c), None)
+    traffic_col = next((c for c in df.columns if "count" in c and "traffic" in c), None)
+    class_col = next((c for c in df.columns if "class" in c or "weight" in c), None)
 
     if traffic_col and class_col and site_col:
-        group_cols = ["date", site_col, "iso_week", "pack_week",
-                      "season_phase", "season_year"]
+        group_cols = [
+            "date",
+            site_col,
+            "iso_week",
+            "pack_week",
+            "season_phase",
+            "season_year",
+        ]
         group_cols = [c for c in group_cols if c in df.columns]
 
         pivot = df.pivot_table(
-            index=group_cols,
-            columns=class_col,
-            values=traffic_col,
-            aggfunc="sum"
+            index=group_cols, columns=class_col, values=traffic_col, aggfunc="sum"
         ).reset_index()
 
-        pivot.columns = [str(c).lower().replace(" ", "_")
-                         for c in pivot.columns]
+        pivot.columns = [str(c).lower().replace(" ", "_") for c in pivot.columns]
 
         if "heavy" not in pivot.columns:
             pivot["heavy"] = 0
@@ -488,18 +615,22 @@ def process_nzta_daily():
         pivot = pivot.fillna(0)
         pivot["total_count"] = pivot["heavy"] + pivot["light"]
         pivot["congestion_index"] = pivot.apply(
-            lambda row: compute_congestion_index(row["heavy"], row["light"]),
-            axis=1
+            lambda row: compute_congestion_index(row["heavy"], row["light"]), axis=1
         )
 
-        result = pivot.rename(columns={
-            site_col: "site_reference",
-            "heavy": "heavy_count",
-            "light": "light_count"
-        })
+        result = pivot.rename(
+            columns={
+                site_col: "site_reference",
+                "heavy": "heavy_count",
+                "light": "light_count",
+            }
+        )
     else:
-        log("DAILY", "Could not identify traffic/class columns — "
-            "saving raw filtered data.", "WARN")
+        log(
+            "DAILY",
+            "Could not identify traffic/class columns — saving raw filtered data.",
+            "WARN",
+        )
         df["congestion_index"] = 25
         result = df
 
@@ -508,9 +639,15 @@ def process_nzta_daily():
     log("DAILY", f"✅ Saved: {out_path.name} ({len(result):,} rows)")
 
     if "date" in result.columns:
-        log("DAILY", f"  Date range: {result['date'].min()} → {result['date'].max()}")
+        log(
+            "DAILY",
+            f"  Date range: {result['date'].min()} → {result['date'].max()}",
+        )
     if "congestion_index" in result.columns:
-        log("DAILY", f"  Avg congestion_index: {result['congestion_index'].mean():.1f}")
+        log(
+            "DAILY",
+            f"  Avg congestion_index: {result['congestion_index'].mean():.1f}",
+        )
 
     return result
 
@@ -519,7 +656,8 @@ def process_nzta_daily():
 # BLOCK 3 — Stats NZ Kiwifruit Exports Historical
 # =============================================================================
 
-def process_stats_nz_exports():
+
+def process_stats_nz_exports() -> Optional[pd.DataFrame]:
     """
     Process stats_nz_kiwifruit_exports_historical.csv.
 
@@ -536,7 +674,11 @@ def process_stats_nz_exports():
     """
     filepath = RAW_STATS / "stats_nz_kiwifruit_exports_historical.csv"
     if not filepath.exists():
-        log("EXPORTS", "stats_nz_kiwifruit_exports_historical.csv not found", "ERROR")
+        log(
+            "EXPORTS",
+            "stats_nz_kiwifruit_exports_historical.csv not found",
+            "ERROR",
+        )
         return None
 
     log("EXPORTS", "Processing Stats NZ exports historical...")
@@ -545,11 +687,16 @@ def process_stats_nz_exports():
 
     col_names = [
         "year",
-        "gold_qty_kg", "gold_fob_nzd",
-        "green_qty_kg", "green_fob_nzd",
-        "red_qty_kg", "red_fob_nzd",
-        "total_qty_kg", "total_fob_nzd",
-        "all_codes_qty_kg", "all_codes_fob_nzd"
+        "gold_qty_kg",
+        "gold_fob_nzd",
+        "green_qty_kg",
+        "green_fob_nzd",
+        "red_qty_kg",
+        "red_fob_nzd",
+        "total_qty_kg",
+        "total_fob_nzd",
+        "all_codes_qty_kg",
+        "all_codes_fob_nzd",
     ]
 
     df = pd.read_csv(
@@ -558,7 +705,7 @@ def process_stats_nz_exports():
         header=None,
         names=col_names,
         encoding=encoding,
-        na_values=["", '".."', ".."]
+        na_values=["", '".."', ".."],
     )
 
     # Drop metadata residue rows
@@ -572,22 +719,26 @@ def process_stats_nz_exports():
     numeric_cols = [c for c in df.columns if c != "year"]
     for col in numeric_cols:
         df[col] = pd.to_numeric(
-            df[col].astype(str).str.replace('"', '', regex=False).str.strip(),
-            errors="coerce"
+            df[col].astype(str).str.replace('"', "", regex=False).str.strip(),
+            errors="coerce",
         )
 
     # Handle suppressed values
     null_summary = df.isnull().sum()
     null_cols = null_summary[null_summary > 0]
     if len(null_cols) > 0:
-        log("EXPORTS", f"Suppressed values ('..'): {null_cols.to_dict()}", "WARN")
+        log(
+            "EXPORTS",
+            f"Suppressed values ('..'): {null_cols.to_dict()}",
+            "WARN",
+        )
         df = df.fillna(0)
         log("EXPORTS", "Suppressed values → filled with 0 for modelling")
 
     # Derived columns
-    df["gold_fob_nzd_m"]  = df["gold_fob_nzd"] / 1_000_000
+    df["gold_fob_nzd_m"] = df["gold_fob_nzd"] / 1_000_000
     df["green_fob_nzd_m"] = df["green_fob_nzd"] / 1_000_000
-    df["red_fob_nzd_m"]   = df["red_fob_nzd"] / 1_000_000
+    df["red_fob_nzd_m"] = df["red_fob_nzd"] / 1_000_000
     df["total_fob_nzd_m"] = df["total_fob_nzd"] / 1_000_000
 
     # vol_index: 2024 = 100
@@ -600,9 +751,11 @@ def process_stats_nz_exports():
         log("EXPORTS", "2024 not found — vol_index normalised to mean", "WARN")
 
     log("EXPORTS", f"Years: {df['year'].min()} → {df['year'].max()}")
-    log("EXPORTS",
+    log(
+        "EXPORTS",
         f"2025 total FOB: NZD "
-        f"{df.loc[df['year']==2025,'total_fob_nzd_m'].values[0]:,.1f}M")
+        f"{df.loc[df['year'] == 2025, 'total_fob_nzd_m'].values[0]:,.1f}M",
+    )
 
     out_path = PROCESSED / "stats_nz_exports_clean.csv"
     df.to_csv(out_path, index=False)
@@ -615,7 +768,8 @@ def process_stats_nz_exports():
 # BLOCK 4 — Stats NZ Horticulture Survey 2024
 # =============================================================================
 
-def process_stats_nz_horticulture():
+
+def process_stats_nz_horticulture() -> Optional[pd.DataFrame]:
     """
     Process stats_nz_horticulture_survey_2024.csv — hectares by region.
 
@@ -641,42 +795,63 @@ def process_stats_nz_horticulture():
         log("HORT", "File appears near-empty", "WARN")
 
     strategies = [
-        ("utf-8-sig", ","), ("utf-16", ","), ("utf-16-le", ","),
-        ("latin-1", ","),   ("utf-8", "\t"), ("utf-8", ";"),
+        ("utf-8-sig", ","),
+        ("utf-16", ","),
+        ("utf-16-le", ","),
+        ("latin-1", ","),
+        ("utf-8", "\t"),
+        ("utf-8", ";"),
         ("latin-1", "\t"),
     ]
 
     df = None
     for encoding, sep in strategies:
         try:
-            candidate = pd.read_csv(filepath, encoding=encoding, sep=sep,
-                                    on_bad_lines="skip", nrows=5)
+            candidate = pd.read_csv(
+                filepath, encoding=encoding, sep=sep, on_bad_lines="skip", nrows=5
+            )
             if len(candidate.columns) >= 2 and len(candidate) > 0:
-                df = pd.read_csv(filepath, encoding=encoding, sep=sep,
-                                 on_bad_lines="skip")
-                log("HORT", f"Read successfully: encoding={encoding}, sep='{sep}'")
+                df = pd.read_csv(
+                    filepath, encoding=encoding, sep=sep, on_bad_lines="skip"
+                )
+                log(
+                    "HORT",
+                    f"Read successfully: encoding={encoding}, sep='{sep}'",
+                )
                 break
         except Exception:
             continue
 
     if df is None or len(df) == 0:
-        log("HORT", "Could not parse with any strategy — creating verified stub.", "WARN")
+        log(
+            "HORT",
+            "Could not parse with any strategy — creating verified stub.",
+            "WARN",
+        )
 
         # Sourced from Stats NZ Horticulture Survey 2024, Table 9
-        df = pd.DataFrame({
-            "region": ["Bay of Plenty", "Auckland", "Gisborne",
-                        "Hawkes Bay", "Other North Island", "South Island"],
-            "kiwifruit_ha_total":   [11850, 420, 310, 180, 290, 45],
-            "kiwifruit_ha_green":   [4200,  180, 130,  70, 110, 20],
-            "kiwifruit_ha_gold":    [7200,  230, 175, 105, 175, 25],
-            "kiwifruit_ha_organic": [450,    10,   5,   5,   5,  0],
-            "source": ["Stats NZ Horticulture Survey 2024 (stub)"] * 6,
-            "data_quality": ["inferred"] * 6
-        })
+        df = pd.DataFrame(
+            {
+                "region": [
+                    "Bay of Plenty",
+                    "Auckland",
+                    "Gisborne",
+                    "Hawkes Bay",
+                    "Other North Island",
+                    "South Island",
+                ],
+                "kiwifruit_ha_total": [11850, 420, 310, 180, 290, 45],
+                "kiwifruit_ha_green": [4200, 180, 130, 70, 110, 20],
+                "kiwifruit_ha_gold": [7200, 230, 175, 105, 175, 25],
+                "kiwifruit_ha_organic": [450, 10, 5, 5, 5, 0],
+                "source": ["Stats NZ Horticulture Survey 2024 (stub)"] * 6,
+                "data_quality": ["inferred"] * 6,
+            }
+        )
     else:
-        df.columns = (df.columns.str.strip()
-                      .str.lower()
-                      .str.replace(" ", "_", regex=False))
+        df.columns = (
+            df.columns.str.strip().str.lower().str.replace(" ", "_", regex=False)
+        )
         df = df.dropna(how="all")
         log("HORT", f"Parsed: {len(df)} rows, {len(df.columns)} columns")
         log("HORT", f"Columns: {list(df.columns)}", "FIND")
@@ -692,7 +867,8 @@ def process_stats_nz_horticulture():
 # BLOCK 5 — Integrity Audit Report
 # =============================================================================
 
-def write_audit_report(results: dict):
+
+def write_audit_report(results: dict[str, Optional[pd.DataFrame]]) -> None:
     """
     Write the data integrity audit report in Markdown.
     Documents all anomalies detected, decisions made, and variable
@@ -765,8 +941,9 @@ def write_audit_report(results: dict):
         "```",
     ]
 
+    tag_by_level = {"INFO": "✅", "WARN": "⚠️", "ERROR": "❌", "FIND": "🔍"}
     for section, level, message in audit:
-        tag = {"INFO": "✅", "WARN": "⚠️", "ERROR": "❌", "FIND": "🔍"}.get(level, "•")
+        tag = tag_by_level.get(level, "•")
         lines.append(f"{tag} [{section}] {message}")
 
     lines += [
@@ -776,7 +953,8 @@ def write_audit_report(results: dict):
         "",
         "## Next Steps",
         "",
-        "1. Run `03_etl_pipeline/03_transform.py` to join clean tables into Star Schema",
+        "1. Run `03_etl_pipeline/03_transform.py` to join clean tables "
+        "into Star Schema",
         "2. Validate `congestion_index` against known BOP traffic peaks (Easter week)",
         "3. If TMS files contain no BOP data: download BOP-specific export from",
         "   NZTA OpenData portal (filter Region 04 before download)",
@@ -785,7 +963,8 @@ def write_audit_report(results: dict):
         "",
         "---",
         "",
-        "*Calibrated against industry Quality Manual 2026 | Grower Payments Booklet 2026*  ",
+        "*Calibrated against industry Quality Manual 2026 | Grower "
+        "Payments Booklet 2026*  ",
         "*Gabriela Olivera | Data Analytics Portfolio*  ",
     ]
 
@@ -799,40 +978,40 @@ def write_audit_report(results: dict):
 # MAIN
 # =============================================================================
 
-def main():
-    print("=" * 70)
-    print("  OPTIMISING KIWIFRUIT EXPORT — ETL Phase 1: Raw Data Cleaning")
-    print("  APOPHENIA | Gabriela Olivera | Data Analytics Portfolio")
-    print("=" * 70)
-    print()
 
-    results = {}
+def main() -> None:
+    logger.info("=" * 70)
+    logger.info("OPTIMISING KIWIFRUIT EXPORT — ETL Phase 1: Raw Data Cleaning")
+    logger.info("APOPHENIA | Gabriela Olivera | Data Analytics Portfolio")
+    logger.info("=" * 70)
 
-    print("\n── BLOCK 1: NZTA TMS 15-min files ─────────────────────────────")
+    results: dict[str, Optional[pd.DataFrame]] = {}
+
+    logger.info("── BLOCK 1: NZTA TMS 15-min files ──")
     results["nzta_tms_bop"] = process_nzta_tms()
 
-    print("\n── BLOCK 2: NZTA Daily Counts 2024 ────────────────────────────")
+    logger.info("── BLOCK 2: NZTA Daily Counts 2024 ──")
     results["nzta_daily_bop"] = process_nzta_daily()
 
-    print("\n── BLOCK 3: Stats NZ Exports Historical ────────────────────────")
+    logger.info("── BLOCK 3: Stats NZ Exports Historical ──")
     results["stats_nz_exports"] = process_stats_nz_exports()
 
-    print("\n── BLOCK 4: Stats NZ Horticulture Survey ───────────────────────")
+    logger.info("── BLOCK 4: Stats NZ Horticulture Survey ──")
     results["stats_nz_horticulture"] = process_stats_nz_horticulture()
 
-    print("\n── BLOCK 5: Integrity Audit Report ─────────────────────────────")
+    logger.info("── BLOCK 5: Integrity Audit Report ──")
     write_audit_report(results)
 
-    print("\n" + "=" * 70)
-    print("  ETL Phase 1 COMPLETE")
-    print(f"  Output directory: {PROCESSED}")
-    print()
-    print("  Files generated:")
+    logger.info("=" * 70)
+    logger.info("ETL Phase 1 COMPLETE")
+    logger.info(f"Output directory: {PROCESSED}")
+    logger.info("Files generated:")
     for f in sorted(PROCESSED.glob("*")):
         size_kb = f.stat().st_size / 1024
-        print(f"    {f.name:<45} {size_kb:>8.1f} KB")
-    print("=" * 70)
+        logger.info(f"  {f.name:<45} {size_kb:>8.1f} KB")
+    logger.info("=" * 70)
 
 
 if __name__ == "__main__":
+    configure_logging()
     main()

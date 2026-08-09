@@ -1,4 +1,4 @@
-﻿# =============================================================================
+# =============================================================================
 # APOPHENIA — HORTICULTURAL EXPORT RISK INTELLIGENCE AGENT
 # Bay of Plenty Corridor · Independent Research Project
 # Script: 06_risk_model_validation.py
@@ -40,15 +40,20 @@ HOW TO RUN:
 =============================================================================
 """
 
+import logging
 import sqlite3
 import sys
+from datetime import datetime
+from pathlib import Path
+from typing import Any
+
 import numpy as np
 import pandas as pd
-from pathlib import Path
-from datetime import datetime
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
-from config import DB_PATH, MODELS_DIR  # noqa: E402
+from config import DB_PATH, MODELS_DIR, configure_logging  # noqa: E402
+
+logger = logging.getLogger(__name__)
 
 # =============================================================================
 # PATHS
@@ -57,7 +62,7 @@ from config import DB_PATH, MODELS_DIR  # noqa: E402
 MODELS_DIR.mkdir(exist_ok=True)
 
 # 2026 calibration constants — must match simulator and ETL pipeline
-MTS_GREEN   = 15.5
+MTS_GREEN = 15.5
 MTS_SUNGOLD = 16.1
 OTIF_TARGET = 88.0
 
@@ -70,24 +75,33 @@ try:
     from sklearn.preprocessing import StandardScaler
     from sklearn.model_selection import train_test_split, cross_val_score
     from sklearn.metrics import (
-        accuracy_score, precision_score, recall_score, f1_score,
-        confusion_matrix, classification_report
+        accuracy_score,
+        precision_score,
+        recall_score,
+        f1_score,
+        confusion_matrix,
+        classification_report,
     )
+
     SKLEARN_AVAILABLE = True
 except ImportError:
     SKLEARN_AVAILABLE = False
-    print("  ⚠️  scikit-learn not installed.")
-    print("  Run: pip install scikit-learn")
-    print("  Falling back to manual logistic regression implementation.\n")
+    logger.warning("scikit-learn not installed.")
+    logger.warning("Run: pip install scikit-learn")
+    logger.warning("Falling back to manual logistic regression implementation.")
 
 # =============================================================================
 # MANUAL LOGISTIC REGRESSION (fallback — no sklearn needed)
 # =============================================================================
 
-def sigmoid(x):
+
+def sigmoid(x: np.ndarray) -> np.ndarray:
     return 1 / (1 + np.exp(-np.clip(x, -500, 500)))
 
-def manual_logistic_regression(X, y, lr=0.01, epochs=1000):
+
+def manual_logistic_regression(
+    X: np.ndarray, y: np.ndarray, lr: float = 0.01, epochs: int = 1000
+) -> tuple[np.ndarray, float, list[float]]:
     """
     Simple logistic regression via gradient descent.
     No sklearn dependency — pure numpy.
@@ -95,15 +109,15 @@ def manual_logistic_regression(X, y, lr=0.01, epochs=1000):
     """
     n_samples, n_features = X.shape
     weights = np.zeros(n_features)
-    bias    = 0.0
-    losses  = []
+    bias = 0.0
+    losses = []
 
     for epoch in range(epochs):
-        z    = X @ weights + bias
+        z = X @ weights + bias
         pred = sigmoid(z)
 
         # Binary cross-entropy loss
-        eps  = 1e-15
+        eps = 1e-15
         loss = -np.mean(y * np.log(pred + eps) + (1 - y) * np.log(1 - pred + eps))
         losses.append(loss)
 
@@ -113,61 +127,75 @@ def manual_logistic_regression(X, y, lr=0.01, epochs=1000):
         db = dz.mean()
 
         weights -= lr * dw
-        bias    -= lr * db
+        bias -= lr * db
 
     return weights, bias, losses
 
-def manual_predict(X, weights, bias, threshold=0.5):
-    z    = X @ weights + bias
+
+def manual_predict(
+    X: np.ndarray, weights: np.ndarray, bias: float, threshold: float = 0.5
+) -> tuple[np.ndarray, np.ndarray]:
+    z = X @ weights + bias
     prob = sigmoid(z)
     return (prob >= threshold).astype(int), prob
 
-def manual_metrics(y_true, y_pred):
+
+def manual_metrics(y_true: np.ndarray, y_pred: np.ndarray) -> dict[str, Any]:
     """Calculate accuracy, precision, recall, F1 without sklearn."""
     tp = np.sum((y_true == 1) & (y_pred == 1))
     tn = np.sum((y_true == 0) & (y_pred == 0))
     fp = np.sum((y_true == 0) & (y_pred == 1))
     fn = np.sum((y_true == 1) & (y_pred == 0))
 
-    accuracy  = (tp + tn) / len(y_true)
+    accuracy = (tp + tn) / len(y_true)
     precision = tp / (tp + fp) if (tp + fp) > 0 else 0
-    recall    = tp / (tp + fn) if (tp + fn) > 0 else 0
-    f1        = 2 * precision * recall / (precision + recall) \
-                if (precision + recall) > 0 else 0
+    recall = tp / (tp + fn) if (tp + fn) > 0 else 0
+    f1 = (
+        2 * precision * recall / (precision + recall) if (precision + recall) > 0 else 0
+    )
 
     return {
-        "accuracy":  round(accuracy, 4),
+        "accuracy": round(accuracy, 4),
         "precision": round(precision, 4),
-        "recall":    round(recall, 4),
-        "f1":        round(f1, 4),
-        "tp": int(tp), "tn": int(tn), "fp": int(fp), "fn": int(fn),
+        "recall": round(recall, 4),
+        "f1": round(f1, 4),
+        "tp": int(tp),
+        "tn": int(tn),
+        "fp": int(fp),
+        "fn": int(fn),
     }
 
-def mcfadden_r2(y_true, y_prob):
+
+def mcfadden_r2(y_true: np.ndarray, y_prob: np.ndarray) -> float:
     """
     McFadden's pseudo-R² for logistic regression.
     Equivalent to R² for linear regression — measures model fit.
     R² > 0.2 is considered good for logistic models.
     """
-    eps     = 1e-15
-    ll_model = np.sum(y_true * np.log(y_prob + eps) +
-                      (1 - y_true) * np.log(1 - y_prob + eps))
-    p_null   = y_true.mean()
-    ll_null  = len(y_true) * (p_null * np.log(p_null + eps) +
-                               (1 - p_null) * np.log(1 - p_null + eps))
+    eps = 1e-15
+    ll_model = np.sum(
+        y_true * np.log(y_prob + eps) + (1 - y_true) * np.log(1 - y_prob + eps)
+    )
+    p_null = y_true.mean()
+    ll_null = len(y_true) * (
+        p_null * np.log(p_null + eps) + (1 - p_null) * np.log(1 - p_null + eps)
+    )
     return round(1 - ll_model / ll_null, 4)
+
 
 # =============================================================================
 # DATA LOADING
 # =============================================================================
 
-def load_data():
+
+def load_data() -> tuple[pd.DataFrame, pd.DataFrame]:
     """Load and prepare datasets from SQLite."""
     conn = sqlite3.connect(DB_PATH)
 
     # MODEL 1 data: predict MTS fail from DM% (primary predictor)
     # Using dim_fruit_quality — one reading per KPIN × week
-    df_fruit = pd.read_sql_query("""
+    df_fruit = pd.read_sql_query(
+        """
         SELECT
             dm_pct,
             mts_threshold,
@@ -179,11 +207,14 @@ def load_data():
             CASE WHEN subzone = 'Katikati' THEN 1 ELSE 0 END AS is_katikati,
             CASE WHEN season = '2024/25' THEN 1 ELSE 0 END AS stress_season
         FROM dim_fruit_quality
-    """, conn)
+    """,
+        conn,
+    )
 
     # MODEL 2 data: predict OTIF < 88% from Risk Score inputs
     # Using fact_export_transactions
-    df_fact = pd.read_sql_query("""
+    df_fact = pd.read_sql_query(
+        """
         SELECT
             dm_pct_avg,
             congestion_index,
@@ -198,16 +229,19 @@ def load_data():
             CASE WHEN subzone = 'Opotiki' THEN 1 ELSE 0 END AS is_opotiki,
             CASE WHEN season = '2024/25' THEN 1 ELSE 0 END AS stress_season
         FROM fact_export_transactions
-    """, conn)
+    """,
+        conn,
+    )
 
     conn.close()
 
-    print(f"  ✅ Model 1 data: {len(df_fruit):,} maturity readings")
-    print(f"     MTS fail rate: {df_fruit['mts_fail'].mean():.1%}")
-    print(f"  ✅ Model 2 data: {len(df_fact):,} transactions")
-    print(f"     OTIF < 88% rate: {df_fact['otif_below_88'].mean():.1%}")
+    logger.info(f"Model 1 data: {len(df_fruit):,} maturity readings")
+    logger.info(f"  MTS fail rate: {df_fruit['mts_fail'].mean():.1%}")
+    logger.info(f"Model 2 data: {len(df_fact):,} transactions")
+    logger.info(f"  OTIF < 88% rate: {df_fact['otif_below_88'].mean():.1%}")
 
     return df_fruit, df_fact
+
 
 # =============================================================================
 # MODEL 1 — MTS FAIL PREDICTION
@@ -216,7 +250,10 @@ def load_data():
 #            pack_week_normalised, is_opotiki, stress_season
 # =============================================================================
 
-def run_model_1(df):
+
+def run_model_1(
+    df: pd.DataFrame,
+) -> tuple[dict[str, Any], float, dict[str, float]]:
     """
     Predict MTS failure from maturity reading features.
 
@@ -228,18 +265,18 @@ def run_model_1(df):
     negative coefficient (lower DM → higher fail probability).
     The stress_season indicator should also be significant.
     """
-    print("\n── MODEL 1: MTS Fail Prediction ─────────────────────────────────")
+    logger.info("── MODEL 1: MTS Fail Prediction ──")
 
     df = df.copy()
     df["dm_dist_to_mts"] = df["dm_pct"] - df["mts_threshold"]
-    df["pack_week_norm"]  = (df["pack_week"] - 11) / 15.0
+    df["pack_week_norm"] = (df["pack_week"] - 11) / 15.0
 
     features = [
-        "dm_dist_to_mts",    # distance from MTS threshold — primary driver
-        "pest_indicator",    # PSA history flag
-        "pack_week_norm",    # seasonal position
-        "is_opotiki",        # subzone risk flag
-        "stress_season",     # 2024/25 climate stress year
+        "dm_dist_to_mts",  # distance from MTS threshold — primary driver
+        "pest_indicator",  # PSA history flag
+        "pack_week_norm",  # seasonal position
+        "is_opotiki",  # subzone risk flag
+        "stress_season",  # 2024/25 climate stress year
     ]
 
     X = df[features].values.astype(float)
@@ -247,16 +284,16 @@ def run_model_1(df):
 
     # Normalise features (mean=0, std=1)
     X_mean = X.mean(axis=0)
-    X_std  = X.std(axis=0) + 1e-8
+    X_std = X.std(axis=0) + 1e-8
     X_norm = (X - X_mean) / X_std
 
     # Train/test split (80/20)
     split = int(len(X_norm) * 0.8)
-    idx   = np.random.permutation(len(X_norm))
+    idx = np.random.permutation(len(X_norm))
     train_idx, test_idx = idx[:split], idx[split:]
 
     X_train, X_test = X_norm[train_idx], X_norm[test_idx]
-    y_train, y_test  = y[train_idx], y[test_idx]
+    y_train, y_test = y[train_idx], y[test_idx]
 
     if SKLEARN_AVAILABLE:
         model = LogisticRegression(max_iter=1000, random_state=42)
@@ -266,54 +303,58 @@ def run_model_1(df):
         coefficients = model.coef_[0]
 
         metrics = {
-            "accuracy":  round(accuracy_score(y_test, y_pred), 4),
+            "accuracy": round(accuracy_score(y_test, y_pred), 4),
             "precision": round(precision_score(y_test, y_pred, zero_division=0), 4),
-            "recall":    round(recall_score(y_test, y_pred, zero_division=0), 4),
-            "f1":        round(f1_score(y_test, y_pred, zero_division=0), 4),
+            "recall": round(recall_score(y_test, y_pred, zero_division=0), 4),
+            "f1": round(f1_score(y_test, y_pred, zero_division=0), 4),
         }
         cm = confusion_matrix(y_test, y_pred)
-        metrics["tp"] = int(cm[1,1])
-        metrics["tn"] = int(cm[0,0])
-        metrics["fp"] = int(cm[0,1])
-        metrics["fn"] = int(cm[1,0])
+        metrics["tp"] = int(cm[1, 1])
+        metrics["tn"] = int(cm[0, 0])
+        metrics["fp"] = int(cm[0, 1])
+        metrics["fn"] = int(cm[1, 0])
 
         # Cross-validation
-        cv_scores = cross_val_score(model, X_norm, y, cv=5, scoring='f1')
-        cv_mean   = round(cv_scores.mean(), 4)
+        cv_scores = cross_val_score(model, X_norm, y, cv=5, scoring="f1")
+        cv_mean = round(cv_scores.mean(), 4)
     else:
-        weights, bias, _ = manual_logistic_regression(X_train, y_train,
-                                                       lr=0.1, epochs=500)
-        y_pred, y_prob   = manual_predict(X_test, weights, bias)
-        coefficients     = weights
-        metrics          = manual_metrics(y_test, y_pred)
-        cv_mean          = None
+        weights, bias, _ = manual_logistic_regression(
+            X_train, y_train, lr=0.1, epochs=500
+        )
+        y_pred, y_prob = manual_predict(X_test, weights, bias)
+        coefficients = weights
+        metrics = manual_metrics(y_test, y_pred)
+        cv_mean = None
 
-    r2 = mcfadden_r2(y_test, y_prob if not SKLEARN_AVAILABLE
-                     else y_prob)
+    r2 = mcfadden_r2(y_test, y_prob if not SKLEARN_AVAILABLE else y_prob)
 
-    # Print results
-    print(f"\n  Features: {features}")
-    print(f"\n  PERFORMANCE METRICS (test set, n={len(y_test):,}):")
-    print(f"    Accuracy:          {metrics['accuracy']:.4f}  ({metrics['accuracy']*100:.1f}%)")
-    print(f"    Precision:         {metrics['precision']:.4f}")
-    print(f"    Recall:            {metrics['recall']:.4f}")
-    print(f"    F1 Score:          {metrics['f1']:.4f}")
-    print(f"    McFadden R²:       {r2:.4f}")
+    # Log results
+    logger.info(f"Features: {features}")
+    logger.info(f"PERFORMANCE METRICS (test set, n={len(y_test):,}):")
+    logger.info(
+        f"  Accuracy:          {metrics['accuracy']:.4f}  "
+        f"({metrics['accuracy'] * 100:.1f}%)"
+    )
+    logger.info(f"  Precision:         {metrics['precision']:.4f}")
+    logger.info(f"  Recall:            {metrics['recall']:.4f}")
+    logger.info(f"  F1 Score:          {metrics['f1']:.4f}")
+    logger.info(f"  McFadden R2:       {r2:.4f}")
     if cv_mean:
-        print(f"    CV F1 (5-fold):    {cv_mean:.4f}")
+        logger.info(f"  CV F1 (5-fold):    {cv_mean:.4f}")
 
-    print(f"\n  CONFUSION MATRIX:")
-    print(f"    True Neg  (correct PASS): {metrics['tn']:>5,}")
-    print(f"    True Pos  (correct FAIL): {metrics['tp']:>5,}")
-    print(f"    False Pos (wrong FAIL):   {metrics['fp']:>5,}")
-    print(f"    False Neg (missed FAIL):  {metrics['fn']:>5,}")
+    logger.info("CONFUSION MATRIX:")
+    logger.info(f"  True Neg  (correct PASS): {metrics['tn']:>5,}")
+    logger.info(f"  True Pos  (correct FAIL): {metrics['tp']:>5,}")
+    logger.info(f"  False Pos (wrong FAIL):   {metrics['fp']:>5,}")
+    logger.info(f"  False Neg (missed FAIL):  {metrics['fn']:>5,}")
 
-    print(f"\n  FEATURE COEFFICIENTS (importance):")
-    for feat, coef in sorted(zip(features, coefficients),
-                              key=lambda x: abs(x[1]), reverse=True):
-        bar = "█" * int(abs(coef) * 10)
-        direction = "↑ FAIL" if coef > 0 else "↓ PASS"
-        print(f"    {feat:<25} {coef:>+7.4f}  {bar:<15} {direction}")
+    logger.info("FEATURE COEFFICIENTS (importance):")
+    for feat, coef in sorted(
+        zip(features, coefficients), key=lambda x: abs(x[1]), reverse=True
+    ):
+        bar = "#" * int(abs(coef) * 10)
+        direction = "UP FAIL" if coef > 0 else "DOWN PASS"
+        logger.info(f"  {feat:<25} {coef:>+7.4f}  {bar:<15} {direction}")
 
     return metrics, r2, dict(zip(features, coefficients))
 
@@ -325,7 +366,10 @@ def run_model_1(df):
 #            mts_pass, pack_week_norm, is_opotiki, stress_season
 # =============================================================================
 
-def run_model_2(df):
+
+def run_model_2(
+    df: pd.DataFrame,
+) -> tuple[dict[str, Any], float, dict[str, float]]:
     """
     Predict OTIF failure from Risk Score input variables.
 
@@ -337,24 +381,24 @@ def run_model_2(df):
     Risk Score and MTS breach directly adds 12pts to OTIF drop).
     congestion_index second (15% weight but direct OTIF impact).
     """
-    print("\n── MODEL 2: OTIF < 88% Prediction ──────────────────────────────")
+    logger.info("── MODEL 2: OTIF < 88% Prediction ──")
 
     df = df.copy()
-    df["dm_norm"]   = (df["dm_pct_avg"] - 14.0) / (20.0 - 14.0)
+    df["dm_norm"] = (df["dm_pct_avg"] - 14.0) / (20.0 - 14.0)
     df["cong_norm"] = df["congestion_index"] / 100.0
     df["rain_norm"] = df["rainfall_mm_7d"].clip(0, 120) / 120.0
-    df["reg_norm"]  = df["reg_index"] / 100.0
-    df["pw_norm"]   = (df["pack_week"] - 11) / 15.0
+    df["reg_norm"] = df["reg_index"] / 100.0
+    df["pw_norm"] = (df["pack_week"] - 11) / 15.0
 
     features = [
-        "dm_norm",       # DM% normalised 0→1 (weight: 35%)
-        "cong_norm",     # SH2 congestion normalised (weight: 15%)
-        "rain_norm",     # Rainfall normalised (weight: 15%)
-        "reg_norm",      # Regulatory load normalised (weight: 10%)
-        "mts_pass",      # MTS pass flag (direct -12pt OTIF if breach)
-        "pw_norm",       # Pack week position
-        "is_opotiki",    # Ōpōtiki subzone flag
-        "stress_season", # 2024/25 climate stress
+        "dm_norm",  # DM% normalised 0→1 (weight: 35%)
+        "cong_norm",  # SH2 congestion normalised (weight: 15%)
+        "rain_norm",  # Rainfall normalised (weight: 15%)
+        "reg_norm",  # Regulatory load normalised (weight: 10%)
+        "mts_pass",  # MTS pass flag (direct -12pt OTIF if breach)
+        "pw_norm",  # Pack week position
+        "is_opotiki",  # Ōpōtiki subzone flag
+        "stress_season",  # 2024/25 climate stress
     ]
 
     X = df[features].values.astype(float)
@@ -362,16 +406,16 @@ def run_model_2(df):
 
     # Normalise
     X_mean = X.mean(axis=0)
-    X_std  = X.std(axis=0) + 1e-8
+    X_std = X.std(axis=0) + 1e-8
     X_norm = (X - X_mean) / X_std
 
     # Train/test split (80/20)
     split = int(len(X_norm) * 0.8)
-    idx   = np.random.permutation(len(X_norm))
+    idx = np.random.permutation(len(X_norm))
     train_idx, test_idx = idx[:split], idx[split:]
 
     X_train, X_test = X_norm[train_idx], X_norm[test_idx]
-    y_train, y_test  = y[train_idx], y[test_idx]
+    y_train, y_test = y[train_idx], y[test_idx]
 
     if SKLEARN_AVAILABLE:
         model = LogisticRegression(max_iter=1000, random_state=42)
@@ -381,67 +425,71 @@ def run_model_2(df):
         coefficients = model.coef_[0]
 
         metrics = {
-            "accuracy":  round(accuracy_score(y_test, y_pred), 4),
+            "accuracy": round(accuracy_score(y_test, y_pred), 4),
             "precision": round(precision_score(y_test, y_pred, zero_division=0), 4),
-            "recall":    round(recall_score(y_test, y_pred, zero_division=0), 4),
-            "f1":        round(f1_score(y_test, y_pred, zero_division=0), 4),
+            "recall": round(recall_score(y_test, y_pred, zero_division=0), 4),
+            "f1": round(f1_score(y_test, y_pred, zero_division=0), 4),
         }
         cm = confusion_matrix(y_test, y_pred)
-        metrics["tp"] = int(cm[1,1])
-        metrics["tn"] = int(cm[0,0])
-        metrics["fp"] = int(cm[0,1])
-        metrics["fn"] = int(cm[1,0])
+        metrics["tp"] = int(cm[1, 1])
+        metrics["tn"] = int(cm[0, 0])
+        metrics["fp"] = int(cm[0, 1])
+        metrics["fn"] = int(cm[1, 0])
 
-        cv_scores = cross_val_score(model, X_norm, y, cv=5, scoring='f1')
-        cv_mean   = round(cv_scores.mean(), 4)
+        cv_scores = cross_val_score(model, X_norm, y, cv=5, scoring="f1")
+        cv_mean = round(cv_scores.mean(), 4)
     else:
-        weights, bias, _ = manual_logistic_regression(X_train, y_train,
-                                                       lr=0.1, epochs=500)
-        y_pred, y_prob   = manual_predict(X_test, weights, bias)
-        coefficients     = weights
-        metrics          = manual_metrics(y_test, y_pred)
-        cv_mean          = None
+        weights, bias, _ = manual_logistic_regression(
+            X_train, y_train, lr=0.1, epochs=500
+        )
+        y_pred, y_prob = manual_predict(X_test, weights, bias)
+        coefficients = weights
+        metrics = manual_metrics(y_test, y_pred)
+        cv_mean = None
 
     r2 = mcfadden_r2(y_test, y_prob)
 
     # Compare learned weights vs designed weights
     designed_weights = {
-        "dm_norm":       0.35,
-        "cong_norm":     0.15,
-        "rain_norm":     0.15,
-        "reg_norm":      0.10,
-        "mts_pass":      0.25,  # maps roughly to DM cliff effect
-        "pw_norm":       0.0,   # not in original formula
-        "is_opotiki":    0.0,
+        "dm_norm": 0.35,
+        "cong_norm": 0.15,
+        "rain_norm": 0.15,
+        "reg_norm": 0.10,
+        "mts_pass": 0.25,  # maps roughly to DM cliff effect
+        "pw_norm": 0.0,  # not in original formula
+        "is_opotiki": 0.0,
         "stress_season": 0.0,
     }
 
-    print(f"\n  Features: {features}")
-    print(f"\n  PERFORMANCE METRICS (test set, n={len(y_test):,}):")
-    print(f"    Accuracy:          {metrics['accuracy']:.4f}  ({metrics['accuracy']*100:.1f}%)")
-    print(f"    Precision:         {metrics['precision']:.4f}")
-    print(f"    Recall:            {metrics['recall']:.4f}")
-    print(f"    F1 Score:          {metrics['f1']:.4f}")
-    print(f"    McFadden R²:       {r2:.4f}")
+    logger.info(f"Features: {features}")
+    logger.info(f"PERFORMANCE METRICS (test set, n={len(y_test):,}):")
+    logger.info(
+        f"  Accuracy:          {metrics['accuracy']:.4f}  "
+        f"({metrics['accuracy'] * 100:.1f}%)"
+    )
+    logger.info(f"  Precision:         {metrics['precision']:.4f}")
+    logger.info(f"  Recall:            {metrics['recall']:.4f}")
+    logger.info(f"  F1 Score:          {metrics['f1']:.4f}")
+    logger.info(f"  McFadden R2:       {r2:.4f}")
     if cv_mean:
-        print(f"    CV F1 (5-fold):    {cv_mean:.4f}")
+        logger.info(f"  CV F1 (5-fold):    {cv_mean:.4f}")
 
-    print(f"\n  CONFUSION MATRIX:")
-    print(f"    True Neg  (correct OTIF≥88):  {metrics['tn']:>5,}")
-    print(f"    True Pos  (correct OTIF<88):  {metrics['tp']:>5,}")
-    print(f"    False Pos (wrong alert):       {metrics['fp']:>5,}")
-    print(f"    False Neg (missed failure):    {metrics['fn']:>5,}")
+    logger.info("CONFUSION MATRIX:")
+    logger.info(f"  True Neg  (correct OTIF>=88):  {metrics['tn']:>5,}")
+    logger.info(f"  True Pos  (correct OTIF<88):   {metrics['tp']:>5,}")
+    logger.info(f"  False Pos (wrong alert):       {metrics['fp']:>5,}")
+    logger.info(f"  False Neg (missed failure):    {metrics['fn']:>5,}")
 
-    print(f"\n  FEATURE COEFFICIENTS vs DESIGNED WEIGHTS:")
-    print(f"    {'Feature':<25} {'Learned':>10}  {'Designed':>10}  {'Alignment'}")
-    print(f"    {'-'*60}")
+    logger.info("FEATURE COEFFICIENTS vs DESIGNED WEIGHTS:")
+    logger.info(f"  {'Feature':<25} {'Learned':>10}  {'Designed':>10}  {'Alignment'}")
+    logger.info(f"  {'-' * 60}")
     coef_abs_sum = sum(abs(c) for c in coefficients)
     for feat, coef in zip(features, coefficients):
         coef_norm = abs(coef) / coef_abs_sum if coef_abs_sum > 0 else 0
-        designed  = designed_weights.get(feat, 0)
-        diff      = abs(coef_norm - designed)
-        alignment = "✅ Good" if diff < 0.10 else "⚠️  Off" if diff < 0.20 else "❌ Divergent"
-        print(f"    {feat:<25} {coef:>+10.4f}  {designed:>10.2f}  {alignment}")
+        designed = designed_weights.get(feat, 0)
+        diff = abs(coef_norm - designed)
+        alignment = "Good" if diff < 0.10 else "Off" if diff < 0.20 else "Divergent"
+        logger.info(f"  {feat:<25} {coef:>+10.4f}  {designed:>10.2f}  {alignment}")
 
     return metrics, r2, dict(zip(features, coefficients))
 
@@ -450,14 +498,16 @@ def run_model_2(df):
 # SEASONAL BREAKDOWN
 # =============================================================================
 
-def seasonal_breakdown(conn):
+
+def seasonal_breakdown(conn: sqlite3.Connection) -> pd.DataFrame:
     """
     Additional analysis: model performance by season.
     Shows whether the model generalises across different climate conditions.
     """
-    print("\n── SEASONAL BREAKDOWN ───────────────────────────────────────────")
+    logger.info("── SEASONAL BREAKDOWN ──")
 
-    df = pd.read_sql_query("""
+    df = pd.read_sql_query(
+        """
         SELECT
             season,
             COUNT(*) AS total,
@@ -470,17 +520,24 @@ def seasonal_breakdown(conn):
         FROM fact_export_transactions
         GROUP BY season
         ORDER BY season
-    """, conn)
+    """,
+        conn,
+    )
 
-    print(f"\n  {'Season':<10} {'Submissions':>12} {'Avg Risk':>10} {'Avg OTIF':>10} "
-          f"{'MTS Fail%':>10} {'OTIF Fail%':>11} {'Return $M':>10} {'Reversed $M':>12}")
-    print(f"  {'-'*90}")
+    logger.info(
+        f"  {'Season':<10} {'Submissions':>12} {'Avg Risk':>10} "
+        f"{'Avg OTIF':>10} {'MTS Fail%':>10} {'OTIF Fail%':>11} "
+        f"{'Return $M':>10} {'Reversed $M':>12}"
+    )
+    logger.info(f"  {'-' * 90}")
     for _, row in df.iterrows():
-        flag = "⚠️ " if row["season"] == "2024/25" else "  "
-        print(f"  {flag}{row['season']:<8} {row['total']:>12,} {row['avg_risk']:>10.1f} "
-              f"{row['avg_otif']:>10.2f} {row['mts_fail_pct']:>10.1f}% "
-              f"{row['otif_fail_pct']:>10.1f}% {row['return_nzd_m']:>10.2f} "
-              f"{row['reversed_nzd_m']:>12.3f}")
+        flag = "* " if row["season"] == "2024/25" else "  "
+        logger.info(
+            f"  {flag}{row['season']:<8} {row['total']:>12,} "
+            f"{row['avg_risk']:>10.1f} {row['avg_otif']:>10.2f} "
+            f"{row['mts_fail_pct']:>10.1f}% {row['otif_fail_pct']:>10.1f}% "
+            f"{row['return_nzd_m']:>10.2f} {row['reversed_nzd_m']:>12.3f}"
+        )
 
     return df
 
@@ -489,9 +546,16 @@ def seasonal_breakdown(conn):
 # SAVE VALIDATION REPORT
 # =============================================================================
 
-def save_report(m1_metrics, m1_r2, m1_coefs,
-                m2_metrics, m2_r2, m2_coefs,
-                seasonal_df):
+
+def save_report(
+    m1_metrics: dict[str, Any],
+    m1_r2: float,
+    m1_coefs: dict[str, float],
+    m2_metrics: dict[str, Any],
+    m2_r2: float,
+    m2_coefs: dict[str, float],
+    seasonal_df: pd.DataFrame,
+) -> None:
     now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
     lines = [
@@ -508,9 +572,9 @@ def save_report(m1_metrics, m1_r2, m1_coefs,
         "",
         "Two logistic regression models validate the Risk Score framework:",
         "",
-        f"- **Model 1 (MTS Fail):** Accuracy {m1_metrics['accuracy']*100:.1f}% | "
+        f"- **Model 1 (MTS Fail):** Accuracy {m1_metrics['accuracy'] * 100:.1f}% | "
         f"F1 {m1_metrics['f1']:.3f} | McFadden R² {m1_r2:.3f}",
-        f"- **Model 2 (OTIF < 88%):** Accuracy {m2_metrics['accuracy']*100:.1f}% | "
+        f"- **Model 2 (OTIF < 88%):** Accuracy {m2_metrics['accuracy'] * 100:.1f}% | "
         f"F1 {m2_metrics['f1']:.3f} | McFadden R² {m2_r2:.3f}",
         "",
         "The models confirm that the manually calibrated Risk Score weights "
@@ -526,7 +590,7 @@ def save_report(m1_metrics, m1_r2, m1_coefs,
         "",
         "| Metric | Value |",
         "|--------|-------|",
-        f"| Accuracy | {m1_metrics['accuracy']*100:.2f}% |",
+        f"| Accuracy | {m1_metrics['accuracy'] * 100:.2f}% |",
         f"| Precision | {m1_metrics['precision']:.4f} |",
         f"| Recall | {m1_metrics['recall']:.4f} |",
         f"| F1 Score | {m1_metrics['f1']:.4f} |",
@@ -541,7 +605,9 @@ def save_report(m1_metrics, m1_r2, m1_coefs,
     ]
 
     for feat, coef in sorted(m1_coefs.items(), key=lambda x: abs(x[1]), reverse=True):
-        direction = "Increases fail probability" if coef > 0 else "Decreases fail probability"
+        direction = (
+            "Increases fail probability" if coef > 0 else "Decreases fail probability"
+        )
         lines.append(f"| {feat} | {coef:+.4f} | {direction} |")
 
     lines += [
@@ -555,7 +621,7 @@ def save_report(m1_metrics, m1_r2, m1_coefs,
         "",
         "| Metric | Value |",
         "|--------|-------|",
-        f"| Accuracy | {m2_metrics['accuracy']*100:.2f}% |",
+        f"| Accuracy | {m2_metrics['accuracy'] * 100:.2f}% |",
         f"| Precision | {m2_metrics['precision']:.4f} |",
         f"| Recall | {m2_metrics['recall']:.4f} |",
         f"| F1 Score | {m2_metrics['f1']:.4f} |",
@@ -567,13 +633,13 @@ def save_report(m1_metrics, m1_r2, m1_coefs,
         "",
         "| Feature | Learned Coef | Designed Weight | Notes |",
         "|---------|-------------|-----------------|-------|",
-        f"| dm_norm | {m2_coefs.get('dm_norm',0):+.4f} | 0.35 | DM% — primary quality driver |",
-        f"| mts_pass | {m2_coefs.get('mts_pass',0):+.4f} | 0.25 | MTS breach → direct -12pt OTIF |",
-        f"| cong_norm | {m2_coefs.get('cong_norm',0):+.4f} | 0.15 | SH2 congestion index |",
-        f"| rain_norm | {m2_coefs.get('rain_norm',0):+.4f} | 0.15 | Rainfall 7-day forecast |",
-        f"| reg_norm | {m2_coefs.get('reg_norm',0):+.4f} | 0.10 | Regulatory compliance load |",
-        f"| stress_season | {m2_coefs.get('stress_season',0):+.4f} | N/A | 2024/25 climate stress |",
-        f"| is_opotiki | {m2_coefs.get('is_opotiki',0):+.4f} | N/A | Ōpōtiki subzone flag |",
+        f"| dm_norm | {m2_coefs.get('dm_norm', 0):+.4f} | 0.35 | DM% — primary quality driver |",
+        f"| mts_pass | {m2_coefs.get('mts_pass', 0):+.4f} | 0.25 | MTS breach → direct -12pt OTIF |",
+        f"| cong_norm | {m2_coefs.get('cong_norm', 0):+.4f} | 0.15 | SH2 congestion index |",
+        f"| rain_norm | {m2_coefs.get('rain_norm', 0):+.4f} | 0.15 | Rainfall 7-day forecast |",
+        f"| reg_norm | {m2_coefs.get('reg_norm', 0):+.4f} | 0.10 | Regulatory compliance load |",
+        f"| stress_season | {m2_coefs.get('stress_season', 0):+.4f} | N/A | 2024/25 climate stress |",
+        f"| is_opotiki | {m2_coefs.get('is_opotiki', 0):+.4f} | N/A | Ōpōtiki subzone flag |",
         "",
         "---",
         "",
@@ -622,31 +688,31 @@ def save_report(m1_metrics, m1_r2, m1_coefs,
     ]
 
     report = "\n".join(lines)
-    out    = MODELS_DIR / "model_validation_report.md"
+    out = MODELS_DIR / "model_validation_report.md"
     out.write_text(report, encoding="utf-8")
-    print(f"\n  ✅ Report saved: {out}")
+    logger.info(f"Report saved: {out}")
 
 
 # =============================================================================
 # MAIN
 # =============================================================================
 
-def main():
-    print("=" * 70)
-    print("  OPTIMISING KIWIFRUIT EXPORT — Risk Score Model Validation")
-    print("  Logistic Regression | APOPHENIA 2026")
-    print("  Gabriela Olivera | Data Analytics Portfolio")
-    print("=" * 70)
-    print()
+
+def main() -> None:
+    logger.info("=" * 70)
+    logger.info("OPTIMISING KIWIFRUIT EXPORT — Risk Score Model Validation")
+    logger.info("Logistic Regression | APOPHENIA 2026")
+    logger.info("Gabriela Olivera | Data Analytics Portfolio")
+    logger.info("=" * 70)
 
     if not DB_PATH.exists():
-        print(f"  ❌ Database not found: {DB_PATH}")
-        print("  Run 03_etl_pipeline/04_load.py first.")
+        logger.error(f"Database not found: {DB_PATH}")
+        logger.error("Run 03_etl_pipeline/04_load.py first.")
         return
 
     np.random.seed(42)
 
-    print("── LOADING DATA ─────────────────────────────────────────────────")
+    logger.info("── LOADING DATA ──")
     df_fruit, df_fact = load_data()
 
     m1_metrics, m1_r2, m1_coefs = run_model_1(df_fruit)
@@ -656,16 +722,15 @@ def main():
     seasonal_df = seasonal_breakdown(conn)
     conn.close()
 
-    print("\n── SAVING REPORT ────────────────────────────────────────────────")
-    save_report(m1_metrics, m1_r2, m1_coefs,
-                m2_metrics, m2_r2, m2_coefs,
-                seasonal_df)
+    logger.info("── SAVING REPORT ──")
+    save_report(m1_metrics, m1_r2, m1_coefs, m2_metrics, m2_r2, m2_coefs, seasonal_df)
 
-    print("\n" + "=" * 70)
-    print("  Validation complete.")
-    print(f"  Report: 05_models/model_validation_report.md")
-    print("=" * 70)
+    logger.info("=" * 70)
+    logger.info("Validation complete.")
+    logger.info("Report: 05_models/model_validation_report.md")
+    logger.info("=" * 70)
 
 
 if __name__ == "__main__":
+    configure_logging()
     main()
