@@ -173,17 +173,49 @@ python -m http.server 8000
 ### Run the ETL pipeline (optional)
 
 ```bash
-# Regenerate the live payload from public APIs
-python 03_etl_pipeline/api_feed.py
+pip install -r requirements.txt
 
-# Regenerate synthetic EDI data (4 seasons)
+# Regenerate the live payload from public APIs
+python 03_etl_pipeline/api_feed.py --all
+
+# Regenerate synthetic EDI data (4 seasons) — has a fixed random seed,
+# so this reproduces the committed CSVs byte-for-byte
 python 03_etl_pipeline/generate_edi_simulation.py
 
-# Rebuild the star schema database
+# Rebuild the star schema database (kiwifruit_export.db)
 python 03_etl_pipeline/02_clean_raw_data.py
 python 03_etl_pipeline/03_transform.py
 python 03_etl_pipeline/04_load.py
+
+# Rebuild the separate, redesigned schema (apophenia_star.db) — see
+# "Two databases" in 08_documentation/ARCHITECTURE.md
+python 04_analysis/star_schema/load_star_schema.py
 ```
+
+#### Reproducibility from a clean clone
+
+`kiwifruit_export.db` (5.9 MB) is committed directly to the repo, along
+with every raw/processed input the commands above need — **except**
+the raw NZTA SH2 traffic data (`01_data_raw/nzta_sh2/`, ~2.4 GB across
+5 files): too large for GitHub, and beyond what's practical to ship
+via Git LFS for a portfolio project.
+
+Without it, `02_clean_raw_data.py`'s two NZTA-specific steps log an
+`ERROR` and leave `nzta_daily_bop_clean.csv` / `nzta_sh2_bop_clean.csv`
+untouched — the script still prints `ETL Phase 1 COMPLETE` and exits 0
+either way, so read the log rather than trusting the banner. Because
+those two CSVs are also committed (built from the original raw data,
+outside this repo), the rest of the pipeline runs from them
+unaffected: `03_transform.py` and `04_load.py` complete normally and
+reproduce `kiwifruit_export.db` byte-for-byte, confirmed by hashing it
+before and after a full run on a fresh clone with `01_data_raw/nzta_sh2/`
+genuinely absent. What you *can't* do without the raw NZTA data is
+regenerate those two intermediate CSVs from scratch — only rebuild
+everything downstream of them.
+
+Everything else — `generate_edi_simulation.py`, `load_star_schema.py`,
+`05_sql_analysis.py`, `06_risk_model_validation.py`, and `api_feed.py`
+— is fully reproducible from a clean clone with no raw data missing.
 
 ### Run the unit tests
 
@@ -215,7 +247,7 @@ The Mapbox token in `config.local.js` is URL-restricted in the Mapbox dashboard.
 | Frankfurter | Public API (live) | NZD/EUR and NZD/JPY exchange rates |
 | Mapbox | Public API (live) | Vector basemap and live traffic overlay |
 | Stats NZ | Public dataset | Horticulture Survey volume aggregates |
-| NZTA | Public dataset | SH2 corridor traffic monitoring |
+| NZTA | Public dataset | SH2 corridor traffic monitoring — raw files not committed (~2.4 GB); see "Reproducibility from a clean clone" above |
 | ZGL Quality Manual 2026 | Public PDF | Calibration of synthetic dry-matter and MTS thresholds |
 | Grower Payments Booklet 2026 | Public PDF | Payment rate calibration |
 | **Operational inventory** | **Synthetic** | Stochastically generated within documented industry ranges |
