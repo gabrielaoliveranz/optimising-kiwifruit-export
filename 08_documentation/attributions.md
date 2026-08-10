@@ -21,23 +21,18 @@ Format:
 
 - Fraunces and Inter by their respective type designers — Google Fonts (`06_simulator/index.html:19`, https://fonts.googleapis.com/css2?family=Fraunces...&family=Inter...), SIL Open Font License 1.1
 
+- "A bunch of green fruit hanging from a tree" by Niranjan Lamichhane — Unsplash (https://unsplash.com/photos/a-bunch-of-green-fruit-hanging-from-a-tree-6mxOodN6KHk), Unsplash License (free for commercial and non-commercial use, no permission needed; attribution not required but given here). Covers both `06_simulator/assets/hero-orchard.jpg` and `06_simulator/assets/hero-orchard.webp` — the same photograph in two formats, `.webp` a converted derivative of the `.jpg`, not a separate asset.
+
 ## Status
 
-Four CDN dependencies logged, verified against `06_simulator/index.html`
-directly (grepped for every `http(s)://` reference in that file — these
-four are the complete set). Two of the four (Fraunces/Inter via Google
+Five third-party assets logged: four CDN dependencies, verified against
+`06_simulator/index.html` directly (grepped for every `http(s)://`
+reference in that file — these four are the complete set), plus the
+hero photograph. Two of the four CDN entries (Fraunces/Inter via Google
 Fonts, and Chart.js) were not part of the original request that prompted
 this file; they surfaced during the same verification pass and are
 logged for the same reason the other two were: used but previously
 uncredited.
-
-**Unresolved — do not guess:** `assets/hero-orchard.webp` and
-`assets/hero-orchard.jpg`'s provenance and licence are not established.
-They are not logged above because their status is genuinely unknown, not
-because they were checked and found to need no entry. Do not assume they
-are original photography or public domain; do not assume they need a
-Flaticon-style credit either. This needs the asset's actual source
-before an entry can be written.
 
 Not logged, and not third-party: `assets/gabriela.webp`,
 `assets/preview/hero.png`, `04_analysis/star_schema/apophenia-star-schema.{png,svg}`,
