@@ -44,3 +44,44 @@ since this repo has no `src/`-style package layout.
 different things — not a migration in progress. See "Two databases" in
 `08_documentation/ARCHITECTURE.md` before assuming one supersedes the
 other.
+
+## Reported metrics, synthetic data, and display formulas
+
+- **Every reported metric names the script that produces it.** Incident:
+  "R² = 0.82" appeared in five places (README.md, METHODOLOGY.md,
+  app.js) and turned out to be the arithmetic mean of two different
+  models' McFadden pseudo-R² — a number no script actually produced.
+  "±8%" and "±12%" OTIF/cost-of-delay accuracy figures had no source at
+  all and were deleted rather than kept with softened wording.
+- **Never describe synthetic output as actual, historical or
+  measured.** Incident: the simulator's UI copy claimed the risk model
+  was "validated ... against 3 seasons of actuals" in a project whose
+  own methodology states no proprietary operational data has ever been
+  accessed.
+- **Display formulas are labelled as display formulas, not
+  measurements.** Incident: the simulator's interactive OTIF/returns
+  KPI tiles and the star schema's real `otif_pct` are unrelated
+  quantities that happen to share a name and a unit — one was quoted
+  in UI copy as if it were the other.
+- **A metric that looks too good gets interrogated before it gets
+  published.** Incident: Model 2 reported Accuracy 100% / F1 1.0000 /
+  zero false negatives using `mts_pass` as a feature — a feature that
+  mechanically determines its own target, because the data generator
+  applies a fixed OTIF penalty on MTS breach. The metrics were real
+  outputs of a real model; the leakage that produced them sat
+  undisclosed for as long as nobody asked why they were this good.
+- **A learned coefficient of exactly 0.0000 means the input is
+  constant, not that it doesn't matter.** Incident: `congestion_index`
+  was the same single value (91.8) in all 17,592 rows of
+  `fact_export_transactions.csv` while carrying 15% of the composite
+  Risk Score weight — the model validation report showed the resulting
+  +0.0000 coefficient the whole time, uninterpreted. `reg_index` turned
+  out to have the identical issue (constant at 15.0, also +0.0000)
+  once someone checked.
+- **Attributions are verified in both directions.** Incident:
+  README.md credited six Flaticon icons for files that don't exist
+  anywhere in this repo, while Phosphor Icons, Mapbox GL JS, Chart.js
+  and Google Fonts — all genuinely loaded from CDNs in
+  `06_simulator/index.html` — went uncredited. A credits list that's
+  wrong in one direction is generally wrong in the other too; check
+  both, not just the one that prompted the audit.
