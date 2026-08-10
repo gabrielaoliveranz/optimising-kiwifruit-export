@@ -34,16 +34,15 @@ A multi-variable regression with logistic transform combining five operational d
 |----------|--------|--------|
 | Dry-matter % | 35% | Synthetic (calibrated to QM 2026) |
 | Pest pressure | 25% | Synthetic (calibrated to CCP triggers) |
-| SH2 congestion | 15% | Live (Mapbox traffic) + synthetic baseline |
+| SH2 congestion | 15% | Live (Mapbox traffic) + synthetic baseline. **Held constant in the current build** (`congestion_index` = 91.8 for every row in `fact_export_transactions.csv`) — contributes no measured variance despite its 15% weight; `model_validation_report.md` shows a learned coefficient of exactly +0.0000. See "Congestion proxy" below. |
 | Rainfall | 15% | Live (Open-Meteo) |
-| Regulatory load | 10% | Synthetic |
+| Regulatory load | 10% | Synthetic. **Also held constant in the current build** (`reg_index` = 15.0 for every row) — same zero-variance issue as SH2 congestion, and the same +0.0000 learned coefficient in `model_validation_report.md`. No live substitute exists for this one (unlike congestion's `estimate_congestion()`). |
 
 ### Validation
 
-- **Backtest horizon**: 3 simulated seasons (2022/23 → 2024/25)
-- **R² on synthetic backtest**: 0.82
-- **OTIF projection accuracy**: ±8% within a 14-day horizon
-- **Cost-of-delay estimate**: ±12% under stable conditions
+- **Backtest horizon**: 4 simulated seasons (2022/23 → 2025/26)
+- **Model 1 (MTS fail) — McFadden pseudo-R²**: 0.7006
+- **Model 2 (OTIF < 88%) — McFadden pseudo-R²**: 0.9394 (see `model_validation_report.md`'s target-leakage limitation for this model before citing it alone)
 - **26-week risk arc**: 90% confidence intervals
 
 ### Known boundaries
@@ -68,6 +67,14 @@ A multi-variable regression with logistic transform combining five operational d
 | ≥ 23 | Late season | 18% |
 
 This is a disclosed estimate, not a measurement — `build_payload()`'s docstring and the payload's `congestion_note` field say so explicitly. Fixing it properly requires re-ingesting real SH2 traffic data from NZTA (the ~2.4GB raw files are not committed — see `01_data_raw/nzta_sh2/` and `.gitignore`) and recalibrating `congestion_index` from it.
+
+---
+
+## Display model vs validated model
+
+The simulator's live KPI tiles (OTIF rate, tray returns, freight variance, margin, the confidence figure on the risk-arc panel) are **not** the APO v4 risk model above. They're separate, hand-calibrated display formulas in `06_simulator/assets/js/app.js` — e.g. the OTIF tile is `100 − congestion×0.35 − rainfall penalty`, the returns tile scales a flat baseline by a dry-matter multiplier and volume. They exist to make the sliders feel responsive and directionally plausible; none of their coefficients were fit to data or validated the way the APO v4 weights and the Model 1/Model 2 logistic regressions above were.
+
+Being interactive is the point of a simulator and isn't the problem. The problem is when a display-formula output is presented with the same confidence as a validated figure. For contrast, the real, star-schema-derived OTIF range across all four backtested seasons is **85.63–88.32%** (see `model_validation_report.md`'s Seasonal Performance Breakdown) — a single-digit range grounded in the synthetic dataset, not the wider, slider-reactive number the live OTIF tile shows.
 
 ---
 

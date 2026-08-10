@@ -1928,7 +1928,7 @@ const _docContent = {
         <li>Dwell time: compounding penalty when &gt;20h dwell × congestion &gt;55%</li>
       </ul>
       <h4>Baseline</h4>
-      <p>Historical OTIF average: 94.2% (2023–2025 MainPack seasons). Model validated R² = 0.82 against 3 seasons of actuals.</p>`
+      <p>Simulated OTIF average: 94.2% (2023–2025 MainPack seasons, synthetic). Risk model backtested against four synthetic seasons: McFadden pseudo-R² 0.7006 (MTS fail model) and 0.9394 (OTIF&lt;88% model).</p>`
   },
   'methodology-dm': {
     eyebrow: 'METHODOLOGY',
@@ -1998,8 +1998,8 @@ const _docContent = {
     body: `<dl class="meta-grid">
       <dt>Built by</dt><dd>Gabriela Olivera · Independent operational analytics</dd>
       <dt>Model type</dt><dd>Multi-variable risk regression with logistic transform</dd>
-      <dt>Calibration</dt><dd>3-season backtest against synthetic dataset</dd>
-      <dt>Reported R²</dt><dd>0.82 (synthetic backtest only)</dd>
+      <dt>Calibration</dt><dd>4-season backtest against synthetic dataset</dd>
+      <dt>McFadden pseudo-R²</dt><dd>0.7006 (MTS fail model) · 0.9394 (OTIF&lt;88% model) — synthetic backtest only</dd>
       <dt>Use</dt><dd>Portfolio demonstration of operational risk modelling for fruit export supply chains.</dd>
       <dt>Status</dt><dd><span class="status-sync">&#x25D0; RESEARCH PROTOTYPE</span></dd>
     </dl>`
@@ -2065,7 +2065,7 @@ const _docContent = {
       This is a research prototype built on synthetic data. It is <strong>not</strong> validated for binding operational decisions without customisation to real proprietary data. Not affiliated with or endorsed by any grower organisation.
       </div>
       <h4>Reported accuracy (synthetic backtest)</h4>
-      <ul><li>OTIF projection: ±8% within 14-day horizon</li><li>Cost-of-delay estimate: ±12% under stable conditions</li><li>26-week risk arc: 90% confidence interval</li></ul>
+      <ul><li>26-week risk arc: 90% confidence interval</li></ul>
       <h4>Scope for production deployment</h4>
       <ul><li>Replace synthetic feeds with live proprietary data sources</li><li>Re-calibrate model against actual historical OTIF records</li><li>Subzone granularity below packhouse level requires additional data integration</li></ul>`
   },

@@ -110,7 +110,7 @@ optimising-kiwifruit-export/
 │                                  standalone schema.sql for apophenia_star.db
 │
 ├── 05_models/
-│   ├── 06_risk_model_validation.py ← 3-season backtest, R² = 0.82
+│   ├── 06_risk_model_validation.py ← 4-season backtest, McFadden pseudo-R² 0.7006 (MTS fail) / 0.9394 (OTIF<88%)
 │   └── model_validation_report.md  ← generated validation report
 │
 ├── 06_simulator/               ← frontend product
@@ -278,7 +278,7 @@ No proprietary data has been accessed. All operational variables are synthetic, 
 
 - **Synthetic data**: stochastically generated within ranges documented in ZGL Quality Manual 2026 and Grower Payments Booklet 2026.
 - **Risk model (APO v4)**: multi-variable logistic regression weighting dry matter (35%), pest pressure (25%), congestion (15%), rainfall (15%), and regulatory load (10%).
-- **Validation**: 3-season backtest against the synthetic dataset, R² = 0.82, OTIF projection accuracy ±8% within a 14-day horizon.
+- **Validation**: 4-season backtest against the synthetic dataset — McFadden pseudo-R² 0.7006 (MTS fail model), 0.9394 (OTIF<88% model; see the model validation report's target-leakage limitation before citing this figure alone).
 
 See [`08_documentation/METHODOLOGY.md`](08_documentation/METHODOLOGY.md) for the full methodology.
 

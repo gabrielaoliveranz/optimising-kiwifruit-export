@@ -641,6 +641,27 @@ def save_report(
         f"| stress_season | {m2_coefs.get('stress_season', 0):+.4f} | N/A | 2024/25 climate stress |",
         f"| is_opotiki | {m2_coefs.get('is_opotiki', 0):+.4f} | N/A | Ōpōtiki subzone flag |",
         "",
+        "### Limitation: target leakage in Model 2",
+        "",
+        "Model 2's headline metrics (Accuracy 100%, F1 1.0000, zero false "
+        "negatives) are inflated by target leakage, not genuine predictive "
+        "power. `mts_pass` is a feature; the synthetic generator applies a "
+        "fixed -12pt OTIF penalty whenever `mts_pass` is False, so for a "
+        "meaningful share of rows `mts_pass` mechanically determines "
+        "`otif_below_88` (the target) rather than statistically predicting "
+        "it. `cong_norm` and `reg_norm` learning coefficients of exactly "
+        "+0.0000 (table above) are a separate, related finding — those two "
+        "inputs are held constant in the current build (see "
+        "METHODOLOGY.md) — but it means the 100% accuracy is not evidence "
+        "that congestion or regulatory load usefully predict OTIF failure "
+        "either.",
+        "",
+        "**Recommendation, not a decision:** given the leakage, Model 2's "
+        "Accuracy/F1 probably shouldn't stand alone in the Executive "
+        "Summary as a headline result without this caveat attached — or "
+        "should be dropped from the summary entirely and kept only in the "
+        "full Model 2 section, next to this note.",
+        "",
         "---",
         "",
         "## Seasonal Performance Breakdown",
