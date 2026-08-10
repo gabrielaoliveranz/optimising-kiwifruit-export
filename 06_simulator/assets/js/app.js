@@ -628,7 +628,6 @@ const APO = (() => {
     _setText('hero-amount',   '$'+exposure+'M');
     _setText('hero-peakwk',   peakWk);
     _setText('hero-recommendation', rec);
-    _setText('hero-conf',     '90%');
     _setText('hero-updated',  new Date().toLocaleTimeString('en-NZ',{hour:'2-digit',minute:'2-digit'}));
     /* Triad sync */
     _setText('triad-where-name', corr?corr.name:'Ōpōtiki–Tauranga');
@@ -1928,7 +1927,7 @@ const _docContent = {
         <li>Dwell time: compounding penalty when &gt;20h dwell × congestion &gt;55%</li>
       </ul>
       <h4>Baseline</h4>
-      <p>Simulated OTIF average: 94.2% (2023–2025 MainPack seasons, synthetic). Risk model backtested against four synthetic seasons: McFadden pseudo-R² 0.7006 (MTS fail model) and 0.9394 (OTIF&lt;88% model).</p>`
+      <p>Display OTIF average at default slider settings: 91% — a calibrated display formula, not tied to any specific season (see METHODOLOGY.md, "Display model vs validated model"). Risk model backtested against four synthetic seasons: McFadden pseudo-R² 0.7006 (MTS fail model) and 0.9394 (OTIF&lt;88% model).</p>`
   },
   'methodology-dm': {
     eyebrow: 'METHODOLOGY',
