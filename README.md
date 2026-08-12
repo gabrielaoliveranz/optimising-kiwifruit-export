@@ -43,7 +43,7 @@ This separation means the entire simulator framework can be ported to a differen
 ## What it demonstrates
 
 - **Data engineering** — Python ETL pipeline processing synthetic operational datasets calibrated against publicly available industry standards
-- **Predictive modelling** — multi-variable risk regression with 90% confidence intervals, 26-week forecast arc, and 90-day scenario projection
+- **Predictive modelling** — multi-variable risk regression, a 26-week forecast arc, and a 90-day scenario projection, each with fixed-width projection bands (not statistically fitted confidence intervals)
 - **Geospatial visualisation** — Mapbox-powered Bay of Plenty corridor map with live traffic overlay
 - **Executive dashboard design** — editorial visual system with hero narrative, evidence triad, KPI strip, and exportable PDF briefings
 - **Software architecture** — CONFIG/Engine separation, ES module design, vanilla test runner with 18 unit tests

@@ -117,7 +117,7 @@ Version: 4.1.0 | 2026-05
     <span class="st-item"><span class="st-label"><i class="ph ph-airplane-takeoff"></i> EXPORT</span> Transactions joined · corridors · quality · logistics</span><span class="st-sep"> — </span>
     <span class="st-item"><span class="st-label"><i class="ph ph-stack"></i> PALLETS</span> Submissions synced · <span class="st-ok">2,341 pallets</span></span><span class="st-sep"> — </span>
     <span class="st-item"><span class="st-label"><i class="ph ph-flask"></i> MTS</span> DM threshold monitor · <span class="st-ok">Green 15.5% — SunGold 16.1%</span></span><span class="st-sep"> — </span>
-    <span class="st-item"><span class="st-label"><i class="ph ph-warning-circle"></i> RISK</span> Score refresh: <span class="st-ok">real-time</span> · Confidence: <span class="st-ok">94%</span></span><span class="st-sep"> — </span>
+    <span class="st-item"><span class="st-label"><i class="ph ph-warning-circle"></i> RISK</span> Score refresh: <span class="st-ok">real-time</span></span><span class="st-sep"> — </span>
     <span class="st-item"><span class="st-label"><i class="ph ph-leaf"></i> PHYTO</span> CCP2/3 pest monitor active · <span class="st-ok">No quarantine events</span></span><span class="st-sep"> — </span>
     <!-- duplicate for seamless loop -->
     <span class="st-item"><span class="st-label"><i class="ph ph-road"></i> SH2</span> Corridor feed ingested · <span class="st-ok">1,847 records</span></span><span class="st-sep"> — </span>
@@ -126,7 +126,7 @@ Version: 4.1.0 | 2026-05
     <span class="st-item"><span class="st-label"><i class="ph ph-airplane-takeoff"></i> EXPORT</span> Transactions joined · corridors · quality · logistics</span><span class="st-sep"> — </span>
     <span class="st-item"><span class="st-label"><i class="ph ph-stack"></i> PALLETS</span> Submissions synced · <span class="st-ok">2,341 pallets</span></span><span class="st-sep"> — </span>
     <span class="st-item"><span class="st-label"><i class="ph ph-flask"></i> MTS</span> DM threshold monitor · <span class="st-ok">Green 15.5% — SunGold 16.1%</span></span><span class="st-sep"> — </span>
-    <span class="st-item"><span class="st-label"><i class="ph ph-warning-circle"></i> RISK</span> Score refresh: <span class="st-ok">real-time</span> · Confidence: <span class="st-ok">94%</span></span><span class="st-sep"> — </span>
+    <span class="st-item"><span class="st-label"><i class="ph ph-warning-circle"></i> RISK</span> Score refresh: <span class="st-ok">real-time</span></span><span class="st-sep"> — </span>
     <span class="st-item"><span class="st-label"><i class="ph ph-leaf"></i> PHYTO</span> CCP2/3 pest monitor active · <span class="st-ok">No quarantine events</span></span>
   </div>
 </div>
@@ -836,7 +836,7 @@ Version: 4.1.0 | 2026-05
           <div class="chart-card">
             <div class="cc-head">
               <div class="cc-label">26-Week Risk Arc — Season Projection</div>
-              <div class="cc-src">90% confidence band</div>
+              <div class="cc-src">Projection band</div>
             </div>
             <svg height="110" id="projSvg" style="width:100%;overflow:visible;" aria-label="26-week risk projection"></svg>
             <div class="proj-labels" id="projLabels"></div>
@@ -1045,7 +1045,7 @@ Version: 4.1.0 | 2026-05
               <div class="bi-chart-header">
                 <div class="bi-chart-header-left">
                   <div class="bi-chart-title">26-Week Risk Arc — Season Projection</div>
-                  <div class="bi-chart-subtitle">90% confidence interval</div>
+                  <div class="bi-chart-subtitle">Projection band</div>
                 </div>
                 <div class="bi-chart-header-right">
                   <div class="bi-chart-live">LIVE</div>
@@ -1053,7 +1053,7 @@ Version: 4.1.0 | 2026-05
                 </div>
               </div>
               <div class="bi-chart-body" style="min-height:150px;">
-                <canvas id="biChart3" aria-label="26-week risk score projection with 90 percent confidence interval, showing confidence bands and main trend line"></canvas>
+                <canvas id="biChart3" aria-label="26-week risk score projection with a fixed-width projection band, showing upper and lower bounds and main trend line"></canvas>
               </div>
               <div class="bi-chart-caption">Risk peaks around Wk 22 during late MainPack; returns to baseline by Wk 26.</div>
             </div>
@@ -1187,7 +1187,7 @@ Version: 4.1.0 | 2026-05
         <div class="process-icon"><svg><use href="#i-trend-up"/></svg></div>
         <div class="process-step">03 — Project</div>
         <h3 class="process-title">Forward forecast</h3>
-        <p class="process-text">26-week confidence bands and 90-day operational projections refresh on every scenario change.</p>
+        <p class="process-text">26-week and 90-day operational projection bands refresh on every scenario change.</p>
       </div>
       <div class="process-item">
         <div class="process-icon"><svg><use href="#i-target"/></svg></div>
@@ -1213,7 +1213,7 @@ Version: 4.1.0 | 2026-05
           <li><a href="#" data-doc="methodology-risk">Risk model overview</a></li>
           <li><a href="#" data-doc="methodology-otif">OTIF calculation basis</a></li>
           <li><a href="#" data-doc="methodology-dm">Dry-matter weighting</a></li>
-          <li><a href="#" data-doc="methodology-ci">Confidence intervals</a></li>
+          <li><a href="#" data-doc="methodology-ci">Projection bands</a></li>
         </ul>
       </div>
       <div class="footer-col">

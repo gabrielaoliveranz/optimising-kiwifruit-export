@@ -965,7 +965,7 @@ const APO = (() => {
       cod.update('none');
     }
     if (risk) {
-      // dataset[6] is the Risk Score line (datasets 0-5 are the confidence bands — do NOT touch)
+      // dataset[6] is the Risk Score line (datasets 0-5 are the projection bands — do NOT touch)
       risk.data.datasets[6].data=Array(26).fill(_computeRisk());
       risk.update('none');
     }
@@ -1520,7 +1520,7 @@ const APO = (() => {
           '</div>' +
           '<div style="padding:14px 20px;height:320px;"><canvas id="canvas90Day"></canvas></div>' +
           '<div style="padding:4px 20px 18px;display:flex;gap:20px;flex-wrap:wrap;align-items:center;">' +
-            '<span style="display:flex;align-items:center;gap:6px;font-size:11px;color:var(--txt-secondary);"><span style="width:20px;height:8px;background:rgba(0,61,43,.18);display:inline-block;border-radius:1px;"></span>90% confidence interval</span>' +
+            '<span style="display:flex;align-items:center;gap:6px;font-size:11px;color:var(--txt-secondary);"><span style="width:20px;height:8px;background:rgba(0,61,43,.18);display:inline-block;border-radius:1px;"></span>Projection band</span>' +
             '<span style="display:flex;align-items:center;gap:6px;font-size:11px;color:var(--txt-secondary);"><span style="width:20px;height:1.5px;background:#003d2b;display:inline-block;"></span>Base projection</span>' +
             '<span style="margin-left:auto;font-size:10px;color:var(--txt-dim);font-family:\'JetBrains Mono\',monospace;">Milestones — hairline</span>' +
           '</div>' +
@@ -1590,7 +1590,7 @@ const APO = (() => {
     const weeks = Array.from({ length: 13 }, (_, i) => 'Wk' + (startWk + i));
     const delta  = [0, 2, 5, 9, 14, 18, 14, 10, 6, 2, -2, -6, -10];
     const base   = delta.map(d => Math.min(99, Math.max(1, Math.round(baseRisk + d))));
-    // Fan chart: optimistic/stress as confidence bands around base
+    // Fan chart: optimistic/stress as projection bands around base
     const bandOuter = base.map(v => Math.min(99, Math.round(v * 1.28)));
     const bandInner = base.map(v => Math.max(1,  Math.round(v * 0.78)));
     const otifMax = Math.max(40, Math.round(100 - s.cong * 0.35 - (s.rain > 40 ? (s.rain - 40) * 0.2 : 0)));
@@ -1705,7 +1705,7 @@ const APO = (() => {
        ['Pongakawa', sz?.['Pongakawa'] ? sz['Pongakawa'].dm_mean.toFixed(2) : (s.dm+0.07).toFixed(2), sz?.['Pongakawa'] ? Math.round((1-sz['Pongakawa'].mts_pass_rate)*100)+'%' : '9%'],
        ['Te Puke',   sz?.['Te Puke']   ? sz['Te Puke'].dm_mean.toFixed(2)   : s.dm.toFixed(2),         sz?.['Te Puke']   ? Math.round((1-sz['Te Puke'].mts_pass_rate)*100)+'%'   : '11%'],
        ['Tauranga',  (s.dm-0.04).toFixed(2), '13%'],
-       ['Opotiki', sz?.['Opotiki'] ? sz['Opotiki'].dm_mean.toFixed(2) : (s.dm-0.24).toFixed(2), sz?.['Opotiki'] ? Math.round((1-sz['Opotiki'].mts_pass_rate)*100)+'%' : '20%']
+       ['Ōpōtiki', sz?.['Opotiki'] ? sz['Opotiki'].dm_mean.toFixed(2) : (s.dm-0.24).toFixed(2), sz?.['Opotiki'] ? Math.round((1-sz['Opotiki'].mts_pass_rate)*100)+'%' : '20%']
       ].forEach(([name, dm, fail], i) => {
         const y = 151 + i * 8;
         doc.setFont('helvetica', 'normal'); doc.setTextColor(26, 35, 25);
@@ -1943,13 +1943,12 @@ const _docContent = {
   },
   'methodology-ci': {
     eyebrow: 'METHODOLOGY',
-    title: 'Confidence intervals',
-    body: `<p>The 26-week and 90-day projections carry explicit confidence bands to reflect model uncertainty.</p>
+    title: 'Projection bands',
+    body: `<p>The 26-week and 90-day charts each draw a fixed-width band around the projection. Neither is a statistically fitted confidence interval — both are deterministic offsets kept for visual context, not a measure of forecast uncertainty.</p>
       <h4>Band construction</h4>
       <ul>
-        <li>Outer 90% band: ±28% of base score</li>
-        <li>Inner 80% band: ±12% of base score</li>
-        <li>Bands widen beyond week 12 reflecting reduced forecast accuracy</li>
+        <li>26-week risk arc: three nested bands at fixed offsets of ±6, ±12 and ±18 points around the projected score (0–100 scale), constant across all 26 weeks</li>
+        <li>90-day operational projection: two nested bands at roughly ±10&ndash;12% and ±22&ndash;28% of the projected value at each week</li>
       </ul>
       <h4>Limitations</h4>
       <p>Bands assume stable regulatory environment and no black-swan events. Cyclone/frost scenarios should be modelled explicitly via the scenario sliders.</p>`
@@ -2064,7 +2063,7 @@ const _docContent = {
       This is a research prototype built on synthetic data. It is <strong>not</strong> validated for binding operational decisions without customisation to real proprietary data. Not affiliated with or endorsed by any grower organisation.
       </div>
       <h4>Reported accuracy (synthetic backtest)</h4>
-      <ul><li>26-week risk arc: 90% confidence interval</li></ul>
+      <ul><li>26-week risk arc: fixed-width projection band, not a statistically fitted interval</li></ul>
       <h4>Scope for production deployment</h4>
       <ul><li>Replace synthetic feeds with live proprietary data sources</li><li>Re-calibrate model against actual historical OTIF records</li><li>Subzone granularity below packhouse level requires additional data integration</li></ul>`
   },

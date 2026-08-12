@@ -85,3 +85,34 @@ other.
   `06_simulator/index.html` — went uncredited. A credits list that's
   wrong in one direction is generally wrong in the other too; check
   both, not just the one that prompted the audit.
+- **A band drawn from a fixed formula isn't a statistically fitted
+  interval.** Incident: the 26-week and 90-day charts' "confidence
+  interval"/"confidence band" labels — UI subtitles, aria-labels, the
+  methodology modal, README.md, METHODOLOGY.md — described
+  deterministic offsets (±6/12/18 points on the 26-week arc; roughly
+  ±10–12%/±22–28% of the projected value on the 90-day chart) as if
+  they were derived confidence intervals. The methodology modal also
+  attributed the 90-day chart's own formula to the 26-week chart.
+  Relabelled everywhere as "projection band," and the modal now
+  describes each chart's actual construction separately. The
+  status-ticker's unrelated "Confidence: 94%" had no derivation
+  anywhere in the codebase and was removed outright, same as
+  hero-conf.
+
+## Māori place names: ASCII keys, macron display text
+
+Subzone/corridor identifiers (`id: 'opotiki'`, `subzoneMap` keys, the
+dict keys in `generate_edi_simulation.py`, `subzone` column/field
+values used for joins and lookups) are plain ASCII on purpose —
+exact-string matching against a macron is fragile in exactly the way
+Terroir's own case study is built around (a plain-ASCII filter
+silently excluded an entire district because a macron in the data
+didn't match). Anything actually rendered to a reader — chart labels,
+the Mapbox `locations[].name` field, exported-PDF text — uses the
+macron (`Ōpōtiki`). **Don't "fix" the ASCII keys to add the macron**;
+that reintroduces the exact fragility this split exists to avoid.
+
+Incident: the PDF export's subzone-breakdown table used the bare key
+`'Opotiki'` as its display name instead of the `Ōpōtiki` used
+everywhere else in the UI. Fixed to display the macron while leaving
+the `sz['Opotiki']` data lookups (matching the ASCII key) untouched.

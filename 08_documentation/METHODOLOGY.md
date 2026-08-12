@@ -43,7 +43,7 @@ A multi-variable regression with logistic transform combining five operational d
 - **Backtest horizon**: 4 simulated seasons (2022/23 → 2025/26)
 - **Model 1 (MTS fail) — McFadden pseudo-R²**: 0.7006
 - **Model 2 (OTIF < 88%) — McFadden pseudo-R²**: 0.9394 (see `model_validation_report.md`'s target-leakage limitation for this model before citing it alone)
-- **26-week risk arc**: 90% confidence intervals
+- **26-week risk arc**: fixed-width projection band (deterministic offset, not a statistically fitted interval — not a validation metric)
 
 ### Known boundaries
 
