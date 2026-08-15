@@ -98,6 +98,51 @@ other.
   status-ticker's unrelated "Confidence: 94%" had no derivation
   anywhere in the codebase and was removed outright, same as
   hero-conf.
+- **"Four independent public APIs" counts what's actually wired to
+  run, not what's been written.** Verified 2026-08-15: `app.js`
+  contains a full NZTA live-traffic integration —
+  `_fetchNZTAEvents`/`_renderNZTAEvents`/`_startNZTARefresh`, hitting
+  two real endpoints (`journeys.nzta.govt.nz`,
+  `api.gisngis.com/nzta`) — but `_startNZTARefresh` has zero call
+  sites anywhere in `06_simulator/`. It never runs on load, on a
+  timer, or from any button; the only way it fires is a developer
+  manually calling `APO.refreshTraffic()` from a console. This
+  matches README.md's own roadmap line ("Live NZTA integration |
+  🔄 Planned") — it's unfinished scaffolding for a not-yet-shipped
+  feature, not a fifth live integration, so it doesn't change the
+  "four" count (Open-Meteo, Frankfurter, Overpass, Mapbox). The map's
+  live traffic layer visitors actually see is Mapbox's own Traffic
+  API (`CONFIG.api.mapbox.trafficUrl`, added as a real source/layer
+  in `_addMapLayers`) — already covered under Mapbox, not a separate
+  public API. **Separately:** `index.html`'s `#nztaStatusBadge` is
+  not `hidden` and has no fallback state for "never started" — it
+  reads "NZTA · connecting…" indefinitely for every visitor, since
+  nothing ever resolves it out of the loading state. Flagged, not
+  fixed as part of this pass — resolving it is a product decision
+  (wire the integration up for real, hide the badge until it is, or
+  give it an explicit "planned" state) rather than a stale-copy fix.
+- **The status ticker's other static numbers had the same problem as
+  "Confidence: 94%," just not yet caught.** Verified 2026-08-15,
+  `06_simulator/index.html`'s `.sys-ticker`: "1,847 records" (SH2) and
+  "2,341 pallets" didn't match any real file — the actual clean/raw
+  files have 715 and 17,592 rows respectively — corrected to those.
+  "24h window" (climate) didn't match `api_feed.py:326`'s
+  `forecast_days: 7` — corrected to "7-day forecast", consistent with
+  the `src-niwa` methodology modal's own "Forecast horizon: 7 days".
+  "Duplicate check: 0 dupes" and "Health: 100%" were removed outright
+  — `integrity_audit_report.md` never reports a row-level duplicate
+  check or any "health score" metric, only a duplicate-*column-header*
+  parsing bug (unrelated) and per-dataset status. "Null check: 0
+  nulls" was kept — the report explicitly states one dataset had "No
+  null values detected" and the other's nulls were imputed away, so
+  the delivered clean files genuinely have zero remaining nulls.
+  Separately, "No quarantine events" (PHYTO) was actively wrong, not
+  just undocumented: `generate_edi_simulation.py`'s synthetic data
+  generator assigns PEST_CCP3 (market-block-risk) a real, nonzero
+  weight, and the actual generated `synthetic_fruit_loss_records.csv`
+  contains 1,181 rows with `primary_cause == PEST_CCP3` — removed the
+  claim rather than quote a number, same resolution as the original
+  "Confidence: 94%" incident.
 
 ## Māori place names: ASCII keys, macron display text
 

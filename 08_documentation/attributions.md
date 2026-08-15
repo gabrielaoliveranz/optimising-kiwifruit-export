@@ -23,16 +23,28 @@ Format:
 
 - "A bunch of green fruit hanging from a tree" by Niranjan Lamichhane — Unsplash (https://unsplash.com/photos/a-bunch-of-green-fruit-hanging-from-a-tree-6mxOodN6KHk), Unsplash License (free for commercial and non-commercial use, no permission needed; attribution not required but given here). Covers both `06_simulator/assets/hero-orchard.jpg` and `06_simulator/assets/hero-orchard.webp` — the same photograph in two formats, `.webp` a converted derivative of the `.jpg`, not a separate asset.
 
+- jsPDF v2.5.1 by the jsPDF contributors — cdnjs CDN, loaded dynamically at runtime rather than a static `<script>` tag (`06_simulator/assets/js/app.js:1663`, `JSPDF_CDN = 'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js'`, injected via `sc.src = JSPDF_CDN` at `app.js:1752` when the PDF-export feature is actually used), MIT License
+
 ## Status
 
-Five third-party assets logged: four CDN dependencies, verified against
-`06_simulator/index.html` directly (grepped for every `http(s)://`
-reference in that file — these four are the complete set), plus the
-hero photograph. Two of the four CDN entries (Fraunces/Inter via Google
-Fonts, and Chart.js) were not part of the original request that prompted
-this file; they surfaced during the same verification pass and are
-logged for the same reason the other two were: used but previously
+Six third-party assets logged: five CDN dependencies, verified against
+`06_simulator/index.html` **and** `06_simulator/assets/js/app.js`, plus
+the hero photograph. Four of the five CDN entries (Fraunces/Inter via
+Google Fonts, Chart.js, and jsPDF) were not part of the original request
+that prompted this file; they surfaced during verification passes and
+are logged for the same reason the others were: used but previously
 uncredited.
+
+**Verified 2026-08-15, corrected from an earlier version of this
+section:** this log's stated methodology used to say it was complete
+after grepping only `index.html` for every `http(s)://` reference —
+that missed jsPDF entirely, because it isn't a static `<script src>` in
+the HTML at all, it's a URL string inside `app.js` that gets injected
+into a `<script>` element only when a visitor actually exports a PDF.
+Any dependency loaded programmatically from JS, not declared in markup,
+will keep being invisible to an HTML-only grep. Re-verify against both
+files (and any other JS entry point this project gains) next time this
+log is audited, not `index.html` alone.
 
 Not logged, and not third-party: `assets/gabriela.webp`,
 `assets/preview/hero.png`, `04_analysis/star_schema/apophenia-star-schema.{png,svg}`,
