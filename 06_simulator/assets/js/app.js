@@ -679,16 +679,29 @@ const APO = (() => {
       `<circle cx="${ex}" cy="${ey}" r="5" fill="${col}"/>`;
   }
 
-  /* ── PROJECTION SVG (26-week arc — accepts real ETL data or falls back to defaults) */
+  /* ── PROJECTION SVG (26-week arc — accepts real ETL data or falls back to defaults)
+     Same ±6/12/18-point nested bands as biChart3 (the detail "Forecast Lab"
+     view of this identical projection) — both share the title "26-Week Risk
+     Arc — Season Projection" and subtitle "Projection band", so a visitor
+     has no way to tell them apart, which means they can't legitimately draw
+     different bands. This used to be a single flat ±12 band; brought in
+     line with biChart3 and the methodology modal ('methodology-ci') on
+     2026-08-15 rather than left as an undocumented simplification. */
   function _drawProjectionSvg(arcData) {
     const svg=document.getElementById('projSvg'); if(!svg) return;
     const W=svg.clientWidth||400, H=110;
     const data=arcData||[18,20,22,28,32,30,26,24,22,26,30,35,38,32,28,24,22,20,24,28,26,22,20,18,16,14];
-    const upper=data.map(v=>Math.min(100,v+12)), lower=data.map(v=>Math.max(0,v-12));
+    const b50u=data.map(v=>Math.min(100,v+6)),  b50l=data.map(v=>Math.max(0,v-6));
+    const b80u=data.map(v=>Math.min(100,v+12)), b80l=data.map(v=>Math.max(0,v-12));
+    const b95u=data.map(v=>Math.min(100,v+18)), b95l=data.map(v=>Math.max(0,v-18));
     const tx=i=>i/(data.length-1)*W, ty=v=>H-(v/80)*H;
     const pts=arr=>arr.map((v,i)=>`${tx(i)},${ty(v)}`).join(' ');
-    const band=[...upper.map((v,i)=>`${tx(i)},${ty(v)}`), ...[...lower].reverse().map((v,i)=>`${tx(data.length-1-i)},${ty(v)}`)].join(' ');
-    svg.innerHTML=`<polygon points="${band}" fill="rgba(0,99,56,.08)"/><polyline points="${pts(upper)}" fill="none" stroke="rgba(0,99,56,.2)" stroke-width="1" stroke-dasharray="3,3"/><polyline points="${pts(lower)}" fill="none" stroke="rgba(0,99,56,.2)" stroke-width="1" stroke-dasharray="3,3"/><polyline points="${pts(data)}" fill="none" stroke="#006338" stroke-width="2"/>`;
+    const band=(upper,lower)=>[...upper.map((v,i)=>`${tx(i)},${ty(v)}`), ...[...lower].reverse().map((v,i)=>`${tx(data.length-1-i)},${ty(v)}`)].join(' ');
+    svg.innerHTML=
+      `<polygon points="${band(b95u,b95l)}" fill="rgba(0,99,56,.06)"/>`+
+      `<polygon points="${band(b80u,b80l)}" fill="rgba(0,99,56,.10)"/>`+
+      `<polygon points="${band(b50u,b50l)}" fill="rgba(0,99,56,.14)"/>`+
+      `<polyline points="${pts(data)}" fill="none" stroke="#006338" stroke-width="2"/>`;
     const lEl=document.getElementById('projLabels'); if(lEl) lEl.innerHTML=['Wk1','Wk7','Wk13','Wk19','Wk26'].map(l=>`<span>${l}</span>`).join('');
   }
 
