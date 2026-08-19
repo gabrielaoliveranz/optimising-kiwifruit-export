@@ -1,0 +1,14 @@
+# Normalises every text file to LF in the git object database, regardless
+# of what line endings a contributor's OS/editor/git config writes to
+# disk locally.
+* text=auto eol=lf
+
+# True binaries — never text-normalise these, regardless of extension
+# detection.
+*.png binary
+*.webp binary
+*.jpg binary
+*.gif binary
+*.pdf binary
+*.db binary
+*.pbix binary
