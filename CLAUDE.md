@@ -78,13 +78,32 @@ other.
   +0.0000 coefficient the whole time, uninterpreted. `reg_index` turned
   out to have the identical issue (constant at 15.0, also +0.0000)
   once someone checked.
-- **Attributions are verified in both directions.** Incident:
-  README.md credited six Flaticon icons for files that don't exist
-  anywhere in this repo, while Phosphor Icons, Mapbox GL JS, Chart.js
-  and Google Fonts — all genuinely loaded from CDNs in
+- **Attributions are verified in both directions — and "I can't find it"
+  isn't the same as "it doesn't exist."** Incident: README.md credited
+  six Flaticon icons, while Phosphor Icons, Mapbox GL JS, Chart.js and
+  Google Fonts — all genuinely loaded from CDNs in
   `06_simulator/index.html` — went uncredited. A credits list that's
   wrong in one direction is generally wrong in the other too; check
-  both, not just the one that prompted the audit.
+  both, not just the one that prompted the audit. But the first fix
+  attempt got the "missing" direction wrong: it concluded the six
+  Flaticon credits named files that don't exist anywhere in the repo,
+  deleted them, and shipped that conclusion in a commit message —
+  based on grepping `06_simulator/index.html` (and later `app.js`) for
+  `http(s)://` references. That method has a fixed blind spot: it can
+  only see markup and script text, never a committed **binary**. The
+  six icons were real, embedded inside
+  `07_reports/presentation_slides/apophenia_dashboard_v1_2026-07-28.pbix`
+  (a `.pbix` is a ZIP — `Report/StaticResources/RegisteredResources/`)
+  and rendered in `apophenia_dashboard_screenshot.png`, both committed
+  in the same repo the grep ran against. `attributions.md` had already
+  logged this exact failure mode for jsPDF (a URL string injected from
+  `app.js` at runtime, invisible to a static-HTML grep) before the
+  Flaticon conclusion was written — and it recurred anyway, in a more
+  extreme form: not "the wrong entry point," but a file format grep
+  can't enter at all. A `.pbix`, or any other archive/compiled asset
+  committed to the repo, needs to be unzipped/decompiled and checked
+  directly — a clean `http(s)://` grep proves nothing about what's
+  inside one.
 - **A band drawn from a fixed formula isn't a statistically fitted
   interval.** Incident: the 26-week and 90-day charts' "confidence
   interval"/"confidence band" labels — UI subtitles, aria-labels, the
@@ -161,3 +180,17 @@ Incident: the PDF export's subzone-breakdown table used the bare key
 `'Opotiki'` as its display name instead of the `Ōpōtiki` used
 everywhere else in the UI. Fixed to display the macron while leaving
 the `sz['Opotiki']` data lookups (matching the ASCII key) untouched.
+
+This is not a one-off PDF-export bug — it's a class of bug, and it
+recurred a second time in a completely different tool. The Power BI
+dashboard's "Highest-Risk Growers" table (`dim_grower.subzone`, bound
+straight to the raw ASCII key) rendered "Opotiki" next to the "Delay
+Risk by Corridor" chart's "Ōpōtiki-Tauranga" in the same screenshot.
+Same root cause as the PDF export: a visual bound directly to the join
+key instead of a display value. Fixed the same way — a calculated
+column, `dim_grower[Subzone display] = SWITCH(dim_grower[subzone],
+"Opotiki", "Ōpōtiki", dim_grower[subzone])`, swapped into the table
+visual in place of the raw column; `subzone` itself, and every
+relationship/filter keyed on it, untouched. Any new visual, export, or
+UI surface that reads `subzone` (or an equivalent ASCII key elsewhere)
+directly should be assumed to have this bug until checked.
