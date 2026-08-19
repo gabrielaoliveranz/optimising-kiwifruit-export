@@ -23,3 +23,12 @@ Before importing this workflow into an n8n instance:
 3. Activate the workflow once the environment variable is confirmed set
    — each node throws an explicit error if it's missing, rather than
    silently writing to the wrong place.
+
+## Status
+
+Exported workflow definition. It has never run: `active` is `false` in
+the definition, and `etl_log.txt` — which both the success and the
+quality-alert branches write to on every execution — does not exist
+anywhere in the repo. The workflow automates the manual step
+`python 03_etl_pipeline/api_feed.py --live --live-apis` on a daily 18:00
+UTC cron. Scaffolding, not a live integration.

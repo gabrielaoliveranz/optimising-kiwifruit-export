@@ -140,6 +140,20 @@ other.
   fixed as part of this pass — resolving it is a product decision
   (wire the integration up for real, hide the badge until it is, or
   give it an explicit "planned" state) rather than a stale-copy fix.
+  **Second instance of the same pattern, found during the Proyectos
+  migration (2026-08-19):** `03_etl_pipeline/n8n_workflows/
+  apophenia_live_feed.json` has the identical shape — `active` is
+  `false` in the definition, and `etl_log.txt` (written by both the
+  success and quality-alert branches on every real execution) doesn't
+  exist anywhere in the repo, so the workflow has never actually run.
+  Unlike the NZTA case there was no README line asserting it was live,
+  so no false claim needed correcting — but the file-tree listing gave
+  it no status indicator either, which was its own silent gap. Now
+  closed with an explicit "Status" note in
+  `n8n_workflows/README.md`. Two for two: written-but-never-executed
+  automation needs a status marker in its own documentation, not just
+  the absence of a false claim elsewhere — that's the standard now,
+  not a one-off.
 - **The status ticker's other static numbers had the same problem as
   "Confidence: 94%," just not yet caught.** Verified 2026-08-15,
   `06_simulator/index.html`'s `.sys-ticker`: "1,847 records" (SH2) and
