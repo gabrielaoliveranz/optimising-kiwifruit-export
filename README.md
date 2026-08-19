@@ -372,3 +372,17 @@ See [`08_documentation/attributions.md`](08_documentation/attributions.md)
 for every third-party asset and CDN dependency actually in use (Phosphor
 Icons, Mapbox GL JS, Chart.js, Google Fonts), verified against the
 codebase directly.
+
+## Icon Credits (Power BI dashboard)
+
+The KPI card icons embedded in
+[`07_reports/presentation_slides/apophenia_dashboard_v1_2026-07-28.pbix`](07_reports/presentation_slides/apophenia_dashboard_v1_2026-07-28.pbix)
+— not the web simulator above — are sourced from Flaticon:
+
+- Quality check icon by berkahicon - Flaticon (https://www.flaticon.com/free-icons/trust)
+- Stopwatch icon by nawicon - Flaticon (https://www.flaticon.com/free-icons/stop-watch)
+- Water drop icon by Good Ware - Flaticon (https://www.flaticon.com/free-icons/water)
+- Crate icon by Magnific - Flaticon (https://www.flaticon.com/free-icons/crate)
+- Money icon by Kiranshastry - Flaticon (https://www.flaticon.com/free-icons/money)
+- Clipboard icon by Magnific - Flaticon (https://www.flaticon.com/free-icons/clipboard)
+- On time icon by Ihdizein - Flaticon (https://www.flaticon.com/free-icons/on-time)

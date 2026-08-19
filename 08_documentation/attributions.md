@@ -53,7 +53,16 @@ appear to be this project's own original photography/diagrams/screenshots,
 not third-party assets — outside this log's scope, same as the sister
 repo's own attributions.md only logs genuine third-party sources.
 
-The six Flaticon credits previously in `README.md` (trust, stopwatch,
-water, crate, money, clipboard icons) named files that do not exist
-anywhere in this repository and have been removed, not migrated here —
-see `README.md`'s Icon Credits section.
+The Flaticon credits in `README.md`'s Icon Credits section are not logged
+here: they cover the seven KPI-card icons embedded inside
+`07_reports/presentation_slides/apophenia_dashboard_v1_2026-07-28.pbix`
+(a `.pbix` is a ZIP — see `Report/StaticResources/RegisteredResources/`),
+not a CDN/markup dependency of `06_simulator/`, so they sit outside this
+log's scope (third-party assets loaded by the web simulator) rather than
+being absent from the repo. An earlier version of this note claimed those
+six credits named files that don't exist anywhere in the repository —
+that was wrong: it was based on grepping `06_simulator/index.html` and
+`app.js` for `http(s)://` references, which cannot see inside a committed
+binary. The six were real; a seventh (the "on time" icon, replacing an
+unattributed "time-check" icon) was also missing from that list. All
+seven are now credited in `README.md`.
